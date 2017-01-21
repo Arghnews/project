@@ -6,6 +6,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include "Util.hpp"
 
 typedef glm::dvec2 v2;
 typedef glm::dvec3 v3;

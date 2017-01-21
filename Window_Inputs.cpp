@@ -3,6 +3,7 @@
 #include <map>
 #include <functional>
 #include <iostream>
+#include "Util.hpp"
 #include "Window_Inputs.hpp"
 
 extern Window_Inputs inputs; // should be defined in main

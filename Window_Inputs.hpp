@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <map>
 #include <functional>
+#include "Util.hpp"
 
 typedef std::function<void()> void_func;
 static const void_func NOPfunc = ([](){});
