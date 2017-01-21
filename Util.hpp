@@ -1,5 +1,7 @@
 #ifndef MY_UTIL
 #define MY_UTIL
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +22,7 @@ typedef glm::fvec3 v3;
 typedef glm::fvec4 v4;
 typedef glm::fquat fq;
 typedef glm::fmat4 m4;
+typedef std::vector<GLfloat> fv;
 typedef std::vector<v3> vv3;
 
 static const v3 FORWARD(0.0f,0.0f,-1.0f);
@@ -73,7 +76,8 @@ std::string static printQ(const fq v) {
     return buffer.str();
 }
 
-bool static areSame(double a, double b) {
+template <typename N>
+bool static areSame(N a, N b) {
     return fabs(a - b) < EPSILON;
 }
 

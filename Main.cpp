@@ -15,13 +15,15 @@
 #include "Shader.hpp"
 #include "Window_Inputs.hpp"
 #include "Camera.hpp"
+#include "data.hpp"
 
 Window_Inputs inputs;
 
 void set_keyboard(Window_Inputs& w_in, GLFWwindow* window, Camera& c);
 
 int main() {
-    GLFWwindow* window = inputs.init_window();
+
+    GLFWwindow* window = inputs.init_window(1440, 1440);
 
     Camera camera;
     
@@ -41,15 +43,10 @@ int main() {
     inputs.setFunc2(GLFW_KEY_UP,[&] () {camera.move(UP); });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {camera.move(DOWN); });
 
+    inputs.setFunc(GLFW_KEY_LEFT_SHIFT,GLFW_PRESS,[&] () {camera.toggleSpeed(); });
+
     Shader shaderProgram("vertex.shader", "fragment.shader");
 
-    // Set up vertex data (and bufer(s)) and attribute pointers
-    GLfloat vertices[] = {
-        // Positions         // Colors
-        0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // Bottom Right
-        -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  // Bottom Left
-        0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // Top 
-    };
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -57,13 +54,13 @@ int main() {
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
     glBindVertexArray(0); // Unbind VAO
@@ -86,7 +83,7 @@ int main() {
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
 
-        double aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
+        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
 
         m4 model;
         m4 trans;
@@ -100,7 +97,7 @@ int main() {
         m4 view = camera.update();
 
         m4 projection;
-        projection = glm::perspective(glm::radians(90.0f), 2.0f, 0.1f, 200.0f);
+        projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
         //projection = glm::ortho(-3.0f,3.0f,-3.0f,3.0f,0.1f, 100.0f);
 
         GLint modelLoc = glGetUniformLocation(shaderProgram.Program, "model");
@@ -110,7 +107,7 @@ int main() {
         GLint projectionLoc = glGetUniformLocation(shaderProgram.Program, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
         inputs.loop(); // polls loop and executes functions
     }

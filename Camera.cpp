@@ -9,11 +9,26 @@
 #include "Util.hpp"
 #include "Camera.hpp"
 
-Camera::Camera() {
+Camera::Camera() :
+    Camera(0.02f) {
+}
+
+void Camera::toggleSpeed() {
+    if (areSame(speed,slow_speed)) {
+        speed = fast_speed;
+    } else if (areSame(speed,fast_speed)) {
+        speed = slow_speed;
+    }
+}
+
+Camera::Camera(const float& sp) :
+    slow_speed(sp),
+    fast_speed(4.0f*sp) {
+    speed = slow_speed;
 }
 
 void Camera::move(const v3& v) { // change translation matrix by v
-    trans = glm::translate(trans, v * orient);
+    trans = glm::translate(trans, speed * (v * orient));
 }
 
 void Camera::turn(const v3& v) { // turn by vec
@@ -26,7 +41,7 @@ void Camera::rotate(const v2& offset) { // rotate by mouse input
 }
 
 m4 Camera::update() { // view matrix
-    const v3 pos = trans * v4(0.0f, 0.0f, 0.0f, 1.0f);
+    const v3 pos = (trans * v4(0.0f, 0.0f, 0.0f, 1.0f));
     const v3 facing = FORWARD * orient;
     const v3 up_relative = UP * orient;
     return glm::lookAt(pos, pos + facing, up_relative);

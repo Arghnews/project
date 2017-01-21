@@ -83,7 +83,7 @@ v2 Window_Inputs::windowSize() {
     return v2(width, height);
 }
 
-GLFWwindow* Window_Inputs::init_window() {
+GLFWwindow* Window_Inputs::init_window(int x, int y) {
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) {
@@ -94,7 +94,7 @@ GLFWwindow* Window_Inputs::init_window() {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(1024, 768, "Sick window here", NULL, NULL);
+    window = glfwCreateWindow(x, y, "Sick window here", NULL, NULL);
 
     if (!window) {
         // Window or OpenGL context creation failed
