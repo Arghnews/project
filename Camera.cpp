@@ -22,12 +22,13 @@ void Camera::turn(const v3& v) { // turn by vec
 }
 
 void Camera::rotate(const v2& offset) { // rotate by mouse input
-    orient = dq(0.05 * v3(-glm::radians(offset.y), glm::radians(offset.x), 0.0)) * orient;
+    orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
 }
 
 m4 Camera::update() { // view matrix
-    const v3 pos = trans * v4(0.0, 0.0, 0.0, 1.0);
-    const v3 facing = forward * orient;
-    const v3 up_relative = up * orient;
+    const v3 pos = trans * v4(0.0f, 0.0f, 0.0f, 1.0f);
+    const v3 facing = FORWARD * orient;
+    const v3 up_relative = UP * orient;
     return glm::lookAt(pos, pos + facing, up_relative);
 }
+

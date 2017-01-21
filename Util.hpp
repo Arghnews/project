@@ -15,19 +15,19 @@
 #include <limits>
 #include <math.h>
 
-typedef glm::dvec2 v2;
-typedef glm::dvec3 v3;
-typedef glm::dvec4 v4;
-typedef glm::dquat dq;
-typedef glm::dmat4 m4;
+typedef glm::fvec2 v2;
+typedef glm::fvec3 v3;
+typedef glm::fvec4 v4;
+typedef glm::fquat fq;
+typedef glm::fmat4 m4;
 typedef std::vector<v3> vv3;
 
-static const v3 forward(0.0,0.0,1.0);
-static const v3 backward(0.0,0.0,-1.0);
-static const v3 left(-1.0,0.0,0.0);
-static const v3 right(1.0,0.0,0.0);
-static const v3 up(0.0,1.0,0.0);
-static const v3 down(0.0,-1.0,0.0);
+static const v3 FORWARD(0.0f,0.0f,-1.0f);
+static const v3 BACKWARD(0.0f,0.0f,1.0f);
+static const v3 LEFT(-1.0f,0.0f,0.0f);
+static const v3 RIGHT(1.0f,0.0f,0.0f);
+static const v3 UP(0.0f,1.0f,0.0f);
+static const v3 DOWN(0.0f,-1.0f,0.0f);
 //typedef std::pair<float,float> Projection;
 
 static const v3 zeroV(0.0f,0.0f,0.0f);
@@ -67,7 +67,7 @@ std::string static printV(const v3 v) {
     return buffer.str();
 }
 
-std::string static printQ(const dq v) {
+std::string static printQ(const fq v) {
     std::stringstream buffer;
     buffer << "( " << v.x << "," << v.y << "," << v.z << ", " << v.w << ")";
     return buffer.str();
@@ -96,7 +96,7 @@ vv3 static unique(const vv3 vec_in, const bool ignoreSign) {
                 }
             } else {
                 // want to ignore sign
-                if (areSame(u,elem) || areSame(u,elem*-1.0)) {
+                if (areSame(u,elem) || areSame(u,elem*-1.0f)) {
                     has = true;
                     break;
                 }

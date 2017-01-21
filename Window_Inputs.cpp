@@ -77,6 +77,12 @@ static void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
+v2 Window_Inputs::windowSize() {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    return v2(width, height);
+}
+
 GLFWwindow* Window_Inputs::init_window() {
     glfwSetErrorCallback(error_callback);
 
@@ -123,7 +129,7 @@ Window_Inputs::Window_Inputs() {
 }
 
 void Window_Inputs::cursor(const double& xPos, const double& yPos) {
-    cursor_pos = v2(xPos, -yPos);
+    cursor_pos = v2(xPos, yPos);
 }
 
 v2 Window_Inputs::cursorDelta() {

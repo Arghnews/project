@@ -38,6 +38,7 @@ class Window_Inputs {
 
         GLFWwindow* init_window();
         GLFWwindow* getWindow();
+        v2 windowSize();
 
         void input(int key, const int action);
         void loop();
@@ -46,19 +47,25 @@ class Window_Inputs {
         v2 cursorDelta();
 
         template <typename F>
-            void setFunc(int key, int action, F f) {
-                switch (action) {
-                    case GLFW_PRESS:
-                        inputs[key].pressed_func = f;
-                        break;
-                    case GLFW_REPEAT:
-                        inputs[key].repeated_func = f;
-                        break;
-                    case GLFW_RELEASE:
-                        inputs[key].released_func = f;
-                        break;
-                }
+        void setFunc(int key, int action, F f) {
+            switch (action) {
+                case GLFW_PRESS:
+                    inputs[key].pressed_func = f;
+                    break;
+                case GLFW_REPEAT:
+                    inputs[key].repeated_func = f;
+                    break;
+                case GLFW_RELEASE:
+                    inputs[key].released_func = f;
+                    break;
             }
+        }
+
+        template <typename F>
+        void setFunc2(int key, F f) {
+            setFunc(key,GLFW_PRESS,f);
+            setFunc(key,GLFW_REPEAT,f);
+        }
 
 
         void close();
