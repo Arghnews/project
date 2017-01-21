@@ -16,6 +16,8 @@ main() {
 
 	cppFiles=( 
     "main.cpp"
+    "Window_Inputs.cpp"
+    "camera.cpp"
 	)
 
 	compiler="g++"
