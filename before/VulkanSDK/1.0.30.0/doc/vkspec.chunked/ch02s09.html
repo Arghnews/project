@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>2.9. API Version Numbers and Semantics</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch02.html" title="Chapter 2. Fundamentals" /><link rel="prev" href="ch02s08.html" title="2.8. Fixed-Point Data Conversions" /><link rel="next" href="ch02s10.html" title="2.10. Common Object Types" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch02s08.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02s10.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fundamentals-versionnum"></a>2.9. API Version Numbers and Semantics</h2></div></div></div><p>The Vulkan version number is used in several places in the API.
+In each such use, the API <span class="emphasis"><em>major version number</em></span>, <span class="emphasis"><em>minor version number</em></span>,
+and <span class="emphasis"><em>patch version number</em></span> are packed into a 32-bit integer as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The major version number is a 10-bit integer packed into bits 31-22.
+</li><li class="listitem">
+The minor version number is a 10-bit integer packed into bits 21-12.
+</li><li class="listitem">
+The patch version number is a 12-bit integer packed into bits 11-0.
+</li></ul></div><p>Differences in any of the Vulkan version numbers indicates a change to the
+API in some way, with each part of the version number indicating a different
+scope of changes.</p><p>A difference in patch version numbers indicates that some usually small part
+of the specification or header has been modified, typically to fix a bug,
+and <span class="normative">may</span> have an impact on the behavior of existing functionality.
+Differences in this version number <span class="normative">should</span> not affect either <span class="emphasis"><em>full
+compatibility</em></span> or <span class="emphasis"><em>backwards compatibility</em></span> between two versions, or add
+additional interfaces to the API.</p><p>A difference in minor version numbers indicates that some amount of new
+functionality has been added.
+This will usually include new interfaces in the header, and <span class="normative">may</span> also
+include behavior changes and bug fixes.
+Functionality <span class="normative">may</span> be deprecated in a minor revision, but will not be
+removed.
+When a new minor version is introduced, the patch version is reset to 0, and
+each minor revision maintains its own set of patch versions.
+Differences in this version <span class="normative">should</span> not affect backwards compatibility, but
+will affect full compatibility.</p><p>A difference in major version numbers indicates a large set of changes to
+the API, potentially including new functionality and header interfaces,
+behavioral changes, removal of deprecated features, modification or outright
+replacement of any feature, and is thus very likely to break any and all
+compatibility.
+Differences in this version will typically require significant modification
+to an application in order for it to function.</p><p>C language macros for manipulating version numbers are defined in the
+<a class="link" href="apds03.html#boilerplate-versions" title="D.3.1. Vulkan Version Number Macros">Version Number Macros</a> appendix.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s08.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s10.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

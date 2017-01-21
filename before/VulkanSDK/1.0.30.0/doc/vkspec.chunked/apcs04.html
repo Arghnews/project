@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>C.4. VK_EXT_debug_report</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="apc.html" title="Appendix C. Layers &amp; Extensions" /><link rel="prev" href="apcs03.html" title="C.3. VK_EXT_debug_marker" /><link rel="next" href="apcs05.html" title="C.5. VK_EXT_validation_flags" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="apcs03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apcs05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="VK_EXT_debug_report"></a>C.4. VK_EXT_debug_report</h2></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    VK_EXT_debug_report
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    12
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2016-09-17
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    3
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0.27 of the Vulkan API.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Dan Ginsburg, Valve
+</li><li class="listitem">
+Jon Ashburn, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Courtney Goeltzenleuchter
+</li></ul></div></dd></dl></div><p>Due to the nature of the Vulkan interface, there is very little error
+information available to the developer and application.
+By enabling optional validation layers and using the <code class="literal">VK_EXT_debug_report</code>
+extension, developers <span class="normative">can</span> obtain much more detailed feedback on the
+application’s use of Vulkan.
+This extension define a way for layers and the implementation to call back
+to the application for events of interest to the application.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_object_types_12"></a>C.4.1. New Object Types</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#VkDebugReportCallbackCreateInfoEXT">VkDebugReportCallbackCreateInfoEXT</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_enum_constants_13"></a>C.4.2. New Enum Constants</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code"><a class="link" href="apds01.html#VkStructureType">VkStructureType</a></code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT</code>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Extending <code class="code"><a class="link" href="ch02s06.html#VkResult">VkResult</a></code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_ERROR_VALIDATION_FAILED_EXT</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_enums_12"></a>C.4.3. New Enums</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#VkDebugReportFlagBitsEXT">VkDebugReportFlagBitsEXT</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch32s01.html#VkDebugReportObjectTypeEXT">VkDebugReportObjectTypeEXT</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#VkDebugReportErrorEXT">VkDebugReportErrorEXT</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_structures_12"></a>C.4.4. New Structures</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#VkDebugReportCallbackCreateInfoEXT">VkDebugReportCallbackCreateInfoEXT</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_functions_12"></a>C.4.5. New Functions</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#vkCreateDebugReportCallbackEXT">vkCreateDebugReportCallbackEXT</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#vkDestroyDebugReportCallbackEXT">vkDestroyDebugReportCallbackEXT</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#vkDebugReportMessageEXT">vkDebugReportMessageEXT</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_new_function_pointers"></a>C.4.6. New Function Pointers</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch32s02.html#PFN_vkDebugReportCallbackEXT">PFN_vkDebugReportCallbackEXT</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_examples_6"></a>C.4.7. Examples</h3></div></div></div><p><code class="literal">VK_EXT_debug_report</code> allows an application to register multiple callbacks
+with the validation layers.
+Some callbacks may log the information to a file, others may cause a debug
+break point or other application defined behavior.
+An application can register callbacks even when no validation layers are
+enabled, but they will only be called for loader and, if implemented, driver
+events.</p><p>To capture issues found while creating or destroying an instance an
+application can link a <code class="code">VkDebugReportCallbackCreateInfoEXT</code> structure to
+the <em class="parameter"><code>pNext</code></em> element of the <code class="code">VkInstanceCreateInfo</code> structure given to
+<span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span>.
+This callback is only valid for the duration of the <span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span>
+and the <span class="strong"><strong><code class="code">vkDestroyInstance</code></strong></span> call.
+Use <code class="code"><a class="link" href="ch32s02.html#vkCreateDebugReportCallbackEXT">vkCreateDebugReportCallbackEXT</a></code> to create persistent callback
+objects.</p><p>Example uses: Create three callback objects.
+One will log errors and warnings to the debug console using Windows
+OutputDebugString.
+The second will cause the debugger to break at that callback when an error
+happens and the third will log warnings to stdout.</p><pre class="programlisting">    VkResult res;
+    VkDebugReportCallbackEXT cb1, cb2, cb3;
+
+    VkDebugReportCallbackCreateInfoEXT callback1 = {
+            VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,    // sType
+            NULL,                                                       // pNext
+            VK_DEBUG_REPORT_ERROR_BIT_EXT |                             // flags
+            VK_DEBUG_REPORT_WARNING_BIT_EXT,
+            myOutputDebugString,                                        // pfnCallback
+            NULL                                                        // pUserData
+    };
+    res = vkCreateDebugReportCallbackEXT(instance, &amp;callback1, &amp;cb1);
+    if (res != VK_SUCCESS)
+       /* Do error handling for VK_ERROR_OUT_OF_MEMORY */
+
+    callback.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT;
+    callback.pfnCallback = myDebugBreak;
+    callback.pUserData = NULL;
+    res = vkCreateDebugReportCallbackEXT(instance, &amp;callback, &amp;cb2);
+    if (res != VK_SUCCESS)
+       /* Do error handling for VK_ERROR_OUT_OF_MEMORY */
+
+    VkDebugReportCallbackCreateInfoEXT callback3 = {
+            VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,    // sType
+            NULL,                                                       // pNext
+            VK_DEBUG_REPORT_WARNING_BIT_EXT,                            // flags
+            mystdOutLogger,                                             // pfnCallback
+            NULL                                                        // pUserData
+    };
+    res = vkCreateDebugReportCallbackEXT(instance, &amp;callback3, &amp;cb3);
+    if (res != VK_SUCCESS)
+       /* Do error handling for VK_ERROR_OUT_OF_MEMORY */
+
+    ...
+
+    /* remove callbacks when cleaning up */
+    vkDestroyDebugReportCallbackEXT(instance, cb1);
+    vkDestroyDebugReportCallbackEXT(instance, cb2);
+    vkDestroyDebugReportCallbackEXT(instance, cb3);</pre><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>In the initial release of the <code class="literal">VK_EXT_debug_report</code> extension, the token
+<code class="code">VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT</code> was used.
+Starting in version 2 of the extension branch,
+<code class="code">VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT</code> is used
+instead for consistency with Vulkan naming rules.
+The older enum is still available for backwards compatibility.</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_issues_12"></a>C.4.8. Issues</h3></div></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>There are no issues in the current spec.
+We should probably add some.</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_version_history_13"></a>C.4.9. Version History</h3></div></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>There is no revision history in the current spec.
+We should probably add some.</p></td></tr></table></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="apcs05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>9.6. Pipeline Cache</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch09.html" title="Chapter 9. Pipelines" /><link rel="prev" href="ch09s05.html" title="9.5. Pipeline Derivatives" /><link rel="next" href="ch09s07.html" title="9.7. Specialization Constants" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch09s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch09s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pipelines-cache"></a>9.6. Pipeline Cache</h2></div></div></div><p>Pipeline cache objects allow the result of pipeline construction to be
+reused between pipelines and between runs of an application.
+Reuse between pipelines is achieved by passing the same pipeline cache
+object when creating multiple related pipelines.
+Reuse across runs of an application is achieved by retrieving pipeline cache
+contents in one run of an application, saving the contents, and using them
+to preinitialize a pipeline cache on a subsequent run.
+The contents of the pipeline cache objects are managed by the
+implementation.
+Applications <span class="normative">can</span> manage the host memory consumed by a pipeline cache object
+and control the amount of data retrieved from a pipeline cache object.</p><p>Pipeline cache objects are represented by <code class="code">VkPipelineCache</code> handles:</p><p><a id="VkPipelineCache"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipelineCache)</pre><p>
+</p><p>To create pipeline cache objects, call:</p><p><a id="vkCreatePipelineCache"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreatePipelineCache(
+    VkDevice                                    device,
+    const VkPipelineCacheCreateInfo*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPipelineCache*                            pPipelineCache);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the pipeline cache
+    object.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to a <code class="code">VkPipelineCacheCreateInfo</code>
+    structure that contains the initial parameters for the pipeline cache
+    object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pPipelineCache</code></em> is a pointer to a <code class="code">VkPipelineCache</code> handle in
+    which the resulting pipeline cache object is returned.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Applications <span class="normative">can</span> track and manage the total host memory size of a pipeline
+cache object using the <em class="parameter"><code>pAllocator</code></em>.
+Applications <span class="normative">can</span> limit the amount of data retrieved from a pipeline cache
+object in <span class="strong"><strong><code class="code">vkGetPipelineCacheData</code></strong></span>.
+Implementations <span class="normative">should</span> not internally limit the total number of entries
+added to a pipeline cache object or the total host memory consumed.</p></td></tr></table></div><p>Once created, a pipeline cache <span class="normative">can</span> be passed to the
+<span class="strong"><strong><code class="code">vkCreateGraphicsPipelines</code></strong></span> and <span class="strong"><strong><code class="code">vkCreateComputePipelines</code></strong></span> commands.
+If the pipeline cache passed into these commands is not
+<code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, the implementation will query it for possible reuse
+opportunities and update it with new content.
+The use of the pipeline cache object in these commands is internally
+synchronized, and the same pipeline cache object <span class="normative">can</span> be used in multiple
+threads simultaneously.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Implementations <span class="normative">should</span> make every effort to limit any critical sections to
+the actual accesses to the cache, which is expected to be significantly
+shorter than the duration of the <span class="strong"><strong><code class="code">vkCreateGraphicsPipelines</code></strong></span> and
+<span class="strong"><strong><code class="code">vkCreateComputePipelines</code></strong></span> commands.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkPipelineCacheCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pPipelineCache</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkPipelineCache</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkPipelineCacheCreateInfo</code> structure is defined as:</p><p><a id="VkPipelineCacheCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkPipelineCacheCreateInfo {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkPipelineCacheCreateFlags    flags;
+    size_t                        initialDataSize;
+    const void*                   pInitialData;
+} VkPipelineCacheCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>initialDataSize</code></em> is the number of bytes in <em class="parameter"><code>pInitialData</code></em>.
+    If <em class="parameter"><code>initialDataSize</code></em> is zero, the pipeline cache will initially be
+    empty.
+</li><li class="listitem">
+<em class="parameter"><code>pInitialData</code></em> is a pointer to previously retrieved pipeline cache
+    data.
+    If the pipeline cache data is incompatible (as defined below) with the
+    device, the pipeline cache will be initially empty.
+    If <em class="parameter"><code>initialDataSize</code></em> is zero, <em class="parameter"><code>pInitialData</code></em> is ignored.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>initialDataSize</code></em> is not <code class="literal">0</code>, it <span class="normative">must</span> be equal to the size of
+    <em class="parameter"><code>pInitialData</code></em>, as returned by <span class="strong"><strong><code class="code">vkGetPipelineCacheData</code></strong></span> when
+    <em class="parameter"><code>pInitialData</code></em> was originally retrieved
+</li><li class="listitem">
+If <em class="parameter"><code>initialDataSize</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pInitialData</code></em> <span class="normative">must</span> have been
+    retrieved from a previous call to <span class="strong"><strong><code class="code">vkGetPipelineCacheData</code></strong></span>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>initialDataSize</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pInitialData</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>initialDataSize</code></em> bytes
+</li></ul></div></div><p>Pipeline cache objects <span class="normative">can</span> be merged using the command:</p><p><a id="vkMergePipelineCaches"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkMergePipelineCaches(
+    VkDevice                                    device,
+    VkPipelineCache                             dstCache,
+    uint32_t                                    srcCacheCount,
+    const VkPipelineCache*                      pSrcCaches);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the pipeline cache objects.
+</li><li class="listitem">
+<em class="parameter"><code>dstCache</code></em> is the handle of the pipeline cache to merge results
+    into.
+</li><li class="listitem">
+<em class="parameter"><code>srcCacheCount</code></em> is the length of the <em class="parameter"><code>pSrcCaches</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pSrcCaches</code></em> is an array of pipeline cache handles, which will be
+    merged into <em class="parameter"><code>dstCache</code></em>.
+    The previous contents of <em class="parameter"><code>dstCache</code></em> are included after the merge.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The details of the merge operation are implementation dependent, but
+implementations <span class="normative">should</span> merge the contents of the specified pipelines and
+prune duplicate entries.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>dstCache</code></em> <span class="normative">must</span> not appear in the list of source caches
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>dstCache</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineCache</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSrcCaches</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>srcCacheCount</code></em> valid <code class="code">VkPipelineCache</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>srcCacheCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>dstCache</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li><li class="listitem">
+Each element of <em class="parameter"><code>pSrcCaches</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>dstCache</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>Data <span class="normative">can</span> be retrieved from a pipeline cache object using the command:</p><p><a id="vkGetPipelineCacheData"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPipelineCacheData(
+    VkDevice                                    device,
+    VkPipelineCache                             pipelineCache,
+    size_t*                                     pDataSize,
+    void*                                       pData);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the pipeline cache.
+</li><li class="listitem">
+<em class="parameter"><code>pipelineCache</code></em> is the pipeline cache to retrieve data from.
+</li><li class="listitem">
+<em class="parameter"><code>pDataSize</code></em> is a pointer to a value related to the amount of data in
+    the pipeline cache, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pData</code></em> is either <code class="literal">NULL</code> or a pointer to a buffer.
+</li></ul></div><p>If <em class="parameter"><code>pData</code></em> is <code class="literal">NULL</code>, then the maximum size of the data that <span class="normative">can</span> be
+retrieved from the pipeline cache, in bytes, is returned in <em class="parameter"><code>pDataSize</code></em>.
+Otherwise, <em class="parameter"><code>pDataSize</code></em> <span class="normative">must</span> point to a variable set by the user to the
+size of the buffer, in bytes, pointed to by <em class="parameter"><code>pData</code></em>, and on return the
+variable is overwritten with the amount of data actually written to
+<em class="parameter"><code>pData</code></em>.</p><p>If <em class="parameter"><code>pDataSize</code></em> is less than the maximum size that <span class="normative">can</span> be retrieved by
+the pipeline cache, at most <em class="parameter"><code>pDataSize</code></em> bytes will be written to
+<em class="parameter"><code>pData</code></em>, and <span class="strong"><strong><code class="code">vkGetPipelineCacheData</code></strong></span> will return
+<code class="code">VK_INCOMPLETE</code>.
+Any data written to <em class="parameter"><code>pData</code></em> is valid and <span class="normative">can</span> be provided as the
+<em class="parameter"><code>pInitialData</code></em> member of the <code class="code">VkPipelineCacheCreateInfo</code> structure
+passed to <span class="strong"><strong><code class="code">vkCreatePipelineCache</code></strong></span>.</p><p>Two calls to <span class="strong"><strong><code class="code">vkGetPipelineCacheData</code></strong></span> with the same parameters <span class="normative">must</span>
+retrieve the same data unless a command that modifies the contents of the
+cache is called between them.</p><p><a id="pipelines-cache-header"></a>Applications <span class="normative">can</span> store the data retrieved from the pipeline cache, and use
+these data, possibly in a future run of the application, to populate new
+pipeline cache objects.
+The results of pipeline compiles, however, <span class="normative">may</span> depend on the vendor ID,
+device ID, driver version, and other details of the device.
+To enable applications to detect when previously retrieved data is
+incompatible with the device, the initial bytes written to <em class="parameter"><code>pData</code></em> <span class="normative">must</span>
+be a header consisting of the following members:</p><div class="table"><a id="id-1.11.18.33"></a><p class="title"><strong>Table 9.1. Layout for pipeline cache header version <code class="code">VK_PIPELINE_CACHE_HEADER_VERSION_ONE</code></strong></p><div class="table-contents"><table class="table" summary="Layout for pipeline cache header version VK_PIPELINE_CACHE_HEADER_VERSION_ONE" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="85%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Offset </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Size </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Meaning</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>0</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>length in bytes of the entire pipeline cache header
+                             written as a stream of bytes, with the least
+                             significant byte first</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a <code class="code"><a class="link" href="ch09s06.html#VkPipelineCacheHeaderVersion">VkPipelineCacheHeaderVersion</a></code> value
+                             written as a stream of bytes, with the least
+                             significant byte first</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>8</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a vendor ID equal to
+                             <code class="code">VkPhysicalDeviceProperties</code>::<em class="parameter"><code>vendorID</code></em>
+                             written as a stream of bytes, with the least
+                             significant byte first</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>12</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>a device ID equal to
+                             <code class="code">VkPhysicalDeviceProperties</code>::<em class="parameter"><code>deviceID</code></em>
+                             written as a stream of bytes, with the least
+                             significant byte first</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>16</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_UUID_SIZE</code></p></td><td style="" align="left" valign="top"><p>a pipeline cache ID equal to
+                             <code class="code">VkPhysicalDeviceProperties</code>::<em class="parameter"><code>pipelineCacheUUID</code></em></p></td></tr></tbody></table></div></div><br class="table-break" /><p>The first four bytes encode the length of the entire pipeline header, in
+bytes.
+This value includes all fields in the header including the pipeline cache
+version field and the size of the length field.</p><p>The next four bytes encode the pipeline cache version.
+This field is interpreted as a <code class="code"><a class="link" href="ch09s06.html#VkPipelineCacheHeaderVersion">VkPipelineCacheHeaderVersion</a></code> value, and
+<span class="normative">must</span> have one of the following values:</p><p><a id="VkPipelineCacheHeaderVersion"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkPipelineCacheHeaderVersion {
+    VK_PIPELINE_CACHE_HEADER_VERSION_ONE = 1,
+} VkPipelineCacheHeaderVersion;</pre><p>
+</p><p>A consumer of the pipeline cache <span class="normative">should</span> use the cache version to interpret
+the remainder of the cache header.</p><p>If <em class="parameter"><code>pDataSize</code></em> is less than what is necessary to store this header,
+nothing will be written to <em class="parameter"><code>pData</code></em> and zero will be written to
+<em class="parameter"><code>pDataSize</code></em>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pipelineCache</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineCache</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pDataSize</code></em> <span class="normative">must</span> be a pointer to a <code class="code">size_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pDataSize</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pData</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pData</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pDataSize</code></em> bytes
+</li><li class="listitem">
+<em class="parameter"><code>pipelineCache</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>To destroy a pipeline cache, call:</p><p><a id="vkDestroyPipelineCache"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyPipelineCache(
+    VkDevice                                    device,
+    VkPipelineCache                             pipelineCache,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the pipeline cache
+    object.
+</li><li class="listitem">
+<em class="parameter"><code>pipelineCache</code></em> is the handle of the pipeline cache to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>pipelineCache</code></em>
+    was created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>pipelineCache</code></em>
+    was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pipelineCache</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>pipelineCache</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineCache</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pipelineCache</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pipelineCache</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch09.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch09s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

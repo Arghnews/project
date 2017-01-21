@@ -1,0 +1,2520 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>C.2. Window System Integration (WSI) Extensions</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="apc.html" title="Appendix C. Layers &amp; Extensions" /><link rel="prev" href="apcs01.html" title="C.1. VK_KHR_sampler_mirror_clamp_to_edge" /><link rel="next" href="apcs03.html" title="C.3. VK_EXT_debug_marker" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="apcs01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apcs03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_window_system_integration_wsi_extensions"></a>C.2. Window System Integration (WSI) Extensions</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_editors"></a>C.2.1. Editors</h3></div></div></div><p>Significant specification work was performed by the following editors:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li></ul></div><p>Relevant information is now documented for each extension.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_surface"></a>C.2.2. VK_KHR_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    1
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2016-14-01
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    25
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_surface</code> extension is an instance extension.
+It introduces <code class="code">VkSurfaceKHR</code> objects, which abstract native platform
+surface or window objects for use with Vulkan.
+It also provides a way to determine whether a queue family in a physical
+device supports presenting to particular surface.</p><p>Separate extensions for each each platform provide the mechanisms for
+creating <code class="code">VkSurfaceKHR</code> objects, but once created they may be used in
+this and other platform-independent extensions, in particular the
+<code class="literal">VK_KHR_swapchain</code> extension.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types"></a>New Object Types</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkSurfaceKHR</code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_2"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkResult</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_NATIVE_WINDOW_IN_USE_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums"></a>New Enums</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkSurfaceTransformFlagBitsKHR</code>
+</li><li class="listitem">
+<code class="code">VkPresentModeKHR</code>
+</li><li class="listitem">
+<code class="code">VkColorSpaceKHR</code>
+</li><li class="listitem">
+<code class="code">VkCompositeAlphaFlagBitsKHR</code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s05.html#VkSurfaceCapabilitiesKHR">VkSurfaceCapabilitiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s05.html#VkSurfaceFormatKHR">VkSurfaceFormatKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkDestroySurfaceKHR">vkDestroySurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceSurfaceSupportKHR">vkGetPhysicalDeviceSurfaceSupportKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s05.html#vkGetPhysicalDeviceSurfaceCapabilitiesKHR">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s05.html#vkGetPhysicalDeviceSurfaceFormatsKHR">vkGetPhysicalDeviceSurfaceFormatsKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s05.html#vkGetPhysicalDeviceSurfacePresentModesKHR">vkGetPhysicalDeviceSurfacePresentModesKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_examples"></a>Examples</h4></div></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The example code for the <code class="literal">VK_KHR_surface</code> and <code class="literal">VK_KHR_swapchain</code> extensions
+was removed from the appendix after revision 1.0.29.
+This WSI example code was ported to the cube demo that is shipped with the
+official Khronos SDK, and is being kept up-to-date in that location (see:
+<a class="ulink" href="https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/blob/master/demos/cube.c" target="_top">https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/blob/master/demos/cube.c</a>).</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues"></a>Issues</h4></div></div></div><p>1) Should this extension include a method to query whether a physical device
+   supports presenting to a specific window or native surface on a given
+   platform?</p><pre class="literallayout">RESOLVED: Yes.
+Without this, applications would need to create a device instance to
+determine whether a particular window can be presented to.
+Knowing that a device supports presentation to a platform in general is
+not sufficient, as a single machine might support multiple seats, or
+instances of the platform that each use different underlying physical
+devices.
+Additionally, some platforms, such as X windows, different drivers and
+devices might be used for different windows depending on which section of
+the desktop they exist on.</pre><p>2) Should the vkGetSurfacePropertiesKHR(), vkGetSurfaceFormatsKHR(), and
+   vkGetSurfacePresentModesKHR() functions from VK_KHR_swapchain be modified
+   to operate on physical devices and moved to this extension to implement
+   the resolution of issue 1?</p><pre class="literallayout">RESOLVED: No, separate query functions are needed, as the purposes served
+are similar but incompatible.
+The vkGetSurface*KHR functions return information that could potentially
+depend on an initialized device.
+For example, the formats supported for presentation to the surface might
+vary depending on which device extensions are enabled.
+The query introduced to resolve issue 1 should be used only to query
+generic driver or platform properties.
+The physical device parameter is intended to serve only as an identifier
+rather than a stateful object.</pre><p>3) Should Vulkan include support Xlib or XCB as the API for accessing the X
+   Window System platform?</p><pre class="literallayout">RESOLVED: Both.
+XCB is a more modern and efficient API, but Xlib usage is deeply
+ingrained in many applications and likely will remain in use for the
+foreseeable future.
+Not all drivers necessarily need to support both, but including both as
+options in the core specification will probably encourage support, which
+should in turn eases adoption of the Vulkan API in older codebases.
+Additionally, the performance improvements possible with XCB likely will
+not have a measurable impact on the performance of Vulkan presentation
+and other minimal window system interactions defined here.</pre><p>4) Should the GBM platform be included in the list of platform enums?</p><pre class="literallayout">RESOLVED: Deferred, and will be addressed with a platform-specific
+extension to be written in the future.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_2"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-05-20 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on LunarG KHR spec, other KHR specs, patches
+     attached to bugs.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-05-22 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Created initial Description section.
+</li><li class="listitem">
+Removed query for whether a platform requires the use of a queue for
+     presentation, since it was decided that presentation will always be
+     modeled as being part of the queue.
+</li><li class="listitem">
+Fixed typos and other minor mistakes.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-05-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Improved the Description section.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fixed compilation errors in example code.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-06-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issues 1 and 2 and made related spec updates.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-06-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Merged the platform type mappings table previously removed from
+     VK_KHR_swapchain with the platform description table in this spec.
+</li><li class="listitem">
+Added issues 3 and 4 documenting choices made when building the initial
+     list of native platforms supported.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 7, 2015-06-11 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated table 1 per input from the KHR TSG.
+</li><li class="listitem">
+Updated issue 4 (GBM) per discussion with Daniel Stone.
+     He will create a platform-specific extension sometime in the future.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 8, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated enum-extending values using new convention.
+</li><li class="listitem">
+Fixed the value of VK_SURFACE_PLATFORM_INFO_TYPE_SUPPORTED_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 9, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Rebased on Vulkan API version 126.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 10, 2015-06-18 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Marked issues 2 and 3 resolved.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 11, 2015-06-23 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Examples now show use of function pointers for extension functions.
+</li><li class="listitem">
+Eliminated extraneous whitespace.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 12, 2015-07-07 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added error section describing when each error is expected to be
+     reported.
+</li><li class="listitem">
+Replaced the term "queue node index" with "queue family index" in the
+     spec as that is the agreed term to be used in the latest version of the
+     core header and spec.
+</li><li class="listitem">
+Replaced bool32_t with VkBool32.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 13, 2015-08-06 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated spec against latest core API header version.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 14, 2015-08-20 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed this extension and all of its enumerations, types, functions,
+     etc.
+     This makes it compliant with the proposed standard for Vulkan
+     extensions.
+</li><li class="listitem">
+Switched from "revision" to "version", including use of the
+     VK_MAKE_VERSION macro in the header file.
+</li><li class="listitem">
+Did miscellaneous cleanup, etc.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 15, 2015-08-20 (Ian Elliott—porting a 2015-07-29 change from
+   James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved the surface transform enums here from VK_WSI_swapchain so they
+     could be re-used by VK_WSI_display.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 16, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Restore single-field revision number.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 17, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fix example code compilation errors.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 18, 2015-09-26 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Replaced VkSurfaceDescriptionKHR with the VkSurfaceKHR object, which is
+     created via layered extensions.
+     Added VkDestroySurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 19, 2015-09-28 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_swapchain to VK_EXT_KHR_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 20, 2015-09-30 (Jeff Vigil)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Add error result VK_ERROR_SURFACE_LOST_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 21, 2015-10-15 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the resolution of issue #2 and include the surface capability
+     queries in this extension.
+</li><li class="listitem">
+Renamed SurfaceProperties to SurfaceCapabilities as it better reflects
+     that the values returned are the capabilities of the surface on a
+     particular device.
+</li><li class="listitem">
+Other minor cleanup and consistency changes.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 22, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_surface to VK_KHR_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 23, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to vkDestroySurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 24, 2015-11-10 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed VkSurfaceTransformKHR.
+     Use VkSurfaceTransformFlagBitsKHR instead.
+</li><li class="listitem">
+Rename VkSurfaceCapabilitiesKHR member maxImageArraySize to
+     maxImageArrayLayers.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 25, 2016-01-14 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved VK_ERROR_NATIVE_WINDOW_IN_USE_KHR from the VK_KHR_android_surface
+     to the VK_KHR_surface extension.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+2016-08-23 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Update the example code, to not have so many characters per line, and
+     to split out a new example to show how to obtain function pointers.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+2016-08-25 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+A note was added at the beginning of the example code, stating that it
+     will be removed from future versions of the appendix.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_swapchain"></a>C.2.3. VK_KHR_swapchain</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_swapchain</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Device extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    2
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2016-05-04
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    68
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Mathias Heyer, NVIDIA
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Matthaeus G.
+    Chajdas, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_swapchain</code> extension is the device-level companion to the
+<code class="literal">VK_KHR_surface</code> extension.
+It introduces <code class="code">VkSwapchainKHR</code> objects, which provide the ability to
+present rendering results to a surface.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_2"></a>New Object Types</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkSwapchainKHR</code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_3"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_PRESENT_INFO_KHR</code>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Extending <code class="code">VkImageLayout</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Extending <code class="code">VkResult</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_SUBOPTIMAL_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DATE_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_2"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_2"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#VkSwapchainCreateInfoKHR">VkSwapchainCreateInfoKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#VkPresentInfoKHR">VkPresentInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_2"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkDestroySwapchainKHR">vkDestroySwapchainKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkGetSwapchainImagesKHR">vkGetSwapchainImagesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkAcquireNextImageKHR">vkAcquireNextImageKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkQueuePresentKHR">vkQueuePresentKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_2"></a>Issues</h4></div></div></div><p>1) Does this extension allow the application to specify the memory backing
+    of the presentable images?</p><pre class="literallayout">RESOLVED: No.
+Unlike standard images, the implementation will allocate the memory
+backing of the presentable image.</pre><p>2) What operations are allowed on presentable images?</p><pre class="literallayout">RESOLVED: This is determined by the imageUsageFlags specified when
+creating the presentable image's swapchain.</pre><p>3) Does this extension support MSAA presentable images?</p><pre class="literallayout">RESOLVED: No.
+Presentable images are always single-sampled.
+Multi-sampled rendering must use regular images.
+To present the rendering results the application must manually resolve
+the multi- sampled image to a single-sampled presentable image prior to
+presentation.</pre><p>4) Does this extension support stereo/multi-view presentable images?</p><pre class="literallayout">RESOLVED: Yes.
+The number of views associated with a presentable image is determined by
+the imageArraySize specified when creating a swapchain.
+All presentable images in a given swapchain use the same array size.</pre><p>5) Are the layers of stereo presentable images half-sized?</p><pre class="literallayout">RESOLVED: No.
+The image extents always match those requested by the application.</pre><p>6) Do the "present" and "acquire next image" commands operate on a queue? If
+    not, do they need to include explicit semaphore objects to interlock
+    them with queue operations?</p><pre class="literallayout">RESOLVED: The present command operates on a queue.
+The image ownership operation it represents happens in order with other
+operations on the queue, so no explicit semaphore object is required to
+synchronize its actions.
+Applications may want to acquire the next image in separate threads from
+those in which they manage their queue, or in multiple threads.
+To make such usage easier, the acquire next image command takes a
+semaphore to signal as a method of explicit synchronization.
+The application must later queue a wait for this semaphore before
+queuing execution of any commands using the image.</pre><p>7) Does vkAcquireNextImageKHR() block if no images are available?</p><pre class="literallayout">RESOLVED: The command takes a timeout parameter.
+Special values for the timeout are 0, which makes the call a
+non-blocking operation, and UINT64_MAX, which blocks indefinitely.
+Values in between will block for up to the specified time.
+The call will return when an image becomes available or an error occurs.
+It may, but is not required to, return before the specified timeout
+expires if the swapchain becomes out of date.</pre><p>8) Can multiple presents be queued using one QueuePresent call?</p><pre class="literallayout">RESOLVED: Yes.
+VkPresentInfoKHR contains a list of swapchains and corresponding image
+indices that will be presented.
+When supported, all presentations queued with a single vkQueuePresentKHR
+call will be applied atomically as one operation.
+The same swapchain must not appear in the list more than once.
+Later extensions may provide applications stronger guarantees of
+atomicity for such present operations, and/or allow them to query
+whether atomic presentation of a particular group of swapchains is
+possible.</pre><p>9) How do the presentation and acquire next image functions notify the
+    application the targeted surface has changed?</p><pre class="literallayout">RESOLVED: Two new result codes are introduced for this purpose:</pre><pre class="literallayout">VK_SUBOPTIMAL_KHR - Presentation will still succeed, subject to the
+window resize behavior, but the swapchain is no longer configured
+optimally for the surface it targets.
+Applications should query updated surface information and recreate
+their swapchain at the next convenient opportunity.</pre><pre class="literallayout">VK_ERROR_OUT_OF_DATE_KHR - Failure.
+The swapchain is no longer compatible with the surface it targets.
+The application must query updated surface information and recreate
+the swapchain before presentation will succeed.</pre><pre class="literallayout">These can be returned by both vkAcquireNextImageKHR and
+vkQueuePresentKHR.</pre><p>10) Does the vkAcquireNextImageKHR command return a semaphore to the
+    application via an output parameter, or accept a semaphore to signal
+    from the application as an object handle parameter?</p><pre class="literallayout">RESOLVED: Accept a semaphore to signal as an object handle.
+This avoids the need to specify whether the application must destroy the
+semaphore or whether it is owned by the swapchain, and if the latter,
+what its lifetime is and whether it can be re-used for other operations
+once it is received from vkAcquireNextImageKHR.</pre><p>11) What types of swapchain queuing behavior should be exposed? Options
+    include swap interval specification, mailbox/most recent Vs.
+    FIFO queue management, targeting specific vertical blank intervals or
+    absolute times for a given present operation, and probably others.
+    For some of these, whether they are specified at swapchain creation time
+    or as per-present parameters needs to be decided as well.</p><pre class="literallayout">RESOLVED: The base swapchain extension will expose 3 possible behaviors
+(of which, FIFO will always be supported):</pre><pre class="literallayout">-Immediate present: Does not wait for vertical blanking period to
+ update the current image, likely resulting in visible tearing.
+ No internal queue is used.
+ Present requests are applied immediately.</pre><pre class="literallayout">-Mailbox queue: Waits for the next vertical blanking period to update
+ the current image.
+ No tearing should be observed.
+ An internal single-entry queue is used to hold pending presentation
+ requests.
+ If the queue is full when a new presentation request is received,
+ the new request replaces the existing entry, and any images
+ associated with the prior entry become available for re-use by the
+ application.</pre><pre class="literallayout">-FIFO queue: Waits for the next vertical blanking period to update
+ the current image.
+ No tearing should be observed.
+ An internal queue containing (numSwapchainImages - 1) entries is
+ used to hold pending presentation requests.
+ New requests are appended to the end of the queue, and one request
+ is removed from the beginning of the queue and processed during each
+ vertical blanking period in which the queue is non-empty</pre><pre class="literallayout">Not all surfaces will support all of these modes, so the modes supported
+will be returned using a surface info query.
+All surfaces must support the FIFO queue mode.
+Applications must choose one of these modes up front when creating a
+swapchain.
+Switching modes can be accomplished by recreating the swapchain.</pre><p>12) Can VK_PRESENT_MODE_MAILBOX_KHR provide non-blocking guarantees for
+    vkAcquireNextImageKHR()? If so, what is the proper criteria?</p><pre class="literallayout">RESOLVED: Yes.
+The difficulty is not immediately obvious here.
+Naively, if at least 3 images are requested, mailbox mode should always
+have an image available for the application if the application does not
+own any images when the call to vkAcquireNextImageKHR() was made.
+However, some presentation engines may have more than one "current"
+image, and would still need to block in some cases.
+The right requirement appears to be that if the application allocates
+the surface's minimum number of images + 1 then it is guaranteed
+non-blocking behavior when it does not currently own any images.</pre><p>13) Is there a way to create and initialize a new swapchain for a surface
+    that has generated a VK_SUBOPTIMAL_KHR return code while still using the
+    old swapchain?</p><pre class="literallayout">RESOLVED: Not as part of this specification.
+This could be useful to allow the application to create an "optimal"
+replacement swapchain and rebuild all its command buffers using it in a
+background thread at a low priority while continuing to use the
+"suboptimal" swapchain in the main thread.
+It could probably use the same "atomic replace" semantics proposed for
+recreating direct-to-device swapchains without incurring a mode switch.
+However, after discussion, it was determined some platforms probably
+could not support concurrent swapchains for the same surface though, so
+this will be left out of the base KHR extensions.
+A future extension could add this for platforms where it is supported.</pre><p>14) Should there be a special value for
+    VkSurfacePropertiesKHR::maxImageCount to indicate there are no practical
+    limits on the number of images in a swapchain?</p><pre class="literallayout">RESOLVED: Yes.
+There where often be cases where there is no practical limit to the
+number of images in a swapchain other than the amount of available
+resources (I.e., memory) in the system.
+Trying to derive a hard limit from things like memory size is prone to
+failure.
+It is better in such cases to leave it to applications to figure such
+soft limits out via trial/failure iterations.</pre><p>15) Should there be a special value for
+    VkSurfacePropertiesKHR::currentExtent to indicate the size of the
+    platform surface is undefined?</p><pre class="literallayout">RESOLVED: Yes.
+On some platforms (Wayland, for example), the surface size is defined by
+the images presented to it rather than the other way around.</pre><p>16) Should there be a special value for
+    VkSurfacePropertiesKHR::maxImageExtent to indicate there is no practical
+    limit on the surface size?</p><pre class="literallayout">RESOLVED: No.
+It seems unlikely such a system would exist.
+0 could be used to indicate the platform places no limits on the extents
+beyond those imposed by Vulkan for normal images, but this query could
+just as easily return those same limits, so a special "unlimited" value
+does not seem useful for this field.</pre><p>17) How should surface rotation and mirroring be exposed to applications?
+    How do they specify rotation and mirroring transforms applied prior to
+    presentation?</p><pre class="literallayout">RESOLVED: Applications can query both the supported and current
+transforms of a surface.
+Both are specified relative to the device's "natural" display rotation
+and direction.
+The supported transforms indicates which orientations the presentation
+engine accepts images in.
+For example, a presentation engine that does not support transforming
+surfaces as part of presentation, and which is presenting to a surface
+that is displayed with a 90-degree rotation, would return only one
+supported transform bit: VK_SURFACE_TRANSFORM_ROT90_BIT_KHR.
+Applications must transform their rendering by the transform they
+specify when creating the swapchain in preTransform field.</pre><p>18) Can surfaces ever not support VK_MIRROR_NONE? Can they support vertical
+    and horizontal mirroring simultaneously? Relatedly, should
+    VK_MIRROR_NONE[_BIT] be zero, or bit one, and should applications be
+    allowed to specify multiple pre and current mirror transform bits, or
+    exactly one?</p><pre class="literallayout">RESOLVED: Since some platforms may not support presenting with a
+transform other than the native window's current transform, and
+prerotation/mirroring are specified relative to the device's natural
+rotation and direction, rather than relative to the surface's current
+rotation and direction, it is necessary to express lack of support for
+no mirroring.
+To allow this, the MIRROR_NONE enum must occupy a bit in the flags.
+Since MIRROR_NONE must be a bit in the bitmask rather than a bitmask
+with no values set, allowing more than one bit to be set in the bitmask
+would make it possible to describe undefined transforms such as
+VK_MIRROR_NONE_BIT | VK_MIRROR_HORIZONTAL_BIT, or a transform that
+includes both "no mirroring" and "horizontal mirroring simultaneously.
+Therefore, it is desirable to allow specifying all supported mirroring
+transforms using only one bit.
+The question then becomes, should there be a
+VK_MIRROR_HORIZONTAL_AND_VERTICAL_BIT to represent a simultaneous
+horizontal and vertical mirror transform? However, such a transform is
+equivalent to a 180 degree rotation, so presentation engines and
+applications that wish to support or use such a transform can express it
+through rotation instead.
+Therefore, 3 exclusive bits are sufficient to express all needed
+mirroring transforms.</pre><p>19) Should support for sRGB be required?</p><pre class="literallayout">RESOLVED: In the advent of UHD and HDR display devices, proper color
+space information is vital to the display pipeline represented by the
+swapchain.
+The app can discover the supported format/color-space pairs and select a
+pair most suited to its rendering needs.
+Currently only the sRGB color space is supported, future extensions may
+provide support for more color spaces.
+See issues 23) and 24).</pre><p>20) Is there a mechanism to modify or replace an existing swapchain with one
+    targeting the same surface?</p><pre class="literallayout">RESOLVED: Yes.
+This is described above in the text.</pre><p>21) Should there be a way to set prerotation and mirroring using native APIs
+    when presenting using a Vulkan swapchain?</p><pre class="literallayout">RESOLVED: Yes.
+The transforms that can be expressed in this extension are a subset of
+those possible on native platforms.
+If a platform exposes a method to specify the transform of presented
+images for a given surface using native methods and exposes more
+transforms or other properties for surfaces than Vulkan supports, it
+might be impossible, difficult, or inconvenient to set some of those
+properties using Vulkan KHR extensions and some using the native
+interfaces.
+To avoid overwriting properties set using native commands when
+presenting using a Vulkan swapchain, the application can set the
+pretransform to "inherit", in which case the current native properties
+will be used, or if none are available, a platform-specific default will
+be used.
+Platforms that do not specify a reasonable default or do not provide
+native mechanisms to specify such transforms should not include the
+inherit bits in the supportedTransform bitmask they return in
+VkSurfacePropertiesKHR.</pre><p>22) Should the content of presentable images be clipped by objects obscuring
+    their target surface?</p><pre class="literallayout">RESOLVED: Applications can choose which behavior they prefer.
+Allowing the content to be clipped could enable more optimal
+presentation methods on some platforms, but some applications might rely
+on the content of presentable images to perform techniques such as
+partial updates or motion blurs.</pre><p>23) What is the purpose of specifying a VkColorSpaceKHR along with VkFormat
+    when creating a swapchain?</p><pre class="literallayout">RESOLVED: While Vulkan itself is color space agnostic (e.g. even the
+meaning of R, G, B and A can be freely defined by the rendering
+application), the swapchain eventually will have to present the images
+on a display device with specific color reproduction characteristics.
+If any color space transformations are necessary before an image can be
+displayed, the color space of the presented image must be known to the
+swapchain.
+A swapchain will only support a restricted set of color format and
+-space pairs.
+This set can be discovered via vkGetSurfaceInfoKHR.
+As it can be expected that most display devices support the sRGB color
+space, at least one format/color-space pair has to be exposed, where the
+color space is VK_COLOR_SPACE_SRGB_NONLINEAR.</pre><p>24) How are sRGB formats and the sRGB color space related?</p><pre class="literallayout">RESOLVED: While Vulkan exposes a number of SRGB texture formats, using
+such formats does not guarantee working in a specific color space.
+It merely means that the hardware can directly support applying the
+non-linear transfer functions defined by the sRGB standard color space
+when reading from or writing to images of that these formats.
+Still, it is unlikely that a swapchain will expose a _SRGB format along
+with any color space other than VK_COLOR_SPACE_SRGB_NONLINEAR.</pre><pre class="literallayout">On the other hand, non-_SRGB formats will be very likely exposed in pair
+with a SRGB color space.
+This means, the hardware will not apply any transfer function when
+reading from or writing to such images, yet they will still be presented
+on a device with sRGB display characteristics.
+In this case the application is responsible for applying the transfer
+function, for instance by using shader math.</pre><p>25) How are the lifetime of surfaces and swapchains targeting them related?</p><pre class="literallayout">RESOLVED: A surface must outlive any swapchains targeting it.
+A VkSurfaceKHR owns the binding of the native window to the Vulkan
+driver.</pre><p>26) How can the client control the way the alpha channel of swap chain
+    images is treated by the presentation engine during compositing?</p><pre class="literallayout">RESOLVED: We should add new enum values to allow the client to negotiate
+with the presentation engine on how to treat image alpha values during
+the compositing process.
+Since not all platforms can practically control this through the Vulkan
+driver, a value of INHERIT is provided like for surface transforms.</pre><p>27) Is vkCreateSwapchainKHR() the right function to return
+    VK_ERROR_NATIVE_WINDOW_IN_USE_KHR, or should the various platform-
+    specific VkSurface factory functions catch this error earlier?</p><pre class="literallayout">RESOLVED: For most platforms, the VkSurface structure is a simple
+container holding the data that identifies a native window or other
+object representing a surface on a particular platform.
+For the surface factory functions to return this error, they would
+likely need to register a reference on the native objects with the
+native display server some how, and ensure no other such references
+exist.
+Surfaces were not intended to be that heavy- weight.</pre><pre class="literallayout">Swapchains are intended to be the objects that directly manipulate
+native windows and communicate with the native presentation mechanisms.
+Swapchains will already need to communicate with the native display
+server to negotiate allocation and/or presentation of presentable images
+for a native surface.
+Therefore, it makes more sense for swapchain creation to be the point at
+which native object exclusivity is enforced.
+Platforms may choose to enforce further restrictions on the number of
+VkSurface objects that may be created for the same native window if such
+a requirement makes sense on a particular platform, but a global
+requirement is only sensible at the swapchain level.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_examples_2"></a>Examples</h4></div></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The example code for the <code class="literal">VK_KHR_surface</code> and <code class="literal">VK_KHR_swapchain</code> extensions
+was removed from the appendix after revision 1.0.29.
+This WSI example code was ported to the cube demo that is shipped with the
+official Khronos SDK, and is being kept up-to-date in that location (see:
+<a class="ulink" href="https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/blob/master/demos/cube.c" target="_top">https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/blob/master/demos/cube.c</a>).</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_3"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-05-20 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on LunarG KHR spec, other KHR specs, patches
+     attached to bugs.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-05-22 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Made many agreed-upon changes from 2015-05-21 KHR TSG meeting.
+     This includes using only a queue for presentation, and having an
+     explicit function to acquire the next image.
+</li><li class="listitem">
+Fixed typos and other minor mistakes.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-05-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Improved the Description section.
+</li><li class="listitem">
+Added or resolved issues that were found in improving the Description.
+     For example, pSurfaceDescription is used consistently, instead of
+     sometimes using pSurface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fixed some grammatical errors and typos
+</li><li class="listitem">
+Filled in the description of imageUseFlags when creating a swapchain.
+</li><li class="listitem">
+Added a description of swapInterval.
+</li><li class="listitem">
+Replaced the paragraph describing the order of operations on a queue
+     for image ownership and presentation.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Imported relevant issues from the (abandoned)
+     vk_wsi_persistent_swapchain_images extension.
+</li><li class="listitem">
+Added issues 6 and 7, regarding behavior of the acquire next image and
+     present commands with respect to queues.
+</li><li class="listitem">
+Updated spec language and examples to align with proposed resolutions
+     to issues 6 and 7.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issue 8, regarding atomic presentation of multiple swapchains
+</li><li class="listitem">
+Updated spec language and examples to align with proposed resolution to
+     issue 8.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 7, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fixed compilation errors in example code, and made related spec fixes.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 8, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issue 9, and the related VK_SUBOPTIMAL_KHR result code.
+</li><li class="listitem">
+Renamed VK_OUT_OF_DATE_KHR to VK_ERROR_OUT_OF_DATE_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 9, 2015-05-27 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added inline proposed resolutions (marked with [JRJ]) to some XXX
+     questions/issues.
+     These should be moved to the issues section in a subsequent update if
+     the proposals are adopted.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 10, 2015-05-28 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Converted vkAcquireNextImageKHR back to a non-queue operation that uses
+     a VkSemaphore object for explicit synchronization.
+</li><li class="listitem">
+Added issue 10 to determine whether vkAcquireNextImageKHR generates or
+     returns semaphores, or whether it operates on a semaphore provided by
+     the application.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 11, 2015-05-28 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Marked issues 6, 7, and 8 resolved.
+</li><li class="listitem">
+Renamed VkSurfaceCapabilityPropertiesKHR to VkSurfacePropertiesKHR to
+     better convey the mutable nature of the info it contains.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 12, 2015-05-28 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issue 11 with a proposed resolution, and the related issue 12.
+</li><li class="listitem">
+Updated various sections of the spec to match the proposed resolution
+     to issue 11.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 13, 2015-06-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved some structures to VK_EXT_KHR_swap_chain to resolve the spec’s
+     issues 1 and 2.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 14, 2015-06-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added code for example 4 demonstrating how an application might make
+     use of the two different present and acquire next image KHR result
+     codes.
+</li><li class="listitem">
+Added issue 13.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 15, 2015-06-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issues 14 - 16 and related spec language.
+</li><li class="listitem">
+Fixed some spelling errors.
+</li><li class="listitem">
+Added language describing the meaningful return values for
+     vkAcquireNextImageKHR and vkQueuePresentKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 16, 2015-06-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issues 17 and 18, as well as related spec language.
+</li><li class="listitem">
+Removed some erroneous text added by mistake in the last update.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 17, 2015-06-15 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Changed special value from "-1" to "0" so that the data types can be
+     unsigned.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 18, 2015-06-15 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Clarified the values of VkSurfacePropertiesKHR::minImageCount and the
+     timeout parameter of the vkAcquireNextImageKHR function.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 19, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Misc.
+     cleanup.
+     Removed resolved inline issues and fixed typos.
+</li><li class="listitem">
+Fixed clarification of VkSurfacePropertiesKHR::minImageCount made in
+     version 18.
+</li><li class="listitem">
+Added a brief "Image Ownership" definition to the list of terms used in
+     the spec.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 20, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated enum-extending values using new convention.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 21, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added language describing how to use
+     VK_IMAGE_LAYOUT_PRESENT_SOURCE_KHR.
+</li><li class="listitem">
+Cleaned up an XXX comment regarding the description of which queues
+     vkQueuePresentKHR can be used on.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 22, 2015-06-17 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Rebased on Vulkan API version 126.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 23, 2015-06-18 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated language for issue 12 to read as a proposed resolution.
+</li><li class="listitem">
+Marked issues 11, 12, 13, 16, and 17 resolved.
+</li><li class="listitem">
+Temporarily added links to the relevant bugs under the remaining
+     unresolved issues.
+</li><li class="listitem">
+Added issues 19 and 20 as well as proposed resolutions.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 24, 2015-06-19 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Changed special value for VkSurfacePropertiesKHR::currentExtent back to
+     "-1" from "0".
+     This value will never need to be unsigned, and "0" is actually a legal
+     value.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 25, 2015-06-23 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Examples now show use of function pointers for extension functions.
+</li><li class="listitem">
+Eliminated extraneous whitespace.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 26, 2015-06-25 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Resolved Issues 9 &amp; 10 per KHR TSG meeting.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 27, 2015-06-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added oldSwapchain member to VkSwapchainCreateInfoKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 28, 2015-06-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added the "inherit" bits to the rotatation and mirroring flags and the
+     associated issue 21.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 29, 2015-06-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added the "clipped" flag to VkSwapchainCreateInfoKHR, and the
+     associated issue 22.
+</li><li class="listitem">
+Specified that presenting an image does not modify it.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 30, 2015-06-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added language to the spec that clarifies the behavior of
+     vkCreateSwapchainKHR() when the oldSwapchain field of
+     VkSwapchainCreateInfoKHR is not NULL.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 31, 2015-06-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Example of new VkSwapchainCreateInfoKHR members, "oldSwapchain" and
+     "clipped".
+</li><li class="listitem">
+Example of using VkSurfacePropertiesKHR::{min|max}ImageCount to set
+     VkSwapchainCreateInfoKHR::minImageCount.
+</li><li class="listitem">
+Rename vkGetSurfaceInfoKHR()'s 4th param to "pDataSize", for
+     consistency with other functions.
+</li><li class="listitem">
+Add macro with C-string name of extension (just to header file).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 32, 2015-06-26 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Minor adjustments to the language describing the behavior of
+     "oldSwapchain"
+</li><li class="listitem">
+Fixed the version date on my previous two updates.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 33, 2015-06-26 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Add usage flags to VkSwapchainCreateInfoKHR
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 34, 2015-06-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Rename vkQueuePresentKHR()'s 2nd param to "pPresentInfo", for
+     consistency with other functions.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 35, 2015-06-26 (Jason Ekstrand)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Merged the VkRotationFlagBitsKHR and VkMirrorFlagBitsKHR enums into a
+     single VkSurfaceTransformFlagBitsKHR enum.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 36, 2015-06-26 (Jason Ekstrand)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added a VkSurfaceTransformKHR enum that is not a bitmask.
+     Each value in VkSurfaceTransformKHR corresponds directly to one of the
+     bits in VkSurfaceTransformFlagBitsKHR so transforming from one to the
+     other is easy.
+     Having a separate enum means that currentTransform and preTransform are
+     now unambiguous by definition.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 37, 2015-06-29 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Corrected one of the signatures of vkAcquireNextImageKHR, which had the
+     last two parameters switched from what it is elsewhere in the
+     specification and header files.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 38, 2015-06-30 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Corrected a typo in description of the vkGetSwapchainInfoKHR()
+     function.
+</li><li class="listitem">
+Corrected a typo in header file comment for VkPresentInfoKHR::sType.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 39, 2015-07-07 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added error section describing when each error is expected to be
+     reported.
+</li><li class="listitem">
+Replaced bool32_t with VkBool32.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 40, 2015-07-10 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated to work with version 138 of the "vulkan.h" header.
+     This includes declaring the VkSwapchainKHR type using the new
+     VK_DEFINE_NONDISP_HANDLE macro, and no longer extending VkObjectType
+     (which was eliminated).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 41 2015-07-09 (Mathias Heyer)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added color space language.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 42, 2015-07-10 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated query mechanism to reflect the convention changes done in the
+     core spec.
+</li><li class="listitem">
+Removed "queue" from the name of
+     VK_STRUCTURE_TYPE_QUEUE_PRESENT_INFO_KHR to be consistent with the
+     established naming convention.
+</li><li class="listitem">
+Removed reference to the no longer existing VkObjectType enum.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 43, 2015-07-17 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added support for concurrent sharing of swapchain images across queue
+     families.
+</li><li class="listitem">
+Updated sample code based on recent changes
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 44, 2015-07-27 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Noted that support for VK_PRESENT_MODE_FIFO_KHR is required.
+     That is ICDs may optionally support IMMEDIATE and MAILBOX, but must
+     support FIFO.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 45, 2015-08-07 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Corrected a typo in spec file (type and variable name had wrong case
+     for the imageColorSpace member of the VkSwapchainCreateInfoKHR struct).
+</li><li class="listitem">
+Corrected a typo in header file (last parameter in
+     PFN_vkGetSurfacePropertiesKHR was missing "KHR" at the end of type:
+     VkSurfacePropertiesKHR).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 46, 2015-08-20 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed this extension and all of its enumerations, types, functions,
+     etc.
+     This makes it compliant with the proposed standard for Vulkan
+     extensions.
+</li><li class="listitem">
+Switched from "revision" to "version", including use of the
+     VK_MAKE_VERSION macro in the header file.
+</li><li class="listitem">
+Made improvements to several descriptions.
+</li><li class="listitem">
+Changed the status of several issues from PROPOSED to RESOLVED, leaving
+     no unresolved issues.
+</li><li class="listitem">
+Resolved several TODOs, did miscellaneous cleanup, etc.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 47, 2015-08-20 (Ian Elliott—porting a 2015-07-29 change from
+   James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved the surface transform enums to VK_WSI_swapchain so they could be
+     re-used by VK_WSI_display.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 48, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Various minor cleanups.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 49, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Restore single-field revision number.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 50, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Update Example #4 to include code that illustrates how to use the
+     oldSwapchain field.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 51, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fix example code compilation errors.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 52, 2015-09-08 (Matthaeus G.
+   Chajdas)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Corrected a typo.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 53, 2015-09-10 (Alon Or-bach)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed underscore from SWAP_CHAIN left in
+     VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 54, 2015-09-11 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Described the execution and memory coherence requirements for image
+     transitions to and from VK_IMAGE_LAYOUT_PRESENT_SOURCE_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 55, 2015-09-11 (Ray Smith)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added errors for destroying and binding memory to presentable images
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 56, 2015-09-18 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added fence argument to vkAcquireNextImageKHR
+</li><li class="listitem">
+Added example of how to meter a CPU thread based on presentation rate.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 57, 2015-09-26 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Replace VkSurfaceDescriptionKHR with VkSurfaceKHR.
+</li><li class="listitem">
+Added issue 25 with agreed resolution.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 58, 2015-09-28 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_device_swapchain to VK_EXT_KHR_swapchain.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 59, 2015-09-29 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Changed vkDestroySwapchainKHR() to return void.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 60, 2015-10-01 (Jeff Vigil)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added error result VK_ERROR_SURFACE_LOST_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 61, 2015-10-05 (Jason Ekstrand)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added the VkCompositeAlpha enum and corresponding structure fields.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 62, 2015-10-12 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added VK_PRESENT_MODE_FIFO_RELAXED_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 63, 2015-10-15 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved surface capability queries to VK_EXT_KHR_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 64, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_swapchain to VK_KHR_swapchain.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 65, 2015-10-28 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added optional pResult member to VkPresentInfoKHR, so that
+     per-swapchain results can be obtained from vkQueuePresentKHR().
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 66, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to create and destroy functions.
+</li><li class="listitem">
+Updated resource transition language.
+</li><li class="listitem">
+Updated sample code.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 67, 2015-11-10 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Add reserved flags bitmask to VkSwapchainCreateInfoKHR.
+</li><li class="listitem">
+Modify naming and member ordering to match API style conventions, and
+     so the VkSwapchainCreateInfoKHR image property members mirror
+     corresponding VkImageCreateInfo members but with an <span class="emphasis"><em>image</em></span> prefix.
+</li><li class="listitem">
+Make VkPresentInfoKHR::pResults non-const; it is an output array
+     parameter.
+</li><li class="listitem">
+Make pPresentInfo parameter to vkQueuePresentKHR const.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 68, 2016-04-05 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved the "validity" include for vkAcquireNextImage to be in its proper
+     place, after the prototype and list of parameters.
+</li><li class="listitem">
+Clarified language about presentable images, including how they are
+     acquired, when applications can and cannot use them, etc.
+     As part of this, removed language about "ownership" of presentable
+     images, and replaced it with more-consistent language about presentable
+     images being "acquired" by the application.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+2016-08-23 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Update the example code, to use the final API command names, to not
+     have so many characters per line, and to split out a new example to
+     show how to obtain function pointers.
+     This code is more similar to the LunarG "cube" demo program.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+2016-08-25 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+A note was added at the beginning of the example code, stating that it
+     will be removed from future versions of the appendix.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_display"></a>C.2.4. VK_KHR_display</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_display</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    3
+</dd><dt><span class="term">
+<span class="strong"><strong>Status</strong></span>
+</span></dt><dd>
+    Draft.
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-12-18
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    21
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones (jajones <span class="emphasis"><em>at</em></span> nvidia.com)
+</li><li class="listitem">
+Norbert Nopper (Norbert.Nopper <span class="emphasis"><em>at</em></span> freescale.com)
+</li></ul></div></dd></dl></div><p>This extension provides the API to enumerate displays and available modes on
+a given device.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_3"></a>New Object Types</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkDisplayKHR</code>
+</li><li class="listitem">
+<code class="code">VkDisplayModeKHR</code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_4"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_3"></a>New Enums</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkDisplayPlaneAlphaFlagBitsKHR</code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_3"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayPropertiesKHR">VkDisplayPropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayModeParametersKHR">VkDisplayModeParametersKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayModePropertiesKHR">VkDisplayModePropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayModeCreateInfoKHR">VkDisplayModeCreateInfoKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayPlanePropertiesKHR">VkDisplayPlanePropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplayPlaneCapabilitiesKHR">VkDisplayPlaneCapabilitiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#VkDisplaySurfaceCreateInfoKHR">VkDisplaySurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_3"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkGetPhysicalDeviceDisplayPropertiesKHR">vkGetPhysicalDeviceDisplayPropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkGetPhysicalDeviceDisplayPlanePropertiesKHR">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkGetDisplayPlaneSupportedDisplaysKHR">vkGetDisplayPlaneSupportedDisplaysKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkGetDisplayModePropertiesKHR">vkGetDisplayModePropertiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkCreateDisplayModeKHR">vkCreateDisplayModeKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkGetDisplayPlaneCapabilitiesKHR">vkGetDisplayPlaneCapabilitiesKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s03.html#vkCreateDisplayPlaneSurfaceKHR">vkCreateDisplayPlaneSurfaceKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_3"></a>Issues</h4></div></div></div><p>1) Which properties of a mode should be fixed in the mode info Vs.
+    settable in some other function when setting the mode? E.g., do we need
+    to double the size of the mode pool to include both stereo and
+    non-stereo modes? YUV and RGB scanout even if they both take RGB input
+    images? BGR Vs.
+    RGB input? etc.</p><pre class="literallayout">PROPOSED RESOLUTION: Many modern displays support at most a handful of
+resolutions and timings natively.
+Other "modes" are expected to be supported using scaling hardware on the
+display engine or GPU.
+Other properties, such as rotation and mirroring should not require
+duplicating hardware modes just to express all combinations.
+Further, these properties may be implemented on a per-display or
+per-overlay granularity.</pre><pre class="literallayout">To avoid the exponential growth of modes as mutable properties are
+added, as was the case with EGLConfig/WGL pixel formats/GLXFBConfig,
+this specification should separate out hardware properties and
+configurable state into separate objects.
+Modes and overlay planes will express capabilities of the hardware,
+while a separate structure will allow applications to configure scaling,
+rotation, mirroring, color keys, LUT values, alpha masks, etc.
+for a given swapchain independent of the mode in use.
+Constraints on these settings will be established by properties of the
+immutable objects.</pre><pre class="literallayout">Note the resolution of this issue may affect issue (5) as well.</pre><p>2) What properties of a display itself are useful?</p><pre class="literallayout">PROPOSED RESOLUTION: This issue is too broad.
+It was meant to prompt general discussion, but resolving this issue
+amounts to completing this specification.
+All interesting properties should be included.
+The issue will remain as a placeholder since removing it would make it
+hard to parse existing discussion notes that refer to issues by number.</pre><p>3) How are multiple overlay planes within a display or mode enumerated?</p><pre class="literallayout">PROPOSED RESOLUTION: They are referred to by an index.
+Each display will report the number of overlay planes it contains.</pre><p>4) Should swapchains be created relative to a mode or a display?</p><pre class="literallayout">PROPOSED RESOLUTION: When using this extension, swapchains are created
+relative to a mode and a plane.
+The mode implies the display object the swapchain will present to.
+If the specified mode is not the display's current mode, the new mode
+will be applied when the first image is presented to the swapchain, and
+the default operating system mode, if any, will be restored when the
+swapchain is destroyed.</pre><p>5) Should users query generic ranges from displays and construct their own
+    modes explicitly using those constraints rather than querying a fixed
+    set of modes (Most monitors only have one real "mode" these days, even
+    though many support relatively arbitrary scaling, either on the monitor
+    side or in the GPU display engine, making "modes" something of a
+    relic/compatibility construct).</p><pre class="literallayout">PROPOSED RESOLUTION: Expose both.
+Display info structures will expose a set of predefined modes, as well
+as any attributes necessary to construct a customized mode.</pre><p>6) Is it fine if we return the display and display mode handles in the
+    structure used to query their properties?</p><pre class="literallayout">PROPOSED RESOLUTION: Yes.</pre><p>7) Is there a possibility that not all displays of a device work with all of
+    the present queues of a device? If yes, how do we determine which
+    displays work with which present queues?</p><pre class="literallayout">PROPOSED RESOLUTION: No known hardware has such limitations, but
+determining such limitations is supported automatically using the
+existing VK_EXT_KHR_surface and VK_EXT_KHR_swapchain query mechanisms.</pre><p>8) Should all presentation need to be done relative to an overlay plane, or
+    can a display mode + display be used alone to target an output?</p><pre class="literallayout">PROPOSED RESOLUTION: Require specifying a plane explicitly.</pre><p>9) Should displays have an associated window system display, such as an HDC
+    or Display*?</p><pre class="literallayout">PROPOSED RESOLUTION: No.
+Displays are independent of any windowing system in use on the system.
+Further, neither HDC nor Display* refer to a physical display object.</pre><p>10) Are displays queried from a physical GPU or from a device instance?</p><pre class="literallayout">PROPOSED RESOLUTION: Developers prefer to query modes directly from the
+physical GPU so they can use display information as an input to their
+device selection algorithms prior to device creation.
+This avoids the need to create dummy device instances to enumerate
+displays.</pre><pre class="literallayout">This preference must be weighed against the extra initialization that
+must be done by driver vendors prior to device instance creation to
+support this usage.</pre><p>11) Should displays and/or modes be dispatchable objects? If functions are
+    to take displays, overlays, or modes as their first parameter, they must
+    be dispatchable objects as defined in Khronos bug 13529.
+    If they are not added to the list of dispatchable objects, functions
+    operating on them must take some higher-level object as their first
+    parameter.
+    There is no performance case against making them dispatchable objects,
+    but they would be the first extension objects to be dispatchable.</p><pre class="literallayout">PROPOSED RESOLUTION: Do not make displays or modes dispatchable.
+They will dispatch based on their associated physical device.</pre><p>12) Should hardware cursor capabilities be exposed?</p><pre class="literallayout">PROPOSED RESOLUTION: Defer.
+This could be a separate extension on top of the base WSI specs.</pre><pre class="literallayout">if they are one physical display device to an end user, but may
+internally be implemented as two side-by-side displays using the same
+display engine (and sometimes cabling) resources as two physically
+separate display devices.</pre><pre class="literallayout">PROPOSED RESOLUTION: Tiled displays will appear as a single display
+object in this API.</pre><p>14) Should the raw EDID data be included in the display information?</p><pre class="literallayout">PROPOSED RESOLUTION: None.
+Unclear whether this is a good idea.
+Provides a path for forward-compatibility as new EDID extensions are
+introduced, but may be complicated by the outcome of issue 13.</pre><p>15) Should min and max scaling factor capabilities of overlays be exposed?</p><pre class="literallayout">PROPOSED RESOLUTION: Yes.
+This is exposed indirectly by allowing applications to query the min/max
+position and extent of the source and destination regions from which
+image contents are fetched by the display engine when using a particular
+mode and overlay pair.</pre><p>16) Should devices be able to expose planes that can be moved between
+    displays? If so, how?</p><pre class="literallayout">PROPOSED RESOLUTION: None.</pre><p>17) Should there be a way to destroy display modes? If so, does it support
+    destroying "built in" modes?</p><pre class="literallayout">PROPOSED RESOLUTION: None.</pre><p>18) What should the lifetime of display and built-in display mode objects
+    be?</p><pre class="literallayout">PROPOSED RESOLUTION: The lifetime of the instance.
+These objects can not be destroyed.
+A future extension may be added to expose a way to destroy these objects
+and/or support display hotplug.</pre><p>19) Should persistent mode for smart panels be enabled/disabled at swap
+    chain creation time, or on a per-present basis.</p><pre class="literallayout">PROPOSED RESOLUTION: On a per-present basis.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_examples_3"></a>Examples</h4></div></div></div><p><span class="strong"><strong>Example 1</strong></span></p><p>Enumerating displays, display modes, and planes, and creating a VkSurfaceKHR</p><pre class="programlisting">    extern VkBool32 ModeMatchesMyCriteria(const VkDisplayModePropertiesKHR *m);
+    extern VkInstance instance;
+    extern VkPhysicalDevice physDevice;
+    extern VkSurfaceKHR surface;
+
+    uint32_t displayCount, planeCount, i, j, k;
+    VkDisplayPropertiesKHR* pDisplayProps;
+    VkDisplayPlanePropertiesKHR* pPlaneProps;
+    VkDisplayModeKHR myMode = VK_NULL_HANDLE;
+    VkDisplayKHR myDisplay = VK_NULL_HANDLE;
+    uint32_t bestPlane = UINT32_MAX;
+    VkDisplayPlaneAlphaFlagBitsKHR alphaMode = 0;
+    PFN_vkGetPhysicalDeviceDisplayPropertiesKHR pfnGetPhysicalDeviceDisplayPropertiesKHR;
+    PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR pfnGetPhysicalDeviceDisplayPlanePropertiesKHR;
+    PFN_vkGetDisplayModePropertiesKHR pfnGetDisplayModePropertiesKHR;
+    PFN_vkGetDisplayPlaneCapabilitiesKHR pfnGetDisplayPlaneCapabilitiesKHR;
+    PFN_vkGetDisplayPlaneSupportedDisplaysKHR pfnGetDisplayPlaneSupportedDisplaysKHR;
+    PFN_vkCreateDisplayPlaneSurfaceKHR pfnCreateDisplayPlaneSurfaceKHR;
+
+    pfnGetPhysicalDeviceDisplayPropertiesKHR =
+        (PFN_vkGetPhysicalDeviceDisplayPropertiesKHR)
+        vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceDisplayPropertiesKHR");
+    pfnGetPhysicalDeviceDisplayPlanePropertiesKHR =
+        (PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR)
+        vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR");
+    pfnGetDisplayModePropertiesKHR =
+        (PFN_vkGetDisplayModePropertiesKHR)
+        vkGetInstanceProcAddr(instance, "vkGetDisplayModePropertiesKHR");
+    pfnGetDisplayPlaneCapabilitiesKHR =
+        (PFN_vkGetDisplayPlaneCapabilitiesKHR)
+        vkGetInstanceProcAddr(instance, "vkGetDisplayPlaneCapabilitiesKHR");
+    pfnGetDisplayPlaneSupportedDisplaysKHR =
+        (PFN_vkGetDisplayPlaneSupportedDisplaysKHR)
+        vkGetInstanceProcAddr(instance, "vkGetDisplayPlaneSupportedDisplaysKHR");
+    pfnCreateDisplayPlaneSurfaceKHR =
+        (PFN_vkCreateDisplayPlaneSurfaceKHR)
+        vkGetInstanceProcAddr(instance, "vkCreateDisplayPlaneSurfaceKHR");
+
+    // Get a list of displays on a physical device
+    displayCount = 0;
+    pfnGetPhysicalDeviceDisplayPropertiesKHR(physDevice, &amp;displayCount, NULL);
+
+    pDisplayProps = (VkDisplayPropertiesKHR*)malloc(sizeof(VkDisplayPropertiesKHR) * displayCount);
+    pfnGetPhysicalDeviceDisplayPropertiesKHR(physDevice, &amp;displayCount, pDisplayProps);
+
+    // Get a list of display planes on a physical device
+    planeCount = 0;
+    pfnGetPhysicalDeviceDisplayPlanePropertiesKHR(physDevice, &amp;planeCount, NULL);
+    pPlaneProps = (VkDisplayPlanePropertiesKHR*)malloc(sizeof(VkDisplayPlanePropertiesKHR) * planeCount);
+    pfnGetPhysicalDeviceDisplayPlanePropertiesKHR(physDevice, &amp;planeCount, pPlaneProps);
+
+    // Get the list of pModes each display supports
+    for (i = 0; i &lt; displayCount; ++i)
+    {
+        VkDisplayKHR display = pDisplayProps[i].display;
+        VkDisplayModePropertiesKHR* pModes;
+        uint32_t modeCount;
+
+        vkGetDisplayModePropertiesKHR(physDevice, display, &amp;modeCount, NULL);
+
+        pModes = (VkDisplayModePropertiesKHR*)malloc(sizeof(VkDisplayModePropertiesKHR) * modeCount);
+        vkGetDisplayModePropertiesKHR(physDevice, display, &amp;modeCount, pModes);
+
+        myMode = VK_NULL_HANDLE;
+        for (j = 0; j &lt; modeCount; ++j)
+        {
+            const VkDisplayModePropertiesKHR* mode = &amp;pModes[i];
+
+            if (ModeMatchesMyCriteria(mode))
+            {
+                myMode = mode-&gt;displayMode;
+                break;
+            }
+        }
+
+        free(pModes);
+
+        // If there are no usable pModes found then check the next display.
+        if (myMode == VK_NULL_HANDLE)
+            continue;
+
+        // Find a plane that matches these criteria, in order of preference:
+        // -Is compatible with the chosen display + mode.
+        // -Is not currently bound to another display.
+        // -Supports per-pixel alpha, if possible.
+        for (j = 0; j &lt; planeCount; ++j)
+        {
+            uint32_t supportedCount = 0;
+            VkDisplayKHR* pSupportedDisplays;
+            VkDisplayPlaneCapabilitiesKHR planeCaps;
+            // See if the plane is compatible with the current display.
+            pfnGetDisplayPlaneSupportedDisplaysKHR(physDevice, j, &amp;supportedCount, NULL);
+
+            // Plane does not support any displays.  This might happen on a card
+            // that has a fixed mapping between planes and connectors when no
+            // displays are currently attached to this plane's connector, for
+            // example.
+            if (supportedCount == 0)
+                continue;
+
+            pSupportedDisplays = (VkDisplayKHR*)malloc(sizeof(VkDisplayKHR) * supportedCount);
+            pfnGetDisplayPlaneSupportedDisplaysKHR(physDevice, j, &amp;supportedCount, pSupportedDisplays);
+
+            for (k = 0; k &lt; supportedCount; ++k)
+                if (pSupportedDisplays[k] == display) {
+                    // If no supported plane has yet been found, this is
+                    // currently the best available plane.
+                    if (bestPlane == UINT32_MAX)
+                        bestPlane = j;
+                    break;
+                }
+
+            // If the plane cannot be used with the chosen display, keep looking.
+            // Each display must have at least one compatible plane.
+            if (k == supportedCount)
+                continue;
+
+            // If the plane passed the above test and is currently bound to the
+            // desired display, or is not in use, it is the best plane found so
+            // far.
+            if ((pPlaneProps[j].currentDisplay == VK_NULL_HANDLE) &amp;&amp;
+                (pPlaneProps[j].currentDisplay == display))
+                bestPlane = j;
+            else
+                continue;
+
+            pfnGetDisplayPlaneCapabilitiesKHR(physDevice, myMode, j, &amp;planeCaps);
+
+            // Prefer a plane that supports per-pixel alpha.
+            if (planeCaps.supportedAlpha &amp; VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR)
+            {
+                // This is the perfect plane for the given criteria.  Use it.
+                bestPlane = j;
+                alphaMode = VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR;
+                break;
+            }
+        }
+    }
+
+    free(pDisplayProps);
+
+    if (myDisplay == VK_NULL_HANDLE || myMode == VK_NULL_HANDLE) {
+        // No suitable display + mode could be found.  Abort.
+        abort();
+    } else {
+        // Success.  Create a VkSurfaceKHR object for this plane.
+        const VkDisplaySurfaceCreateInfoKHR createInfo =
+        {
+            VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR,  // sType
+            NULL,                                               // pNext
+            0,                                                  // flags
+            myMode,                                             // displayMode
+            bestPlane,                                          // planeIndex
+            pPlaneProps[bestPlane].currentStackIndex,           // planeStackIndex
+            VK_SURFACE_TRANSFORM_IDENTITY_KHR,                  // transform
+            1.0f,                                               // globalAlpha
+            alphaMode,                                          // alphaMode
+            ...
+        }
+
+        pfnCreateDisplayPlaneSurfaceKHR(instance, &amp;createInfo, NULL, &amp;surface);
+    }</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_4"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-02-24 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-03-12 (Norbert Nopper)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added overlay enumeration for a display.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-03-17 (Norbert Nopper)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Fixed typos and namings as discussed in Bugzilla.
+</li><li class="listitem">
+Reordered and grouped functions.
+</li><li class="listitem">
+Added functions to query count of display, mode and overlay.
+</li><li class="listitem">
+Added native display handle, which is maybe needed on some platforms to
+     create a native Window.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-03-18 (Norbert Nopper)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed primary and virtualPostion members (see comment of James Jones
+     in Bugzilla).
+</li><li class="listitem">
+Added native overlay handle to info structure.
+</li><li class="listitem">
+Replaced , with ; in struct.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-03-18 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added WSI extension suffix to all items.
+</li><li class="listitem">
+Made the whole API more "Vulkanish".
+</li><li class="listitem">
+Replaced all functions with a single vkGetDisplayInfoKHR function to
+     better match the rest of the API.
+</li><li class="listitem">
+Made the display, display mode, and overlay objects be first class
+     objects, not subclasses of VkBaseObject as they do not support the
+     common functions anyways.
+</li><li class="listitem">
+Renamed *Info structures to *Properties.
+</li><li class="listitem">
+Removed overlayIndex field from VkOverlayProperties as there is an
+     implicit index already as a result of moving to a "Vulkanish" API.
+</li><li class="listitem">
+Displays are not get through device, but through physical GPU to match
+     the rest of the Vulkan API.
+     Also this is something ISVs explicitly requested.
+</li><li class="listitem">
+Added issue (6) and (7).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 7, 2015-03-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added an issues section
+</li><li class="listitem">
+Added rotation and mirroring flags
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 8, 2015-03-25 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Combined the duplicate issues sections introduced in last change.
+</li><li class="listitem">
+Added proposed resolutions to several issues.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 9, 2015-04-01 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Rebased extension against Vulkan 0.82.0
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 10, 2015-04-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added issues (10) and (11).
+</li><li class="listitem">
+Added more straw-man issue resolutions, and cleaned up the proposed
+     resolution for issue (4).
+</li><li class="listitem">
+Updated the rotation and mirroring enums to have proper bitmask
+     semantics.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 11, 2015-04-15 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added proposed resolution for issues (1) and (2).
+</li><li class="listitem">
+Added issues (12), (13), (14), and (15)
+</li><li class="listitem">
+Removed pNativeHandle field from overlay structure.
+</li><li class="listitem">
+Fixed small compilation errors in example code.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 12, 2015-07-29 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Rewrote the guts of the extension against the latest WSI swapchain
+     specifications and the latest Vulkan API.
+</li><li class="listitem">
+Address overlay planes by their index rather than an object handle and
+     refer to them as "planes" rather than "overlays" to make it slightly
+     clearer that even a display with no "overlays" still has at least one
+     base "plane" that images can be displayed on.
+</li><li class="listitem">
+Updated most of the issues.
+</li><li class="listitem">
+Added an "extension type" section to the specification header.
+</li><li class="listitem">
+Re-used the VK_EXT_KHR_surface surface transform enumerations rather
+     than redefining them here.
+</li><li class="listitem">
+Updated the example code to use the new semantics.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 13, 2015-08-21 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed this extension and all of its enumerations, types, functions,
+     etc.
+     This makes it compliant with the proposed standard for Vulkan
+     extensions.
+</li><li class="listitem">
+Switched from "revision" to "version", including use of the
+     VK_MAKE_VERSION macro in the header file.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 14, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Restore single-field revision number.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 15, 2015-09-08 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added alpha flags enum.
+</li><li class="listitem">
+Added premultiplied alpha support.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 16, 2015-09-08 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added description section to the spec.
+</li><li class="listitem">
+Added issues 16 - 18.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 17, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Planes are now a property of the entire device rather than individual
+     displays.
+     This allows planes to be moved between multiple displays on devices
+     that support it.
+</li><li class="listitem">
+Added a function to create a VkSurfaceKHR object describing a display
+     plane and mode to align with the new per-platform surface creation
+     conventions.
+</li><li class="listitem">
+Removed detailed mode timing data.
+     It was agreed that the mode extents and refresh rate are sufficient for
+     current use cases.
+     Other information could be added back2 in as an extension if it is
+     needed in the future.
+</li><li class="listitem">
+Added support for smart/persistent/buffered display devices.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 18, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_display to VK_KHR_display.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 19, 2015-11-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated example code to match revision 17 changes.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 20, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to creation functions.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 21, 2015-11-10 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR, and use
+     VkDisplayPlaneAlphaFlagBitsKHR for
+     VkDisplayPlanePropertiesKHR::alphaMode instead of
+     VkDisplayPlaneAlphaFlagsKHR, since it only represents one mode.
+</li><li class="listitem">
+Added reserved flags bitmask to VkDisplayPlanePropertiesKHR.
+</li><li class="listitem">
+Use VkSurfaceTransformFlagBitsKHR instead of obsolete
+     VkSurfaceTransformKHR.
+</li><li class="listitem">
+Renamed vkGetDisplayPlaneSupportedDisplaysKHR parameters for clarity.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 22, 2015-12-18 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added missing "planeIndex" parameter to
+     vkGetDisplayPlaneSupportedDisplaysKHR()
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_display_swapchain"></a>C.2.5. VK_KHR_display_swapchain</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_display_swapchain</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Device extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    4
+</dd><dt><span class="term">
+<span class="strong"><strong>Status</strong></span>
+</span></dt><dd>
+    Draft.
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-10
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    9
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_swapchain</code> and <code class="literal">VK_KHR_display</code>
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Jesse Hall, Google
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+James Jones (jajones <span class="emphasis"><em>at</em></span> nvidia.com)
+</li></ul></div></dd></dl></div><p>This extension provides an API to create a swapchain directly on a device’s
+display without any underlying window system.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_4"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_5"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR</code>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Extending <code class="code">VkResult</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_ERROR_INCOMPATIBLE_DISPLAY_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_4"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_4"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#VkDisplayPresentInfoKHR">VkDisplayPresentInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_4"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s06.html#vkCreateSharedSwapchainsKHR">vkCreateSharedSwapchainsKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_4"></a>Issues</h4></div></div></div><p>1) Should swapchains sharing images each hold a reference to the images, or
+    should it be up to the application to destroy the swapchains and images
+    in an order that avoids the need for reference counting?</p><pre class="literallayout">PROPOSED RESOLUTION: Take a reference.
+The lifetime of presentable images is already complex enough.</pre><p>2) Should the srcRect/dstRect parameters be specified as part of the present
+    command, or at swapchain creation time?</p><pre class="literallayout">PROPOSED RESOLUTION: As part of the presentation command.
+This allows moving and scaling the image on the screen without the need
+to respecify the mode or create a new swapchain presentable images.</pre><p>3) Should srcRect/dstRect be specified as rects, or separate offset/extent
+    values?</p><pre class="literallayout">PROPOSED RESOLUTION: As rects.
+Specifying them separately might make it easier for hardware to expose
+support for one but not the other, but in such cases applications must
+just take care to obey the reported capabilities and not use non-zero
+offsets or extents that require scaling, as appropriate.</pre><p>4) How can applications create multiple swapchains that use the same images?</p><pre class="literallayout">RESOLUTION: By calling vkCreateSharedSwapchainsKHR().</pre><pre class="literallayout">An earlier resolution used vkCreateSwapchainKHR(), chaining multiple
+VkSwapchainCreateInfoKHR structures through pNext.
+In order to allow each swapchain to also allow other extension structs,
+a level of indirection was used: VkSwapchainCreateInfoKHR::pNext pointed
+to a different structure, which had both an sType/pNext for additional
+extensions, and also had a pointer to the next VkSwapchainCreateInfoKHR
+structure.
+The number of swapchains to be created could only be found by walking
+this linked list of alternating structures, and the pSwapchains out
+parameter was reinterpreted to be an array of VkSwapchainKHR handles.</pre><pre class="literallayout">Another option considered was a method to specify a "shared" swapchain
+when creating a new swapchain, such that groups of swapchains using the
+same images could be built up one at a time.
+This was deemed unusable because drivers need to know all of the
+displays an image will be used on when determining which internal
+formats and layouts to use for that image.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_examples_4"></a>Examples</h4></div></div></div><p><span class="strong"><strong>Example 1</strong></span></p><p>Create a swapchain on a display mode and plane</p><pre class="programlisting">    // See VK_KHR_display for an example of how to pick a display,
+    // display mode, plane, and how to create a VkSurfaceKHR for
+    // that plane.
+    extern VkPhysicalDevice physDevice;
+    extern VkDisplayModePropertiesKHR myModeProps;
+    extern VkSurfaceKHR mySurface;
+    extern VkDevice device;
+
+    uint32_t queueCount, i;
+    uint32_t presentQueueFamilyIndex = UINT32_MAX;
+    VkBool32 supportsPresent;
+
+    // Find a queue family that supports presenting to this surface
+    uint32_t familyCount;
+    vkGetPhysicalDeviceQueueFamilyProperties(physDevice, &amp;familyCount, NULL);
+
+    for (i = 0; i &lt; familyCount; ++i)
+    {
+        vkGetPhysicalDeviceSurfaceSupportKHR(physDevice, i, mySurface, &amp;supportsPresent);
+
+        if (supportsPresent) {
+            // Found a queue family that supports present.  See
+            // VK_KHR_surface for an example of how to find a queue that
+            // supports both presentation and graphics
+            presentQueueFamilyIndex = i;
+            break;
+        }
+    }
+
+    // Figure out which formats and present modes this surface supports.
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, mySurface, &amp;formatCount, NULL);
+
+    VkSurfaceFormatKHR* formats = (VkSurfaceFormatKHR*)malloc(sizeof(VkSurfaceFormatKHR) * formatCount);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(physDevice, mySurface, &amp;formatCount, formats);
+
+    const VkSwapchainCreateInfoKHR createInfo =
+    {
+        VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,    // sType
+        NULL,                                           // pNext
+        0,                                              // flags
+        mySurface,                                      // surface
+        3,                                              // minImageCount
+        formats[0].format,                              // imageFormat
+        formats[0].colorSpace,                          // imageColorSpace
+        myModeProps.parameters.visibleRegion,           // imageExtent
+        1,                                              // imageArrayLayers
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,            // imageUsage
+        VK_SHARING_MODE_EXCLUSIVE,                      // imageSharingMode
+        0,                                              // queueFamilyIndexCount
+        NULL,                                           // pQueueFamilyIndices
+        VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,          // preTransform
+        VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,              // compositeAlpha
+        VK_PRESENT_MODE_FIFO_KHR,                       // presentMode
+        VK_TRUE,                                        // clipped
+        VK_NULL_HANDLE                                  // oldSwapchain
+    };
+
+    VkSwapchainKHR swapchain;
+    // This is equivalent to vkCreateSwapchainKHR.
+    vkCreateSharedSwapchainsKHR(device, 1, &amp;createInfo, NULL, &amp;swapchain);</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_5"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-07-29 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-08-21 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed this extension and all of its enumerations, types, functions,
+     etc.
+     This makes it compliant with the proposed standard for Vulkan
+     extensions.
+</li><li class="listitem">
+Switched from "revision" to "version", including use of the
+     VK_MAKE_VERSION macro in the header file.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-09-01 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Restore single-field revision number.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-09-08 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Allow creating multiple swap chains that share the same images using a
+     single call to vkCreateSwapChainKHR().
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-09-10 (Alon Or-bach)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed underscores from SWAP_CHAIN in two enums.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added support for smart panels/buffered displays.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 7, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_display_swapchain to VK_KHR_display_swapchain.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 8, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated sample code based on the changes to VK_KHR_swapchain.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 9, 2015-11-10 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Replaced <span class="strong"><strong><code class="code">VkDisplaySwapchainCreateInfoKHR</code></strong></span> with
+     vkCreateSharedSwapchainsKHR, changing resolution of issue #4.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_android_surface"></a>C.2.6. VK_KHR_android_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_android_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    9
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2016-14-01
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    6
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_android_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface</code> extension) that refers to an <span class="strong"><strong><code class="code">ANativeWindow</code></strong></span>,
+Android’s native surface type.
+The <span class="strong"><strong><code class="code">ANativeWindow</code></strong></span> represents the producer endpoint of any buffer queue,
+regardless of consumer endpoint.
+Common consumer endpoints for <span class="strong"><strong><code class="code">ANativeWindows</code></strong></span> are the system window
+compositor, video encoders, and application-specific compositors importing
+the images through a SurfaceTexture.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_5"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_6"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_5"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_5"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkAndroidSurfaceCreateInfoKHR">VkAndroidSurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_5"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateAndroidSurfaceKHR">vkCreateAndroidSurfaceKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_5"></a>Issues</h4></div></div></div><p>1) Does Android need a way to query for compatibility between a particular
+   physical device (and queue family?) and a specific Android display?</p><pre class="literallayout">RESOLVED: No.
+Currently on Android, any GPU is expected to be able to present to the
+system compositor, and all queue families must support the necessary
+image layout transitions and synchronization operations.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_6"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_android_surface to VK_KHR_android_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to surface creation function.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-11-10 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed VK_ERROR_INVALID_ANDROID_WINDOW_KHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2016-01-14 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Moved VK_ERROR_NATIVE_WINDOW_IN_USE_KHR from the VK_KHR_android_surface
+     to the VK_KHR_surface extension.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_mir_surface"></a>C.2.7. VK_KHR_mir_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_mir_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    8
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-28
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    4
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_mir_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface extension</code>) that refers to a Mir surface, as well as a
+query to determine support for rendering to the windows desktop.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_6"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_7"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_6"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_6"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkMirSurfaceCreateInfoKHR">VkMirSurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_6"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateMirSurfaceKHR">vkCreateMirSurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceMirPresentationSupportKHR">vkGetPhysicalDeviceMirPresentationSupportKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_6"></a>Issues</h4></div></div></div><p>1) Does Mir need a way to query for compatibility between a particular
+   physical device (and queue family?) and a specific Mir connection,
+   screen, window, etc.?</p><pre class="literallayout">RESOLVED: Yes, vkGetPhysicalDeviceMirPresentationSupportKHR() was added
+to address this.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_7"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on the previous contents of VK_EXT_KHR_swapchain
+     (later renamed VK_EXT_KHR_surface).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added vkGetPhysicalDeviceMirPresentationSupportKHR() to resolve issue
+     #1.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_mir_surface to VK_KHR_mir_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_wayland_surface"></a>C.2.8. VK_KHR_wayland_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_wayland_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    7
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-28
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    5
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_wayland_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface</code> extension) that refers to a Wayland <span class="strong"><strong><code class="code">wl_surface</code></strong></span>, as
+well as a query to determine support for rendering to the windows desktop.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_7"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_8"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_7"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_7"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkWaylandSurfaceCreateInfoKHR">VkWaylandSurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_7"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateWaylandSurfaceKHR">vkCreateWaylandSurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceWaylandPresentationSupportKHR">vkGetPhysicalDeviceWaylandPresentationSupportKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_7"></a>Issues</h4></div></div></div><p>1) Does Wayland need a way to query for compatibility between a particular
+   physical device and a specific Wayland display? This would be a more
+   general query than vkGetPhysicalDeviceSurfaceSupportKHR: if the Wayland-
+   specific query returned true for a (VkPhysicalDevice, struct wl_display*)
+   pair, then the physical device could be assumed to support presentation
+   to any VkSurface for surfaces on the display.</p><pre class="literallayout">RESOLVED: Yes.
+vkGetPhysicalDeviceWaylandPresentationSupportKHR() was added to address
+this issue.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_8"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on the previous contents of VK_EXT_KHR_swapchain
+     (later renamed VK_EXT_KHR_surface).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added vkGetPhysicalDeviceWaylandPresentationSupportKHR() to resolve
+     issue #1.
+</li><li class="listitem">
+Adjusted wording of issue #1 to match the agreed-upon solution.
+</li><li class="listitem">
+Renamed "window" parameters to "surface" to match Wayland conventions.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_wayland_surface to VK_KHR_wayland_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to vkCreateWaylandSurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_win32_surface"></a>C.2.9. VK_KHR_win32_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_win32_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    10
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-28
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    5
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_win32_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface</code> extension) that refers to a Win32 <span class="strong"><strong><code class="code">HWND</code></strong></span>, as well as
+a query to determine support for rendering to the windows desktop.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_8"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_9"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_8"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_8"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkWin32SurfaceCreateInfoKHR">VkWin32SurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_8"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateWin32SurfaceKHR">vkCreateWin32SurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceWin32PresentationSupportKHR">vkGetPhysicalDeviceWin32PresentationSupportKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_8"></a>Issues</h4></div></div></div><p>1) Does Win32 need a way to query for compatibility between a particular
+   physical device and a specific screen? Compatibility between a physical
+   device and a window generally only depends on what screen the window is
+   on.
+   However, there is not an obvious way to identify a screen without already
+   having a window on the screen.</p><pre class="literallayout">RESOLVED: No.
+While it may be useful, there is not a clear way to do this on Win32.
+However, a method was added to query support for presenting to the
+windows desktop as a whole.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_9"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on the previous contents of VK_EXT_KHR_swapchain
+     (later renamed VK_EXT_KHR_surface).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added presentation support query for win32 desktops.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_win32_surface to VK_KHR_win32_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to vkCreateWin32SurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_xcb_surface"></a>C.2.10. VK_KHR_xcb_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_xcb_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    6
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-28
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    6
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_xcb_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface extension</code>) that refers to an X11 <span class="strong"><strong><code class="code">Window</code></strong></span>, using the
+XCB client-side library, as well as a query to determine support for
+rendering via XCB.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_9"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_10"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_9"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_9"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkXcbSurfaceCreateInfoKHR">VkXcbSurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_9"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateXcbSurfaceKHR">vkCreateXcbSurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceXcbPresentationSupportKHR">vkGetPhysicalDeviceXcbPresentationSupportKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_9"></a>Issues</h4></div></div></div><p>1) Does XCB need a way to query for compatibility between a particular
+   physical device and a specific screen? This would be a more general query
+   than vkGetPhysicalDeviceSurfaceSupportKHR: If it returned true, then the
+   physical device could be assumed to support presentation to any window on
+   that screen.</p><pre class="literallayout">RESOLVED: Yes, this is needed for toolkits that want to create a VkDevice
+before creating a window.
+To ensure the query is reliable, it must be made against a particular X
+visual rather than the screen in general.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_10"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on the previous contents of VK_EXT_KHR_swapchain
+     (later renamed VK_EXT_KHR_surface).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added presentation support query for an (xcb_connection_t*,
+     xcb_visualid_t) pair.
+</li><li class="listitem">
+Removed "root" parameter from CreateXcbSurfaceKHR(), as it is redundant
+     when a window on the same screen is specified as well.
+</li><li class="listitem">
+Adjusted wording of issue #1 and added agreed upon resolution.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-10-14 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Removed "root" parameter from CreateXcbSurfaceKHR() in one more place.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_xcb_surface to VK_KHR_xcb_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-10-23 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to vkCreateXcbSurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="VK_KHR_xlib_surface"></a>C.2.11. VK_KHR_xlib_surface</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>Name String</strong></span>
+</span></dt><dd>
+    <code class="literal">VK_KHR_xlib_surface</code>
+</dd><dt><span class="term">
+<span class="strong"><strong>Extension Type</strong></span>
+</span></dt><dd>
+    Instance extension
+</dd><dt><span class="term">
+<span class="strong"><strong>Registered Extension Number</strong></span>
+</span></dt><dd>
+    5
+</dd><dt><span class="term">
+<span class="strong"><strong>Last Modified Date</strong></span>
+</span></dt><dd>
+    2015-11-28
+</dd><dt><span class="term">
+<span class="strong"><strong>Revision</strong></span>
+</span></dt><dd>
+    6
+</dd><dt><span class="term">
+<span class="strong"><strong>IP Status</strong></span>
+</span></dt><dd>
+    No known IP claims.
+</dd><dt><span class="term">
+<span class="strong"><strong>Dependencies</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+This extension is written against version 1.0 of the Vulkan API.
+</li><li class="listitem">
+This extension requires <code class="literal">VK_KHR_surface</code>.
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contributors</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Patrick Doane, Blizzard
+</li><li class="listitem">
+Jason Ekstrand, Intel
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li><li class="listitem">
+Courtney Goeltzenleuchter, LunarG
+</li><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+James Jones, NVIDIA
+</li><li class="listitem">
+Antoine Labour, Google
+</li><li class="listitem">
+Jon Leech, Khronos
+</li><li class="listitem">
+David Mao, AMD
+</li><li class="listitem">
+Norbert Nopper, Freescale
+</li><li class="listitem">
+Alon Or-bach, Samsung
+</li><li class="listitem">
+Daniel Rakos, AMD
+</li><li class="listitem">
+Graham Sellers, AMD
+</li><li class="listitem">
+Ray Smith, ARM
+</li><li class="listitem">
+Jeff Vigil, Qualcomm
+</li><li class="listitem">
+Chia-I Wu, LunarG
+</li></ul></div></dd><dt><span class="term">
+<span class="strong"><strong>Contacts</strong></span>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Jesse Hall, Google
+</li><li class="listitem">
+Ian Elliott, LunarG
+</li></ul></div></dd></dl></div><p>The <code class="literal">VK_KHR_xlib_surface</code> extension is an instance extension.
+It provides a mechanism to create a <code class="code">VkSurfaceKHR</code> object (defined by
+the <code class="literal">VK_KHR_surface</code> extension) that refers to an X11 <span class="strong"><strong><code class="code">Window</code></strong></span>, using the
+Xlib client-side library, as well as a query to determine support for
+rendering via Xlib.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_object_types_10"></a>New Object Types</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enum_constants_11"></a>New Enum Constants</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Extending <code class="code">VkStructureType</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR</code>
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_enums_10"></a>New Enums</h4></div></div></div><p>None</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_structures_10"></a>New Structures</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#VkXlibSurfaceCreateInfoKHR">VkXlibSurfaceCreateInfoKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_new_functions_10"></a>New Functions</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code"><a class="link" href="ch29s02.html#vkCreateXlibSurfaceKHR">vkCreateXlibSurfaceKHR</a></code>
+</li><li class="listitem">
+<code class="code"><a class="link" href="ch29s04.html#vkGetPhysicalDeviceXlibPresentationSupportKHR">vkGetPhysicalDeviceXlibPresentationSupportKHR</a></code>
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_issues_10"></a>Issues</h4></div></div></div><p>1) Does X11 need a way to query for compatibility between a particular
+   physical device and a specific screen? This would be a more general query
+   than vkGetPhysicalDeviceSurfaceSupportKHR: If it returned true, then the
+   physical device could be assumed to support presentation to any window on
+   that screen.</p><pre class="literallayout">RESOLVED: Yes, this is needed for toolkits that want to create a VkDevice
+before creating a window.
+To ensure the query is reliable, it must be made against a particular X
+visual rather than the screen in general.</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_version_history_11"></a>Version History</h4></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Revision 1, 2015-09-23 (Jesse Hall)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Initial draft, based on the previous contents of VK_EXT_KHR_swapchain
+     (later renamed VK_EXT_KHR_surface).
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 2, 2015-10-02 (James Jones)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added presentation support query for (Display*, VisualID) pair.
+</li><li class="listitem">
+Removed "root" parameter from CreateXlibSurfaceKHR(), as it is
+     redundant when a window on the same screen is specified as well.
+</li><li class="listitem">
+Added appropriate X errors.
+</li><li class="listitem">
+Adjusted wording of issue #1 and added agreed upon resolution.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 3, 2015-10-14 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed this extension from VK_EXT_KHR_x11_surface to
+     VK_EXT_KHR_xlib_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 4, 2015-10-26 (Ian Elliott)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Renamed from VK_EXT_KHR_xlib_surface to VK_KHR_xlib_surface.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 5, 2015-11-03 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Added allocation callbacks to vkCreateXlibSurfaceKHR.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Revision 6, 2015-11-28 (Daniel Rakos)
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Updated the surface create function to take a pCreateInfo structure.
+</li></ul></div></li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apcs01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="apc.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="apcs03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

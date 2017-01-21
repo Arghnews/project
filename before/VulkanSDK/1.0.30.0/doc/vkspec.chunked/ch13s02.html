@@ -1,0 +1,1495 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.2. Descriptor Sets</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch13.html" title="Chapter 13. Resource Descriptors" /><link rel="prev" href="ch13s01.html" title="13.1. Descriptor Types" /><link rel="next" href="ch14.html" title="Chapter 14. Shader Interfaces" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch13s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="descriptorsets-sets"></a>13.2. Descriptor Sets</h2></div></div></div><p>Descriptors are grouped together into descriptor set objects.
+A descriptor set object is an opaque object that contains storage for a set
+of descriptors, where the types and number of descriptors is defined by a
+descriptor set layout.
+The layout object <span class="normative">may</span> be used to define the association of each descriptor
+binding with memory or other hardware resources.
+The layout is used both for determining the resources that need to be
+associated with the descriptor set, and determining the interface between
+shader stages and shader resources.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="descriptorsets-setlayout"></a>13.2.1. Descriptor Set Layout</h3></div></div></div><p>A descriptor set layout object is defined by an array of zero or more
+descriptor bindings.
+Each individual descriptor binding is specified by a descriptor type, a
+count (array size) of the number of descriptors in the binding, a set of
+shader stages that <span class="normative">can</span> access the binding, and (if using immutable
+samplers) an array of sampler descriptors.</p><p>Descriptor set layout objects are represented by <code class="code">VkDescriptorSetLayout</code>
+handles:</p><p><a id="VkDescriptorSetLayout"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorSetLayout)</pre><p>
+</p><p>To create descriptor set layout objects, call:</p><p><a id="vkCreateDescriptorSetLayout"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateDescriptorSetLayout(
+    VkDevice                                    device,
+    const VkDescriptorSetLayoutCreateInfo*      pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDescriptorSetLayout*                      pSetLayout);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the descriptor set
+    layout.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch13s02.html#VkDescriptorSetLayoutCreateInfo">VkDescriptorSetLayoutCreateInfo</a></code> structure specifying the state of
+    the descriptor set layout object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pSetLayout</code></em> points to a <code class="code">VkDescriptorSetLayout</code> handle in which
+    the resulting descriptor set layout object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDescriptorSetLayoutCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSetLayout</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDescriptorSetLayout</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>Information about the descriptor set layout is passed in an instance of the
+<code class="code">VkDescriptorSetLayoutCreateInfo</code> structure:</p><p><a id="VkDescriptorSetLayoutCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorSetLayoutCreateInfo {
+    VkStructureType                        sType;
+    const void*                            pNext;
+    VkDescriptorSetLayoutCreateFlags       flags;
+    uint32_t                               bindingCount;
+    const VkDescriptorSetLayoutBinding*    pBindings;
+} VkDescriptorSetLayoutCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>bindingCount</code></em> is the number of elements in <em class="parameter"><code>pBindings</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>pBindings</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch13s02.html#VkDescriptorSetLayoutBinding">VkDescriptorSetLayoutBinding</a></code> structures.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>bindingCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pBindings</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>bindingCount</code></em> valid <code class="code">VkDescriptorSetLayoutBinding</code> structures
+</li></ul></div></div><p>The <code class="code">VkDescriptorSetLayoutBinding</code> structure is defined as:</p><p><a id="VkDescriptorSetLayoutBinding"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorSetLayoutBinding {
+    uint32_t              binding;
+    VkDescriptorType      descriptorType;
+    uint32_t              descriptorCount;
+    VkShaderStageFlags    stageFlags;
+    const VkSampler*      pImmutableSamplers;
+} VkDescriptorSetLayoutBinding;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>binding</code></em> is the binding number of this entry and corresponds to a
+    resource of the same binding number in the shader stages.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorType</code></em> is a <code class="code"><a class="link" href="ch13s02.html#VkDescriptorType">VkDescriptorType</a></code> specifying which type
+    of resource descriptors are used for this binding.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> is the number of descriptors contained in the
+    binding, accessed in a shader as an array.
+    If <em class="parameter"><code>descriptorCount</code></em> is zero this binding entry is reserved and the
+    resource <span class="normative">must</span> not be accessed from any stage via this binding within
+    any pipeline using the set layout.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>stageFlags</code></em> member is a bitmask of <code class="code"><a class="link" href="ch09s01.html#VkShaderStageFlagBits">VkShaderStageFlagBits</a></code>
+    specifying which pipeline shader stages <span class="normative">can</span> access a resource for this
+    binding.
+    <code class="code">VK_SHADER_STAGE_ALL</code> is a shorthand specifying that all defined
+    shader stages, including any additional stages defined by extensions,
+    <span class="normative">can</span> access the resource.
+</p><p class="simpara">If a shader stage is not included in <em class="parameter"><code>stageFlags</code></em>, then a resource <span class="normative">must</span>
+not be accessed from that stage via this binding within any pipeline using
+the set layout.
+There are no limitations on what combinations of stages <span class="normative">can</span> be used by a
+descriptor binding, and in particular a binding <span class="normative">can</span> be used by both
+graphics stages and the compute stage.</p></li><li class="listitem">
+<em class="parameter"><code>pImmutableSamplers</code></em> affects initialization of samplers.
+    If <em class="parameter"><code>descriptorType</code></em> specifies a <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> type descriptor, then
+    <em class="parameter"><code>pImmutableSamplers</code></em> <span class="normative">can</span> be used to initialize a set of <span class="emphasis"><em>immutable
+    samplers</em></span>.
+    Immutable samplers are permanently bound into the set layout; later
+    binding a sampler into an immutable sampler slot in a descriptor set is
+    not allowed.
+    If <em class="parameter"><code>pImmutableSamplers</code></em> is not <code class="literal">NULL</code>, then it is considered to be a
+    pointer to an array of sampler handles that will be consumed by the set
+    layout and used for the corresponding binding.
+    If <em class="parameter"><code>pImmutableSamplers</code></em> is <code class="literal">NULL</code>, then the sampler slots are
+    dynamic and sampler handles <span class="normative">must</span> be bound into descriptor sets using
+    this layout.
+    If <em class="parameter"><code>descriptorType</code></em> is not one of these descriptor types, then
+    <em class="parameter"><code>pImmutableSamplers</code></em> is ignored.
+</li></ul></div><p>The above layout definition allows the descriptor bindings to be specified
+sparsely such that not all binding numbers between 0 and the maximum binding
+number need to be specified in the <em class="parameter"><code>pBindings</code></em> array.
+However, all binding numbers between 0 and the maximum binding number <span class="normative">may</span>
+consume memory in the descriptor set layout even if not all descriptor
+bindings are used, though it <span class="normative">should</span> not consume additional memory from the
+descriptor pool.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The maximum binding number specified <span class="normative">should</span> be as compact as possible to
+avoid wasted memory.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and
+    <em class="parameter"><code>descriptorCount</code></em> is not <code class="literal">0</code> and <em class="parameter"><code>pImmutableSamplers</code></em> is not
+    <code class="literal">NULL</code>, <em class="parameter"><code>pImmutableSamplers</code></em> <span class="normative">must</span> be a pointer to an array of
+    <em class="parameter"><code>descriptorCount</code></em> valid <code class="code">VkSampler</code> handles
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> be a valid
+    combination of <code class="code"><a class="link" href="ch09s01.html#VkShaderStageFlagBits">VkShaderStageFlagBits</a></code> values
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>descriptorType</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch13s02.html#VkDescriptorType">VkDescriptorType</a></code> value
+</li></ul></div></div><p>The following examples show a shader snippet using two descriptor sets, and
+application code that creates corresponding descriptor set layouts.</p><p><strong>GLSL example. </strong>
+</p><pre class="programlisting">//
+// binding to a single sampled image descriptor in set 0
+//
+layout (set=0, binding=0) uniform texture2D mySampledImage;
+
+//
+// binding to an array of sampled image descriptors in set 0
+//
+layout (set=0, binding=1) uniform texture2D myArrayOfSampledImages[12];
+
+//
+// binding to a single uniform buffer descriptor in set 1
+//
+layout (set=1, binding=0) uniform myUniformBuffer
+{
+    vec4 myElement[32];
+};</pre><p>
+</p><p><strong>SPIR-V example. </strong>
+</p><pre class="screen">               ...
+          %1 = OpExtInstImport "GLSL.std.450"
+               ...
+               OpName %9 "mySampledImage"
+               OpName %14 "myArrayOfSampledImages"
+               OpName %18 "myUniformBuffer"
+               OpMemberName %18 0 "myElement"
+               OpName %20 ""
+               OpDecorate %9 DescriptorSet 0
+               OpDecorate %9 Binding 0
+               OpDecorate %14 DescriptorSet 0
+               OpDecorate %14 Binding 1
+               OpDecorate %17 ArrayStride 16
+               OpMemberDecorate %18 0 Offset 0
+               OpDecorate %18 Block
+               OpDecorate %20 DescriptorSet 1
+               OpDecorate %20 Binding 0
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeFloat 32
+          %7 = OpTypeImage %6 2D 0 0 0 1 Unknown
+          %8 = OpTypePointer UniformConstant %7
+          %9 = OpVariable %8 UniformConstant
+         %10 = OpTypeInt 32 0
+         %11 = OpConstant %10 12
+         %12 = OpTypeArray %7 %11
+         %13 = OpTypePointer UniformConstant %12
+         %14 = OpVariable %13 UniformConstant
+         %15 = OpTypeVector %6 4
+         %16 = OpConstant %10 32
+         %17 = OpTypeArray %15 %16
+         %18 = OpTypeStruct %17
+         %19 = OpTypePointer Uniform %18
+         %20 = OpVariable %19 Uniform
+               ...</pre><p>
+</p><p><strong>API example. </strong>
+</p><pre class="programlisting">VkResult myResult;
+
+const VkDescriptorSetLayoutBinding myDescriptorSetLayoutBinding[] =
+{
+    // binding to a single image descriptor
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,       // descriptorType
+        1,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        NULL                                    // pImmutableSamplers
+    },
+
+    // binding to an array of image descriptors
+    {
+        1,                                      // binding
+        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,       // descriptorType
+        12,                                     // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        NULL                                    // pImmutableSamplers
+    },
+
+    // binding to a single uniform buffer descriptor
+    {
+        0,                                      // binding
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,      // descriptorType
+        1,                                      // descriptorCount
+        VK_SHADER_STAGE_FRAGMENT_BIT,           // stageFlags
+        NULL                                    // pImmutableSamplers
+    }
+};
+
+const VkDescriptorSetLayoutCreateInfo myDescriptorSetLayoutCreateInfo[] =
+{
+    // Create info for first descriptor set with two descriptor bindings
+    {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,    // sType
+        NULL,                                                   // pNext
+        0,                                                      // flags
+        2,                                                      // bindingCount
+        &amp;myDescriptorSetLayoutBinding[0]                        // pBindings
+    },
+
+    // Create info for second descriptor set with one descriptor binding
+    {
+        VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,    // sType
+        NULL,                                                   // pNext
+        0,                                                      // flags
+        1,                                                      // bindingCount
+        &amp;myDescriptorSetLayoutBinding[2]                        // pBindings
+    }
+};
+
+VkDescriptorSetLayout myDescriptorSetLayout[2];
+
+//
+// Create first descriptor set layout
+//
+myResult = vkCreateDescriptorSetLayout(
+    myDevice,
+    &amp;myDescriptorSetLayoutCreateInfo[0],
+    NULL,
+    &amp;myDescriptorSetLayout[0]);
+
+//
+// Create second descriptor set layout
+//
+myResult = vkCreateDescriptorSetLayout(
+    myDevice,
+    &amp;myDescriptorSetLayoutCreateInfo[1],
+    NULL,
+    &amp;myDescriptorSetLayout[1]);</pre><p>
+</p><p>To destroy a descriptor set layout, call:</p><p><a id="vkDestroyDescriptorSetLayout"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyDescriptorSetLayout(
+    VkDevice                                    device,
+    VkDescriptorSetLayout                       descriptorSetLayout,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the descriptor set
+    layout.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetLayout</code></em> is the descriptor set layout to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when
+    <em class="parameter"><code>descriptorSetLayout</code></em> was created, a compatible set of callbacks
+    <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when
+    <em class="parameter"><code>descriptorSetLayout</code></em> was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorSetLayout</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>descriptorSetLayout</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorSetLayout</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorSetLayout</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>descriptorSetLayout</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="descriptorsets-pipelinelayout"></a>13.2.2. Pipeline Layouts</h3></div></div></div><p>Access to descriptor sets from a pipeline is accomplished through a
+<span class="emphasis"><em>pipeline layout</em></span>.
+Zero or more descriptor set layouts and zero or more push constant ranges
+are combined to form a pipeline layout object which describes the complete
+set of resources that <span class="normative">can</span> be accessed by a pipeline.
+The pipeline layout represents a sequence of descriptor sets with each
+having a specific layout.
+This sequence of layouts is used to determine the interface between shader
+stages and shader resources.
+Each pipeline is created using a pipeline layout.</p><p>Pipeline layout objects are represented by <code class="code">VkPipelineLayout</code> handles:</p><p><a id="VkPipelineLayout"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipelineLayout)</pre><p>
+</p><p>To create a pipeline layout, call:</p><p><a id="vkCreatePipelineLayout"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreatePipelineLayout(
+    VkDevice                                    device,
+    const VkPipelineLayoutCreateInfo*           pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkPipelineLayout*                           pPipelineLayout);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the pipeline layout.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch13s02.html#VkPipelineLayoutCreateInfo">VkPipelineLayoutCreateInfo</a></code> structure specifying the state of the
+    pipeline layout object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pPipelineLayout</code></em> points to a <code class="code">VkPipelineLayout</code> handle in which
+    the resulting pipeline layout object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkPipelineLayoutCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pPipelineLayout</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkPipelineLayout</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code"><a class="link" href="ch13s02.html#VkPipelineLayoutCreateInfo">VkPipelineLayoutCreateInfo</a></code> structure is defined as:</p><p><a id="VkPipelineLayoutCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkPipelineLayoutCreateInfo {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkPipelineLayoutCreateFlags     flags;
+    uint32_t                        setLayoutCount;
+    const VkDescriptorSetLayout*    pSetLayouts;
+    uint32_t                        pushConstantRangeCount;
+    const VkPushConstantRange*      pPushConstantRanges;
+} VkPipelineLayoutCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>setLayoutCount</code></em> is the number of descriptor sets included in the
+    pipeline layout.
+</li><li class="listitem">
+<em class="parameter"><code>pSetLayouts</code></em> is a pointer to an array of
+    <code class="code">VkDescriptorSetLayout</code> objects.
+</li><li class="listitem">
+<em class="parameter"><code>pushConstantRangeCount</code></em> is the number of push constant ranges
+    included in the pipeline layout.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>pPushConstantRanges</code></em> is a pointer to an array of
+    <code class="code">VkPushConstantRange</code> structures defining a set of push constant
+    ranges for use in a single pipeline layout.
+    In addition to descriptor set layouts, a pipeline layout also describes
+    how many push constants <span class="normative">can</span> be accessed by each stage of the pipeline.
+</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Push constants represent a high speed path to modify constant data in
+pipelines that is expected to outperform memory-backed resource updates.</p></td></tr></table></div></li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>setLayoutCount</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxBoundDescriptorSets</code></em>
+</li><li class="listitem">
+The total number of descriptors of the type
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code> and
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> accessible to any given
+    shader stage across all elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be less than
+    or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPerStageDescriptorSamplers</code></em>
+</li><li class="listitem">
+The total number of descriptors of the type
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> and
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code> accessible to any given
+    shader stage across all elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be less than
+    or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPerStageDescriptorUniformBuffers</code></em>
+</li><li class="listitem">
+The total number of descriptors of the type
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code> and
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code> accessible to any given
+    shader stage across all elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be less than
+    or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPerStageDescriptorStorageBuffers</code></em>
+</li><li class="listitem">
+The total number of descriptors of the type
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>, and
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code> accessible to any given
+    shader stage across all elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be less than
+    or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPerStageDescriptorSampledImages</code></em>
+</li><li class="listitem">
+The total number of descriptors of the type
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, and
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code> accessible to any given
+    shader stage across all elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be less than
+    or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPerStageDescriptorStorageImages</code></em>
+</li><li class="listitem">
+Any two elements of <em class="parameter"><code>pPushConstantRanges</code></em> <span class="normative">must</span> not include the same
+    stage in <em class="parameter"><code>stageFlags</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>setLayoutCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>setLayoutCount</code></em> valid <code class="code">VkDescriptorSetLayout</code> handles
+</li><li class="listitem">
+If <em class="parameter"><code>pushConstantRangeCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pPushConstantRanges</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pushConstantRangeCount</code></em> valid <code class="code">VkPushConstantRange</code> structures
+</li></ul></div></div><p>The <code class="code">VkPushConstantRange</code> structure is defined as:</p><p><a id="VkPushConstantRange"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkPushConstantRange {
+    VkShaderStageFlags    stageFlags;
+    uint32_t              offset;
+    uint32_t              size;
+} VkPushConstantRange;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> is a set of stage flags describing the shader stages
+    that will access a range of push constants.
+    If a particular stage is not included in the range, then accessing
+    members of that range of push constants from the corresponding shader
+    stage will result in undefined data being read.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> and <em class="parameter"><code>size</code></em> are the start offset and size, respectively,
+    consumed by the range.
+    Both <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>size</code></em> are in units of bytes and <span class="normative">must</span> be a
+    multiple of 4.
+    The layout of the push constant variables is specified in the shader.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be less than
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPushConstantsSize</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be a multiple of <code class="literal">4</code>
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPushConstantsSize</code></em> minus
+    <em class="parameter"><code>offset</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch09s01.html#VkShaderStageFlagBits">VkShaderStageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li></ul></div></div><p>Once created, pipeline layouts are used as part of pipeline creation (see
+<a class="link" href="ch09.html" title="Chapter 9. Pipelines">Pipelines</a>), as part of binding descriptor sets (see
+<a class="link" href="ch13s02.html#descriptorsets-binding" title="13.2.5. Descriptor Set Binding">Descriptor Set Binding</a>), and as part of setting
+push constants (see <a class="link" href="ch13s02.html#descriptorsets-push-constants">Push Constant Updates</a>).
+Pipeline creation accepts a pipeline layout as input, and the layout <span class="normative">may</span> be
+used to map (set, binding, arrayElement) tuples to hardware resources or
+memory locations within a descriptor set.
+The assignment of hardware resources depends only on the bindings defined in
+the descriptor sets that comprise the pipeline layout, and not on any shader
+source.</p><p><a id="descriptorsets-pipelinelayout-consistency"></a>All resource variables <a class="link" href="ch08s12.html" title="8.12. Static Use">statically used</a> in all shaders
+in a pipeline <span class="normative">must</span> be declared with a (set,binding,arrayElement) that
+exists in the corresponding descriptor set layout and is of an appropriate
+descriptor type and includes the set of shader stages it is used by in
+<em class="parameter"><code>stageFlags</code></em>.
+The pipeline layout <span class="normative">can</span> include entries that are not used by a particular
+pipeline, or that are dead-code eliminated from any of the shaders.
+The pipeline layout allows the application to provide a consistent set of
+bindings across multiple pipeline compiles, which enables those pipelines to
+be compiled in a way that the implementation <span class="normative">may</span> cheaply switch pipelines
+without reprogramming the bindings.</p><p>Similarly, the push constant block declared in each shader (if present)
+<span class="normative">must</span> only place variables at offsets that are each included in a push
+constant range with <em class="parameter"><code>stageFlags</code></em> including the bit corresponding to the
+shader stage that uses it.
+The pipeline layout <span class="normative">can</span> include ranges or portions of ranges that are not
+used by a particular pipeline, or for which the variables have been
+dead-code eliminated from any of the shaders.</p><p>There is a limit on the total number of resources of each type that <span class="normative">can</span> be
+included in bindings in all descriptor set layouts in a pipeline layout as
+shown in <a class="link" href="ch13s02.html#descriptorsets-pipelinelayout-limits" title="Table 13.1. Pipeline Layout Resource Limits">Pipeline Layout Resource Limits</a>.
+The “Total Resources Available” column gives the limit on the number of
+each type of resource that <span class="normative">can</span> be included in bindings in all descriptor
+sets in the pipeline layout.
+Some resource types count against multiple limits.
+Additionally, there are limits on the total number of each type of resource
+that <span class="normative">can</span> be used in any pipeline stage as described in
+<a class="link" href="ch14s05.html#interfaces-resources-limits" title="Table 14.4. Shader Resource Limits">Shader Resource Limits</a>.</p><div class="table"><a id="descriptorsets-pipelinelayout-limits"></a><p class="title"><strong>Table 13.1. Pipeline Layout Resource Limits</strong></p><div class="table-contents"><table class="table" summary="Pipeline Layout Resource Limits" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="80%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Total Resources Available </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Resource Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " rowspan="2" align="left" valign="middle"><p><em class="parameter"><code>maxDescriptorSetSamplers</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>sampler</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>combined image sampler</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " rowspan="3" align="left" valign="middle"><p><em class="parameter"><code>maxDescriptorSetSampledImages</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>sampled image</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>combined image sampler</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>uniform texel buffer</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " rowspan="2" align="left" valign="middle"><p><em class="parameter"><code>maxDescriptorSetStorageImages</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>storage image</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>storage texel buffer</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " rowspan="2" align="left" valign="middle"><p><em class="parameter"><code>maxDescriptorSetUniformBuffers</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>uniform buffer</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>uniform buffer dynamic</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>maxDescriptorSetUniformBuffersDynamic</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>uniform buffer dynamic</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " rowspan="2" align="left" valign="middle"><p><em class="parameter"><code>maxDescriptorSetStorageBuffers</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>storage buffer</p></td></tr><tr><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>storage buffer dynamic</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>maxDescriptorSetStorageBuffersDynamic</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>storage buffer dynamic</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>maxDescriptorSetInputAttachments</code></em></p></td><td style="" align="left" valign="top"><p>input attachment</p></td></tr></tbody></table></div></div><br class="table-break" /><p>To destroy a pipeline layout, call:</p><p><a id="vkDestroyPipelineLayout"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyPipelineLayout(
+    VkDevice                                    device,
+    VkPipelineLayout                            pipelineLayout,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the pipeline layout.
+</li><li class="listitem">
+<em class="parameter"><code>pipelineLayout</code></em> is the pipeline layout to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>pipelineLayout</code></em>
+    was created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when
+    <em class="parameter"><code>pipelineLayout</code></em> was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pipelineLayout</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>pipelineLayout</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineLayout</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pipelineLayout</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pipelineLayout</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="descriptorsets-compatibility"></a>Pipeline Layout Compatibility</h4></div></div></div><p>Two pipeline layouts are defined to be “compatible for
+<a class="link" href="ch13s02.html#descriptorsets-push-constants">push constants</a>” if they were created
+with identical push constant ranges.
+Two pipeline layouts are defined to be “compatible for set N” if they were
+created with matching (the same, or identically defined) descriptor set
+layouts for sets zero through N, and if they were created with identical
+push constant ranges.</p><p>When binding a descriptor set (see <a class="link" href="ch13s02.html#descriptorsets-binding" title="13.2.5. Descriptor Set Binding">Descriptor Set Binding</a>) to set number N, if the previously bound descriptor sets for sets
+zero through N-1 were all bound using compatible pipeline layouts, then
+performing this binding does not disturb any of the lower numbered sets.
+If, additionally, the previous bound descriptor set for set N was bound
+using a pipeline layout compatible for set N, then the bindings in sets
+numbered greater than N are also not disturbed.</p><p>Similarly, when binding a pipeline, the pipeline <span class="normative">can</span> correctly access any
+previously bound descriptor sets which were bound with compatible pipeline
+layouts, as long as all lower numbered sets were also bound with compatible
+layouts.</p><p>Layout compatibility means that descriptor sets <span class="normative">can</span> be bound to a command
+buffer for use by any pipeline created with a compatible pipeline layout,
+and without having bound a particular pipeline first.
+It also means that descriptor sets <span class="normative">can</span> remain valid across a pipeline
+change, and the same resources will be accessible to the newly bound
+pipeline.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Implementor’s Note</strong></p></div></div></div><p>A consequence of layout compatibility is that when the implementation
+compiles a pipeline layout and assigns hardware units to resources, the
+mechanism to assign hardware units for set N <span class="normative">should</span> only be a function of
+sets [0..N].</p></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Place the least frequently changing descriptor sets near the start of the
+pipeline layout, and place the descriptor sets representing the most
+frequently changing resources near the end.
+When pipelines are switched, only the descriptor set bindings that have been
+invalidated will need to be updated and the remainder of the descriptor set
+bindings will remain in place.</p></td></tr></table></div><p>The maximum number of descriptor sets that <span class="normative">can</span> be bound to a pipeline
+layout is queried from physical device properties (see
+<em class="parameter"><code>maxBoundDescriptorSets</code></em> in <a class="link" href="ch31s02.html" title="31.2. Limits">Limits</a>).</p><p><strong>API example. </strong>
+</p><pre class="programlisting">const VkDescriptorSetLayout layouts[] = { layout1, layout2 };
+
+const VkPushConstantRange ranges[] =
+{
+    {
+        VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,    // stageFlags
+        0,                                      // offset
+        4                                       // size
+    },
+
+    {
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,  // stageFlags
+        4,                                      // offset
+        4                                       // size
+    },
+};
+
+const VkPipelineLayoutCreateInfo createInfo =
+{
+    VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,  // sType
+    NULL,                                           // pNext
+    0,                                              // flags
+    2,                                              // setLayoutCount
+    layouts,                                        // pSetLayouts
+    2,                                              // pushConstantRangeCount
+    ranges                                          // pPushConstantRanges
+};
+
+VkPipelineLayout myPipelineLayout;
+myResult = vkCreatePipelineLayout(
+    myDevice,
+    &amp;createInfo,
+    NULL,
+    &amp;myPipelineLayout);</pre><p>
+</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="descriptorsets-allocation"></a>13.2.3. Allocation of Descriptor Sets</h3></div></div></div><p>A <span class="emphasis"><em>descriptor pool</em></span> maintains a pool of descriptors, from which descriptor
+sets are allocated.
+Descriptor pools are externally synchronized, meaning that the application
+<span class="normative">must</span> not allocate and/or free descriptor sets from the same pool in
+multiple threads simultaneously.</p><p>Descriptor pools are represented by <code class="code">VkDescriptorPool</code> handles:</p><p><a id="VkDescriptorPool"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorPool)</pre><p>
+</p><p>To create a descriptor pool object, call:</p><p><a id="vkCreateDescriptorPool"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateDescriptorPool(
+    VkDevice                                    device,
+    const VkDescriptorPoolCreateInfo*           pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDescriptorPool*                           pDescriptorPool);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the descriptor pool.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch13s02.html#VkDescriptorPoolCreateInfo">VkDescriptorPoolCreateInfo</a></code> structure specifying the state of the
+    descriptor pool object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorPool</code></em> points to a <code class="code">VkDescriptorPool</code> handle in which
+    the resulting descriptor pool object is returned.
+</li></ul></div><p><em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+<a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.</p><p>The created descriptor pool is returned in <em class="parameter"><code>pDescriptorPool</code></em>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDescriptorPoolCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorPool</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDescriptorPool</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>Additional information about the pool is passed in an instance of the
+<code class="code">VkDescriptorPoolCreateInfo</code> structure:</p><p><a id="VkDescriptorPoolCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorPoolCreateInfo {
+    VkStructureType                sType;
+    const void*                    pNext;
+    VkDescriptorPoolCreateFlags    flags;
+    uint32_t                       maxSets;
+    uint32_t                       poolSizeCount;
+    const VkDescriptorPoolSize*    pPoolSizes;
+} VkDescriptorPoolCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>flags</code></em> specifies certain supported operations on the pool.
+    Bits which <span class="normative">can</span> be set include:
+</p><p><a id="VkDescriptorPoolCreateFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkDescriptorPoolCreateFlagBits {
+    VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT = 0x00000001,
+} VkDescriptorPoolCreateFlagBits;</pre><p>
+</p><p class="simpara">If <em class="parameter"><code>flags</code></em> includes
+<code class="code">VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT</code>, then descriptor
+sets <span class="normative">can</span> return their individual allocations to the pool, i.e. all of
+<span class="strong"><strong><code class="code">vkAllocateDescriptorSets</code></strong></span>, <span class="strong"><strong><code class="code">vkFreeDescriptorSets</code></strong></span>, and
+<span class="strong"><strong><code class="code">vkResetDescriptorPool</code></strong></span> are allowed.
+Otherwise, descriptor sets allocated from the pool <span class="normative">must</span> not be individually
+freed back to the pool, i.e. only <span class="strong"><strong><code class="code">vkAllocateDescriptorSets</code></strong></span> and
+<span class="strong"><strong><code class="code">vkResetDescriptorPool</code></strong></span> are allowed.</p></li><li class="listitem">
+<em class="parameter"><code>maxSets</code></em> is the maximum number of descriptor sets that <span class="normative">can</span> be
+    allocated from the pool.
+</li><li class="listitem">
+<em class="parameter"><code>poolSizeCount</code></em> is the number of elements in <em class="parameter"><code>pPoolSizes</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>pPoolSizes</code></em> is a pointer to an array of <code class="code">VkDescriptorPoolSize</code>
+    structures, each containing a descriptor type and number of descriptors
+    of that type to be allocated in the pool.
+</li></ul></div><p>If multiple <code class="code">VkDescriptorPoolSize</code> structures appear in the
+<em class="parameter"><code>pPoolSizes</code></em> array then the pool will be created with enough storage for
+the total number of descriptors of each type.</p><p>Fragmentation of a descriptor pool is possible and <span class="normative">may</span> lead to descriptor
+set allocation failures.
+A failure due to fragmentation is defined as failing a descriptor set
+allocation despite the sum of all outstanding descriptor set allocations
+from the pool plus the requested allocation requiring no more than the total
+number of descriptors requested at pool creation.
+Implementations provide certain guarantees of when fragmentation <span class="normative">must</span> not
+cause allocation failure, as described below.</p><p>If a descriptor pool has not had any descriptor sets freed since it was
+created or most recently reset then fragmentation <span class="normative">must</span> not cause an
+allocation failure (note that this is always the case for a pool created
+without the <code class="code">VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT</code> bit
+set).
+Additionally, if all sets allocated from the pool since it was created or
+most recently reset use the same number of descriptors (of each type) and
+the requested allocation also uses that same number of descriptors (of each
+type), then fragmentation <span class="normative">must</span> not cause an allocation failure.</p><p>If an allocation failure occurs due to fragmentation, an application <span class="normative">can</span>
+create an additional descriptor pool to perform further descriptor set
+allocations.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>maxSets</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch13s02.html#VkDescriptorPoolCreateFlagBits">VkDescriptorPoolCreateFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>pPoolSizes</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>poolSizeCount</code></em> valid <code class="code">VkDescriptorPoolSize</code> structures
+</li><li class="listitem">
+<em class="parameter"><code>poolSizeCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><p>The <code class="code">VkDescriptorPoolSize</code> structure is defined as:</p><p><a id="VkDescriptorPoolSize"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorPoolSize {
+    VkDescriptorType    type;
+    uint32_t            descriptorCount;
+} VkDescriptorPoolSize;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>type</code></em> is the type of descriptor.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> is the number of descriptors of that type to
+    allocate.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>type</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch13s02.html#VkDescriptorType">VkDescriptorType</a></code> value
+</li></ul></div></div><p>To destroy a descriptor pool, call:</p><p><a id="vkDestroyDescriptorPool"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyDescriptorPool(
+    VkDevice                                    device,
+    VkDescriptorPool                            descriptorPool,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the descriptor pool.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> is the descriptor pool to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><p>When a pool is destroyed, all descriptor sets allocated from the pool are
+implicitly freed and become invalid.
+Descriptor sets allocated from a given pool do not need to be freed before
+destroying that descriptor pool.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All submitted commands that refer to <em class="parameter"><code>descriptorPool</code></em> (via any
+    allocated descriptor sets) <span class="normative">must</span> have completed execution
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>descriptorPool</code></em>
+    was created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when
+    <em class="parameter"><code>descriptorPool</code></em> was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorPool</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorPool</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorPool</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><p>Descriptor sets are allocated from descriptor pool objects, and are
+represented by <code class="code">VkDescriptorSet</code> handles:</p><p><a id="VkDescriptorSet"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkDescriptorSet)</pre><p>
+</p><p>To allocate descriptor sets from a descriptor pool, call:</p><p><a id="vkAllocateDescriptorSets"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkAllocateDescriptorSets(
+    VkDevice                                    device,
+    const VkDescriptorSetAllocateInfo*          pAllocateInfo,
+    VkDescriptorSet*                            pDescriptorSets);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the descriptor pool.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch13s02.html#VkDescriptorSetAllocateInfo">VkDescriptorSetAllocateInfo</a></code> structure describing parameters of the
+    allocation.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> is a pointer to an array of <code class="code">VkDescriptorSet</code>
+    handles in which the resulting descriptor set objects are returned.
+    The array <span class="normative">must</span> be at least the length specified by the
+    <em class="parameter"><code>descriptorSetCount</code></em> member of <em class="parameter"><code>pAllocateInfo</code></em>.
+</li></ul></div><p>The allocated descriptor sets are returned in <em class="parameter"><code>pDescriptorSets</code></em>.</p><p>When a descriptor set is allocated, the initial state is largely
+uninitialized and all descriptors are undefined.
+However, the descriptor set <span class="normative">can</span> be bound in a command buffer without
+causing errors or exceptions.
+All entries that are statically used by a pipeline in a drawing or
+dispatching command <span class="normative">must</span> have been populated before the descriptor set is
+bound for use by that command.
+Entries that are not statically used by a pipeline <span class="normative">can</span> have uninitialized
+descriptors or descriptors of resources that have been destroyed, and
+executing a draw or dispatch with such a descriptor set bound does not cause
+undefined behavior.
+This means applications need not populate unused entries with dummy
+descriptors.</p><p>If an allocation fails due to fragmentation, an indeterminate error is
+returned with an unspecified error code.
+Any returned error other than <code class="code">VK_ERROR_FRAGMENTED_POOL</code> does not imply
+its usual meaning: applications <span class="normative">should</span> assume that the allocation failed
+due to fragmentation, and create a new descriptor pool.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Applications <span class="normative">should</span> check for a negative return value when allocating new
+descriptor sets, assume that any error effectively means
+<code class="code">VK_ERROR_FRAGMENTED_POOL</code>, and try to create a new descriptor pool.
+If <code class="code">VK_ERROR_FRAGMENTED_POOL</code> is the actual return value, it adds
+certainty to that decision.</p><p>The reason for this is that <code class="code">VK_ERROR_FRAGMENTED_POOL</code> was only added in
+a later revision of the 1.0 specification, and so drivers <span class="normative">may</span> return other
+errors if they were written against earlier revisions.
+To ensure full compatibility with earlier patch revisions, these other
+errors are allowed.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pAllocateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDescriptorSetAllocateInfo</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pAllocateInfo</code></em>::descriptorSetCount <code class="code">VkDescriptorSet</code> handles
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pAllocateInfo</code></em>::descriptorPool <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_FRAGMENTED_POOL</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDescriptorSetAllocateInfo</code> structure is defined as:</p><p><a id="VkDescriptorSetAllocateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorSetAllocateInfo {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkDescriptorPool                descriptorPool;
+    uint32_t                        descriptorSetCount;
+    const VkDescriptorSetLayout*    pSetLayouts;
+} VkDescriptorSetAllocateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> is the pool which the sets will be allocated from.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> determines the number of descriptor sets to be
+    allocated from the pool.
+</li><li class="listitem">
+<em class="parameter"><code>pSetLayouts</code></em> is an array of descriptor set layouts, with each
+    member specifying how the corresponding descriptor set is allocated.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> <span class="normative">must</span> not be greater than the number of sets
+    that are currently available for allocation in <em class="parameter"><code>descriptorPool</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> have enough free descriptor capacity
+    remaining to allocate the descriptor sets of the specified layouts
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorPool</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>descriptorSetCount</code></em> valid <code class="code">VkDescriptorSetLayout</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+Both of <em class="parameter"><code>descriptorPool</code></em>, and the elements of <em class="parameter"><code>pSetLayouts</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><p>To free allocated descriptor sets, call:</p><p><a id="vkFreeDescriptorSets"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkFreeDescriptorSets(
+    VkDevice                                    device,
+    VkDescriptorPool                            descriptorPool,
+    uint32_t                                    descriptorSetCount,
+    const VkDescriptorSet*                      pDescriptorSets);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the descriptor pool.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> is the descriptor pool from which the descriptor
+    sets were allocated.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> is the number of elements in the
+    <em class="parameter"><code>pDescriptorSets</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> is an array of handles to <code class="code">VkDescriptorSet</code>
+    objects.
+</li></ul></div><p>After a successful call to <span class="strong"><strong><code class="code">vkFreeDescriptorSets</code></strong></span>, all descriptor sets
+in <em class="parameter"><code>pDescriptorSets</code></em> are invalid.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All submitted commands that refer to any element of
+    <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> have completed execution
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> be a pointer to an array of
+    <em class="parameter"><code>descriptorSetCount</code></em> <code class="code">VkDescriptorSet</code> handles, each element of
+    which <span class="normative">must</span> either be a valid handle or <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>
+</li><li class="listitem">
+Each valid handle in <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> have been allocated
+    from <em class="parameter"><code>descriptorPool</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> have been created with the
+    <code class="code">VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT</code> flag
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorPool</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li><li class="listitem">
+Each element of <em class="parameter"><code>pDescriptorSets</code></em> that is a valid handle <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>descriptorPool</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to each member of <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>To return all descriptor sets allocated from a given pool to the pool,
+rather than freeing individual descriptor sets, call:</p><p><a id="vkResetDescriptorPool"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkResetDescriptorPool(
+    VkDevice                                    device,
+    VkDescriptorPool                            descriptorPool,
+    VkDescriptorPoolResetFlags                  flags);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the descriptor pool.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> is the descriptor pool to be reset.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li></ul></div><p>Resetting a descriptor pool recycles all of the resources from all of the
+descriptor sets allocated from the descriptor pool back to the descriptor
+pool, and the descriptor sets are implicitly freed.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All uses of <em class="parameter"><code>descriptorPool</code></em> (via any allocated descriptor sets)
+    <span class="normative">must</span> have completed execution
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorPool</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to any <code class="code">VkDescriptorSet</code> objects allocated from <em class="parameter"><code>descriptorPool</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="descriptorsets-updates"></a>13.2.4. Descriptor Set Updates</h3></div></div></div><p>Once allocated, descriptor sets <span class="normative">can</span> be updated with a combination of write
+and copy operations.
+To update descriptor sets, call:</p><p><a id="vkUpdateDescriptorSets"></a><strong> </strong>
+</p><pre class="programlisting">void vkUpdateDescriptorSets(
+    VkDevice                                    device,
+    uint32_t                                    descriptorWriteCount,
+    const VkWriteDescriptorSet*                 pDescriptorWrites,
+    uint32_t                                    descriptorCopyCount,
+    const VkCopyDescriptorSet*                  pDescriptorCopies);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that updates the descriptor sets.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorWriteCount</code></em> is the number of elements in the
+    <em class="parameter"><code>pDescriptorWrites</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorWrites</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code> structures describing the descriptor sets to
+    write to.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCopyCount</code></em> is the number of elements in the
+    <em class="parameter"><code>pDescriptorCopies</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorCopies</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch13s02.html#VkCopyDescriptorSet">VkCopyDescriptorSet</a></code> structures describing the descriptor sets to
+    copy between.
+</li></ul></div><p>The operations described by <em class="parameter"><code>pDescriptorWrites</code></em> are performed first,
+followed by the operations described by <em class="parameter"><code>pDescriptorCopies</code></em>.
+Within each array, the operations are performed in the order they appear in
+the array.</p><p>Each element in the <em class="parameter"><code>pDescriptorWrites</code></em> array describes an operation
+updating the descriptor set using descriptors for resources specified in the
+structure.</p><p>Each element in the <em class="parameter"><code>pDescriptorCopies</code></em> array is a
+<code class="code"><a class="link" href="ch13s02.html#VkCopyDescriptorSet">VkCopyDescriptorSet</a></code> structure describing an operation copying
+descriptors between sets.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorWriteCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pDescriptorWrites</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>descriptorWriteCount</code></em> valid <code class="code">VkWriteDescriptorSet</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorCopyCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pDescriptorCopies</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>descriptorCopyCount</code></em> valid <code class="code">VkCopyDescriptorSet</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pDescriptorWrites</code></em>[].dstSet <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>pDescriptorCopies</code></em>[].dstSet <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><p>The <code class="code">VkWriteDescriptorSet</code> structure is defined as:</p><p><a id="VkWriteDescriptorSet"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkWriteDescriptorSet {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkDescriptorSet                  dstSet;
+    uint32_t                         dstBinding;
+    uint32_t                         dstArrayElement;
+    uint32_t                         descriptorCount;
+    VkDescriptorType                 descriptorType;
+    const VkDescriptorImageInfo*     pImageInfo;
+    const VkDescriptorBufferInfo*    pBufferInfo;
+    const VkBufferView*              pTexelBufferView;
+} VkWriteDescriptorSet;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>dstSet</code></em> is the destination descriptor set to update.
+</li><li class="listitem">
+<em class="parameter"><code>dstBinding</code></em> is the descriptor binding within that set.
+</li><li class="listitem">
+<em class="parameter"><code>dstArrayElement</code></em> is the starting element in that array.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> is the number of descriptors to update (the number
+    of elements in <em class="parameter"><code>pImageInfo</code></em>, <em class="parameter"><code>pBufferInfo</code></em>, or
+    <em class="parameter"><code>pTexelBufferView</code></em>).
+</li><li class="listitem">
+<em class="parameter"><code>descriptorType</code></em> is a <code class="code"><a class="link" href="ch13s02.html#VkDescriptorType">VkDescriptorType</a></code> specifying the type of
+    each descriptor in <em class="parameter"><code>pImageInfo</code></em>, <em class="parameter"><code>pBufferInfo</code></em>, or
+    <em class="parameter"><code>pTexelBufferView</code></em>, as described below.
+    It <span class="normative">must</span> be the same type as that specified in
+    <code class="code">VkDescriptorSetLayoutBinding</code> for <em class="parameter"><code>dstSet</code></em> at <em class="parameter"><code>dstBinding</code></em>.
+    The type of the descriptor also controls which array the descriptors are
+    taken from.
+</li><li class="listitem">
+<em class="parameter"><code>pImageInfo</code></em> points to an array of <code class="code"><a class="link" href="ch13s02.html#VkDescriptorImageInfo">VkDescriptorImageInfo</a></code>
+    structures or is ignored, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pBufferInfo</code></em> points to an array of <code class="code"><a class="link" href="ch13s02.html#VkDescriptorBufferInfo">VkDescriptorBufferInfo</a></code>
+    structures or is ignored, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pTexelBufferView</code></em> points to an array of <code class="code"><a class="link" href="ch11s02.html#VkBufferView">VkBufferView</a></code> handles
+    as described in the <a class="link" href="ch11s02.html" title="11.2. Buffer Views">Buffer Views</a> section or
+    is ignored, as described below.
+</li></ul></div><p>Only one of <em class="parameter"><code>pImageInfo</code></em>, <em class="parameter"><code>pBufferInfo</code></em>, or <em class="parameter"><code>pTexelBufferView</code></em>
+members is used according to the descriptor type specified in the
+<em class="parameter"><code>descriptorType</code></em> member of the containing <code class="code">VkWriteDescriptorSet</code>
+structure, as specified below.</p><p><a id="descriptorsets-updates-consecutive"></a>If the <em class="parameter"><code>dstBinding</code></em> has fewer than <em class="parameter"><code>descriptorCount</code></em> array elements
+remaining starting from <em class="parameter"><code>dstArrayElement</code></em>, then the remainder will be
+used to update the subsequent binding - <em class="parameter"><code>dstBinding</code></em>+1 starting at array
+element zero.
+This behavior applies recursively, with the update affecting consecutive
+bindings as needed to update all <em class="parameter"><code>descriptorCount</code></em> descriptors.
+All consecutive bindings updated via a single <code class="code">VkWriteDescriptorSet</code>
+structure <span class="normative">must</span> have identical <em class="parameter"><code>descriptorType</code></em> and <em class="parameter"><code>stageFlags</code></em>,
+and <span class="normative">must</span> all either use immutable samplers or <span class="normative">must</span> all not use immutable
+samplers.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>dstBinding</code></em> <span class="normative">must</span> be a valid binding point within <em class="parameter"><code>dstSet</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>descriptorType</code></em> <span class="normative">must</span> match the type of <em class="parameter"><code>dstBinding</code></em> within
+    <em class="parameter"><code>dstSet</code></em>
+</li><li class="listitem">
+The sum of <em class="parameter"><code>dstArrayElement</code></em> and <em class="parameter"><code>descriptorCount</code></em> <span class="normative">must</span> be less
+    than or equal to the number of array elements in the descriptor set
+    binding specified by <em class="parameter"><code>dstBinding</code></em>, and all applicable consecutive
+    bindings, as described by <a class="xref" href="ch13s02.html#descriptorsets-updates-consecutive"> consecutive binding updates</a>
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>, <em class="parameter"><code>pImageInfo</code></em> <span class="normative">must</span> be a
+    pointer to an array of <em class="parameter"><code>descriptorCount</code></em> valid
+    <code class="code">VkDescriptorImageInfo</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code>
+    or <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code>, <em class="parameter"><code>pTexelBufferView</code></em>
+    <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>descriptorCount</code></em> valid
+    <code class="code">VkBufferView</code> handles
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code>, or
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>, <em class="parameter"><code>pBufferInfo</code></em> <span class="normative">must</span>
+    be a pointer to an array of <em class="parameter"><code>descriptorCount</code></em> valid
+    <code class="code">VkDescriptorBufferInfo</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and <em class="parameter"><code>dstSet</code></em> was
+    not allocated with a layout that included immutable samplers for
+    <em class="parameter"><code>dstBinding</code></em> with <em class="parameter"><code>descriptorType</code></em>, the <em class="parameter"><code>sampler</code></em> member of
+    any given element of <em class="parameter"><code>pImageInfo</code></em> <span class="normative">must</span> be a valid <code class="code">VkSampler</code>
+    object
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>, the <em class="parameter"><code>imageView</code></em> and
+    <em class="parameter"><code>imageLayout</code></em> members of any given element of <em class="parameter"><code>pImageInfo</code></em> <span class="normative">must</span>
+    be a valid <code class="code">VkImageView</code> and <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code>, respectively
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>offset</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em> <span class="normative">must</span> be a multiple of
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>minUniformBufferOffsetAlignment</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>offset</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em> <span class="normative">must</span> be a multiple of
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>minStorageBufferOffsetAlignment</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>buffer</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em> <span class="normative">must</span> have been created with
+    <code class="code">VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT</code> set
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>buffer</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em> <span class="normative">must</span> have been created with
+    <code class="code">VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code> set
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>range</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em>, or the effective range if
+    <em class="parameter"><code>range</code></em> is <code class="code">VK_WHOLE_SIZE</code>, <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxUniformBufferRange</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>, the <em class="parameter"><code>range</code></em> member
+    of any given element of <em class="parameter"><code>pBufferInfo</code></em>, or the effective range if
+    <em class="parameter"><code>range</code></em> is <code class="code">VK_WHOLE_SIZE</code>, <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxStorageBufferRange</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code>, the <code class="code">VkBuffer</code> that
+    any given element of <em class="parameter"><code>pTexelBufferView</code></em> was created from <span class="normative">must</span> have
+    been created with <code class="code">VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</code> set
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code>, the <code class="code">VkBuffer</code> that
+    any given element of <em class="parameter"><code>pTexelBufferView</code></em> was created from <span class="normative">must</span> have
+    been created with <code class="code">VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</code> set
+</li><li class="listitem">
+If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>, the <em class="parameter"><code>imageView</code></em> member of
+    any given element of <em class="parameter"><code>pImageInfo</code></em> <span class="normative">must</span> have been created with the
+    identity swizzle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>dstSet</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorSet</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>descriptorType</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch13s02.html#VkDescriptorType">VkDescriptorType</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+Both of <em class="parameter"><code>dstSet</code></em>, and the elements of <em class="parameter"><code>pTexelBufferView</code></em> that are valid handles <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><p>The type of descriptors in a descriptor set is specified by
+<code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code>::<em class="parameter"><code>descriptorType</code></em>, which <span class="normative">must</span> be one of the
+values:</p><p><a id="VkDescriptorType"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkDescriptorType {
+    VK_DESCRIPTOR_TYPE_SAMPLER = 0,
+    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
+    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
+    VK_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
+    VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
+    VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
+    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
+    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
+    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
+    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
+    VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
+} VkDescriptorType;</pre><p>
+</p><p>If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code>,
+<code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code>,
+<code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code>, or
+<code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code>, the elements of the
+<code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code>::<em class="parameter"><code>pBufferInfo</code></em> array of
+<code class="code"><a class="link" href="ch13s02.html#VkDescriptorBufferInfo">VkDescriptorBufferInfo</a></code> structures will be used to update the
+descriptors, and other arrays will be ignored.</p><p>If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code> or
+<code class="code">VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code>, the
+<code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code>::<em class="parameter"><code>pTexelBufferView</code></em> array will be used to
+update the descriptors, and other arrays will be ignored.</p><p>If <em class="parameter"><code>descriptorType</code></em> is <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code>,
+<code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>,
+<code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+<code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
+<code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>, the elements of the
+<code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code>::<em class="parameter"><code>pImageInfo</code></em> array of
+<code class="code"><a class="link" href="ch13s02.html#VkDescriptorImageInfo">VkDescriptorImageInfo</a></code> structures will be used to update the
+descriptors, and other arrays will be ignored.</p><p>The <code class="code">VkDescriptorBufferInfo</code> structure is defined as:</p><p><a id="VkDescriptorBufferInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorBufferInfo {
+    VkBuffer        buffer;
+    VkDeviceSize    offset;
+    VkDeviceSize    range;
+} VkDescriptorBufferInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>buffer</code></em> is the buffer resource.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is the offset in bytes from the start of <em class="parameter"><code>buffer</code></em>.
+    Access to buffer memory via this descriptor uses addressing that is
+    relative to this starting offset.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>range</code></em> is the size in bytes that is used for this descriptor
+    update, or <code class="code">VK_WHOLE_SIZE</code> to use the range from <em class="parameter"><code>offset</code></em> to the
+    end of the buffer.
+</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>When using <code class="code">VK_WHOLE_SIZE</code>, the effective range <span class="normative">must</span> not be larger than
+the maximum range for the descriptor type
+(<a class="link" href="ch31s02.html#features-limits-maxUniformBufferRange">maxUniformBufferRange</a> or
+<a class="link" href="ch31s02.html#features-limits-maxStorageBufferRange">maxStorageBufferRange</a>).
+This means that <code class="code">VK_WHOLE_SIZE</code> is not typically useful in the common
+case where uniform buffer descriptors are suballocated from a buffer that is
+much larger than <em class="parameter"><code>maxUniformBufferRange</code></em>.</p></td></tr></table></div><p class="simpara">For <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code> and
+<code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code> descriptor types,
+<em class="parameter"><code>offset</code></em> is the base offset from which the dynamic offset is applied and
+<em class="parameter"><code>range</code></em> is the static size used for all dynamic offsets.</p></li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be less than the size of <em class="parameter"><code>buffer</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>range</code></em> is not equal to <code class="code">VK_WHOLE_SIZE</code>, <em class="parameter"><code>range</code></em> <span class="normative">must</span> be
+    greater than <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>range</code></em> is not equal to <code class="code">VK_WHOLE_SIZE</code>, <em class="parameter"><code>range</code></em> <span class="normative">must</span> be
+    less than or equal to the size of <em class="parameter"><code>buffer</code></em> minus <em class="parameter"><code>offset</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkBuffer</code> handle
+</li></ul></div></div><p>The <code class="code">VkDescriptorImageInfo</code> structure is defined as:</p><p><a id="VkDescriptorImageInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDescriptorImageInfo {
+    VkSampler        sampler;
+    VkImageView      imageView;
+    VkImageLayout    imageLayout;
+} VkDescriptorImageInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sampler</code></em> is a sampler handle, and is used in descriptor updates for
+    types <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code> and
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code> if the binding being
+    updated does not use immutable samplers.
+</li><li class="listitem">
+<em class="parameter"><code>imageView</code></em> is an image view handle, and is used in descriptor
+    updates for types <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>imageLayout</code></em> is the layout that the image will be in at the time
+    this descriptor is accessed.
+    <em class="parameter"><code>imageLayout</code></em> is used in descriptor updates for types
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>.
+</li></ul></div><p>Members of <code class="code">VkDescriptorImageInfo</code> that are not used in an update (as
+described above) are ignored.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Both of <em class="parameter"><code>imageView</code></em>, and <em class="parameter"><code>sampler</code></em> that are valid handles <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><p>The <code class="code">VkCopyDescriptorSet</code> structure is defined as:</p><p><a id="VkCopyDescriptorSet"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkCopyDescriptorSet {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkDescriptorSet    srcSet;
+    uint32_t           srcBinding;
+    uint32_t           srcArrayElement;
+    VkDescriptorSet    dstSet;
+    uint32_t           dstBinding;
+    uint32_t           dstArrayElement;
+    uint32_t           descriptorCount;
+} VkCopyDescriptorSet;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>srcSet</code></em>, <em class="parameter"><code>srcBinding</code></em>, and <em class="parameter"><code>srcArrayElement</code></em> are the source
+    set, binding, and array element, respectively.
+</li><li class="listitem">
+<em class="parameter"><code>dstSet</code></em>, <em class="parameter"><code>dstBinding</code></em>, and <em class="parameter"><code>dstArrayElement</code></em> are the
+    destination set, binding, and array element, respectively.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorCount</code></em> is the number of descriptors to copy from the
+    source to destination.
+    If <em class="parameter"><code>descriptorCount</code></em> is greater than the number of remaining array
+    elements in the source or destination binding, those affect consecutive
+    bindings in a manner similar to <code class="code"><a class="link" href="ch13s02.html#VkWriteDescriptorSet">VkWriteDescriptorSet</a></code> above.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>srcBinding</code></em> <span class="normative">must</span> be a valid binding within <em class="parameter"><code>srcSet</code></em>
+</li><li class="listitem">
+The sum of <em class="parameter"><code>srcArrayElement</code></em> and <em class="parameter"><code>descriptorCount</code></em> <span class="normative">must</span> be less
+    than or equal to the number of array elements in the descriptor set
+    binding specified by <em class="parameter"><code>srcBinding</code></em>, and all applicable consecutive
+    bindings, as described by <a class="xref" href="ch13s02.html#descriptorsets-updates-consecutive"> consecutive binding updates</a>
+</li><li class="listitem">
+<em class="parameter"><code>dstBinding</code></em> <span class="normative">must</span> be a valid binding within <em class="parameter"><code>dstSet</code></em>
+</li><li class="listitem">
+The sum of <em class="parameter"><code>dstArrayElement</code></em> and <em class="parameter"><code>descriptorCount</code></em> <span class="normative">must</span> be less
+    than or equal to the number of array elements in the descriptor set
+    binding specified by <em class="parameter"><code>dstBinding</code></em>, and all applicable consecutive
+    bindings, as described by <a class="xref" href="ch13s02.html#descriptorsets-updates-consecutive"> consecutive binding updates</a>
+</li><li class="listitem">
+If <em class="parameter"><code>srcSet</code></em> is equal to <em class="parameter"><code>dstSet</code></em>, then the source and
+    destination ranges of descriptors <span class="normative">must</span> not overlap, where the ranges
+    <span class="normative">may</span> include array elements from consecutive bindings as described by
+    <a class="xref" href="ch13s02.html#descriptorsets-updates-consecutive"> consecutive binding updates</a>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>srcSet</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorSet</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>dstSet</code></em> <span class="normative">must</span> be a valid <code class="code">VkDescriptorSet</code> handle
+</li><li class="listitem">
+Both of <em class="parameter"><code>dstSet</code></em>, and <em class="parameter"><code>srcSet</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="descriptorsets-binding"></a>13.2.5. Descriptor Set Binding</h3></div></div></div><p>To bind one or more descriptor sets to a command buffer, call:</p><p><a id="vkCmdBindDescriptorSets"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdBindDescriptorSets(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineBindPoint                         pipelineBindPoint,
+    VkPipelineLayout                            layout,
+    uint32_t                                    firstSet,
+    uint32_t                                    descriptorSetCount,
+    const VkDescriptorSet*                      pDescriptorSets,
+    uint32_t                                    dynamicOffsetCount,
+    const uint32_t*                             pDynamicOffsets);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer that the descriptor sets will
+    be bound to.
+</li><li class="listitem">
+<em class="parameter"><code>pipelineBindPoint</code></em> is a <code class="code"><a class="link" href="ch09s08.html#VkPipelineBindPoint">VkPipelineBindPoint</a></code> indicating
+    whether the descriptors will be used by graphics pipelines or compute
+    pipelines.
+    There is a separate set of bind points for each of graphics and compute,
+    so binding one does not disturb the other.
+</li><li class="listitem">
+<em class="parameter"><code>layout</code></em> is a <code class="code">VkPipelineLayout</code> object used to program the
+    bindings.
+</li><li class="listitem">
+<em class="parameter"><code>firstSet</code></em> is the set number of the first descriptor set to be
+    bound.
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> is the number of elements in the
+    <em class="parameter"><code>pDescriptorSets</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> is an array of handles to <code class="code">VkDescriptorSet</code>
+    objects describing the descriptor sets to write to.
+</li><li class="listitem">
+<em class="parameter"><code>dynamicOffsetCount</code></em> is the number of dynamic offsets in the
+    <em class="parameter"><code>pDynamicOffsets</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pDynamicOffsets</code></em> is a pointer to an array of <span class="strong"><strong><code class="code">uint32_t</code></strong></span> values
+    specifying dynamic offsets.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkCmdBindDescriptorSets</code></strong></span> causes the sets numbered [<em class="parameter"><code>firstSet</code></em>..
+<em class="parameter"><code>firstSet</code></em>+<em class="parameter"><code>descriptorSetCount</code></em>-1] to use the bindings stored in
+<em class="parameter"><code>pDescriptorSets</code></em>[0..<em class="parameter"><code>descriptorSetCount</code></em>-1] for subsequent
+rendering commands (either compute or graphics, according to the
+<em class="parameter"><code>pipelineBindPoint</code></em>).
+Any bindings that were previously applied via these sets are no longer
+valid.</p><p>Once bound, a descriptor set affects rendering of subsequent graphics or
+compute commands in the command buffer until a different set is bound to the
+same set number, or else until the set is disturbed as described in
+<a class="link" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">Pipeline Layout Compatibility</a>.</p><p>A compatible descriptor set <span class="normative">must</span> be bound for all set numbers that any
+shaders in a pipeline access, at the time that a draw or dispatch command is
+recorded to execute using that pipeline.
+However, if none of the shaders in a pipeline statically use any bindings
+with a particular set number, then no descriptor set need be bound for that
+set number, even if the pipeline layout includes a non-trivial descriptor
+set layout for that set number.</p><p>If any of the sets being bound include dynamic uniform or storage buffers,
+then <em class="parameter"><code>pDynamicOffsets</code></em> includes one element for each array element in
+each dynamic descriptor type binding in each set.
+Values are taken from <em class="parameter"><code>pDynamicOffsets</code></em> in an order such that all
+entries for set N come before set N+1; within a set, entries are ordered by
+the binding numbers in the descriptor set layouts; and within a binding
+array, elements are in order.
+<em class="parameter"><code>dynamicOffsetCount</code></em> <span class="normative">must</span> equal the total number of dynamic descriptors
+in the sets being bound.</p><p>The effective offset used for dynamic uniform and storage buffer bindings is
+the sum of the relative offset taken from <em class="parameter"><code>pDynamicOffsets</code></em>, and the
+base address of the buffer plus base offset in the descriptor set.
+The length of the dynamic uniform and storage buffer bindings is the buffer
+range as specified in the descriptor set.</p><p>Each of the <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> be compatible with the pipeline
+layout specified by <em class="parameter"><code>layout</code></em>.
+The layout used to program the bindings <span class="normative">must</span> also be compatible with the
+pipeline used in subsequent graphics or compute commands, as defined in the
+<a class="link" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">Pipeline Layout Compatibility</a> section.</p><p>The descriptor set contents bound by a call to <span class="strong"><strong><code class="code">vkCmdBindDescriptorSets</code></strong></span>
+<span class="normative">may</span> be consumed during host execution of the command, or during shader
+execution of the resulting draws, or any time in between.
+Thus, the contents <span class="normative">must</span> not be altered (overwritten by an update command,
+or freed) between when the command is recorded and when the command
+completes executing on the queue.
+The contents of <em class="parameter"><code>pDynamicOffsets</code></em> are consumed immediately during
+execution of <span class="strong"><strong><code class="code">vkCmdBindDescriptorSets</code></strong></span>.
+Once all pending uses have completed, it is legal to update and reuse a
+descriptor set.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Any given element of <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> have been allocated
+    with a <code class="code">VkDescriptorSetLayout</code> that matches (is the same as, or
+    defined identically to) the <code class="code">VkDescriptorSetLayout</code> at set <span class="emphasis"><em>n</em></span> in
+    <em class="parameter"><code>layout</code></em>, where <span class="emphasis"><em>n</em></span> is the sum of <em class="parameter"><code>firstSet</code></em> and the index into
+    <em class="parameter"><code>pDescriptorSets</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>dynamicOffsetCount</code></em> <span class="normative">must</span> be equal to the total number of dynamic
+    descriptors in <em class="parameter"><code>pDescriptorSets</code></em>
+</li><li class="listitem">
+The sum of <em class="parameter"><code>firstSet</code></em> and <em class="parameter"><code>descriptorSetCount</code></em> <span class="normative">must</span> be less
+    than or equal to <code class="code">VkPipelineLayoutCreateInfo</code>::<em class="parameter"><code>setLayoutCount</code></em>
+    provided when <em class="parameter"><code>layout</code></em> was created
+</li><li class="listitem">
+<em class="parameter"><code>pipelineBindPoint</code></em> <span class="normative">must</span> be supported by the <em class="parameter"><code>commandBuffer</code></em>’s
+    parent <code class="code">VkCommandPool</code>’s queue family
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pDynamicOffsets</code></em> <span class="normative">must</span> satisfy the required
+    alignment for the corresponding descriptor binding’s descriptor type
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pipelineBindPoint</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch09s08.html#VkPipelineBindPoint">VkPipelineBindPoint</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>layout</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineLayout</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>descriptorSetCount</code></em> valid <code class="code">VkDescriptorSet</code> handles
+</li><li class="listitem">
+If <em class="parameter"><code>dynamicOffsetCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pDynamicOffsets</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>dynamicOffsetCount</code></em> <code class="code">uint32_t</code> values
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support graphics, or compute operations
+</li><li class="listitem">
+<em class="parameter"><code>descriptorSetCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+Each of <em class="parameter"><code>commandBuffer</code></em>, <em class="parameter"><code>layout</code></em>, and the elements of <em class="parameter"><code>pDescriptorSets</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>GRAPHICS
+COMPUTE</p></td></tr></tbody></table></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_push_constant_updates"></a>13.2.6. Push Constant Updates</h3></div></div></div><p><a id="descriptorsets-push-constants"></a>As described above in section <a class="link" href="ch13s02.html#descriptorsets-pipelinelayout" title="13.2.2. Pipeline Layouts">Pipeline Layouts</a>, the pipeline layout defines shader push constants which are
+updated via Vulkan commands rather than via writes to memory or copy
+commands.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Push constants represent a high speed path to modify constant data in
+pipelines that is expected to outperform memory-backed resource updates.</p></td></tr></table></div><p>The values of push constants are undefined at the start of a command buffer.</p><p>To update push constants, call:</p><p><a id="vkCmdPushConstants"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdPushConstants(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineLayout                            layout,
+    VkShaderStageFlags                          stageFlags,
+    uint32_t                                    offset,
+    uint32_t                                    size,
+    const void*                                 pValues);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer in which the push constant
+    update will be recorded.
+</li><li class="listitem">
+<em class="parameter"><code>layout</code></em> is the pipeline layout used to program the push constant
+    updates.
+</li><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> is a bitmask of <code class="code"><a class="link" href="ch09s01.html#VkShaderStageFlagBits">VkShaderStageFlagBits</a></code> specifying
+    the shader stages that will use the push constants in the updated range.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is the start offset of the push constant range to update,
+    in units of bytes.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the size of the push constant range to update, in units of
+    bytes.
+</li><li class="listitem">
+<em class="parameter"><code>pValues</code></em> is an array of <em class="parameter"><code>size</code></em> bytes containing the new push
+    constant values.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> match exactly the shader stages used in
+    <em class="parameter"><code>layout</code></em> for the range specified by <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>size</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be a multiple of <code class="literal">4</code>
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be a multiple of <code class="literal">4</code>
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be less than
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPushConstantsSize</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxPushConstantsSize</code></em> minus
+    <em class="parameter"><code>offset</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>layout</code></em> <span class="normative">must</span> be a valid <code class="code">VkPipelineLayout</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch09s01.html#VkShaderStageFlagBits">VkShaderStageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>stageFlags</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>pValues</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>size</code></em> bytes
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support graphics, or compute operations
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+Both of <em class="parameter"><code>commandBuffer</code></em>, and <em class="parameter"><code>layout</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>GRAPHICS
+COMPUTE</p></td></tr></tbody></table></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch14.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

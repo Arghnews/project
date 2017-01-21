@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>23.3. Clipping Shader Outputs</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch23.html" title="Chapter 23. Fixed-Function Vertex Post-Processing" /><link rel="prev" href="ch23s02.html" title="23.2. Primitive Clipping" /><link rel="next" href="ch23s04.html" title="23.4. Coordinate Transformations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch23s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch23s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="vertexpostproc-clipping-shader-outputs"></a>23.3. Clipping Shader Outputs</h2></div></div></div><p>Next, vertex output attributes are clipped.
+The output values associated with a vertex that lies within the clip volume
+are unaffected by clipping.
+If a primitive is clipped, however, the output values assigned to vertices
+produced by clipping are clipped.</p><p>Let the output values assigned to the two vertices <span class="eq"><span class="strong"><strong>P</strong></span><sub>1</sub></span> and
+<span class="eq"><span class="strong"><strong>P</strong></span><sub>2</sub></span> of an unclipped edge be <span class="eq"><span class="strong"><strong>c</strong></span><sub>1</sub></span> and <span class="eq"><span class="strong"><strong>c</strong></span><sub>2</sub></span>.
+The value of <span class="eq">t</span> (see <a class="link" href="ch23s02.html" title="23.2. Primitive Clipping">Primitive Clipping</a>)
+for a clipped point <span class="eq"><span class="strong"><strong>P</strong></span></span> is used to obtain the output value
+associated with <span class="eq"><span class="strong"><strong>P</strong></span></span> as</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq"><span class="strong"><strong>c</strong></span> = t <span class="strong"><strong>c</strong></span><sub>1</sub> + (1-t) <span class="strong"><strong>c</strong></span><sub>2</sub></span>.
+</dd></dl></div><p>(Multiplying an output value by a scalar means multiplying each of <span class="emphasis"><em>x</em></span>, <span class="emphasis"><em>y</em></span>,
+<span class="emphasis"><em>z</em></span>, and <span class="emphasis"><em>w</em></span> by the scalar.)</p><p>Since this computation is performed in clip space before division by
+<span class="eq">w<sub>c</sub></span>, clipped output values are perspective-correct.</p><p>Polygon clipping creates a clipped vertex along an edge of the clip volume’s
+boundary.
+This situation is handled by noting that polygon clipping proceeds by
+clipping against one half-space at a time.
+Output value clipping is done in the same way, so that clipped points always
+occur at the intersection of polygon edges (possibly already clipped) with
+the clip volume’s boundary.</p><p>For vertex output attributes whose matching fragment input attributes are
+decorated with <span class="strong"><strong><code class="code">NoPerspective</code></strong></span>, the value of <span class="eq">t</span> used to obtain the
+output value associated with <span class="eq"><span class="strong"><strong>P</strong></span></span> will be adjusted to produce results
+that vary linearly in framebuffer space.</p><p>Output attributes of integer or unsigned integer type <span class="normative">must</span> always be flat
+shaded.
+Flat shaded attributes are constant over the primitive being rasterized (see
+<a class="link" href="ch24s06.html#primsrast-lines-basic" title="24.6.1. Basic Line Segment Rasterization">Basic Line Segment Rasterization</a> and
+<a class="link" href="ch24s07.html#primsrast-polygons-basic" title="24.7.1. Basic Polygon Rasterization">Basic Polygon Rasterization</a>), and no
+interpolation is performed.
+The output value <span class="eq"><span class="strong"><strong>c</strong></span></span> is taken from either <span class="eq"><span class="strong"><strong>c</strong></span><sub>1</sub></span> or
+<span class="eq"><span class="strong"><strong>c</strong></span><sub>2</sub></span>, since flat shading has already occurred and the two values
+are identical.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch23s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch23.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch23s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

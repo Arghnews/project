@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>28.1. Sparse Resource Features</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch28.html" title="Chapter 28. Sparse Resources" /><link rel="prev" href="ch28.html" title="Chapter 28. Sparse Resources" /><link rel="next" href="ch28s02.html" title="28.2. Sparse Buffers and Fully-Resident Images" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch28.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch28s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="sparsememory-sparseresourcefeatures"></a>28.1. Sparse Resource Features</h2></div></div></div><p>Sparse resources have several features that <span class="normative">must</span> be enabled explicitly at
+resource creation time.
+The features are enabled by including bits in the <em class="parameter"><code>flags</code></em> parameter of
+<code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code> or <code class="code"><a class="link" href="ch11s01.html#VkBufferCreateInfo">VkBufferCreateInfo</a></code>.
+Each feature also has one or more corresponding feature enables specified in
+<code class="code"><a class="link" href="ch31s01.html#VkPhysicalDeviceFeatures">VkPhysicalDeviceFeatures</a></code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+<a class="link" href="ch31s01.html#features-features-sparseBinding">Sparse binding</a> is the base feature,
+    and provides the following capabilities:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Resources <span class="normative">can</span> be bound at some defined (sparse block) granularity.
+</li><li class="listitem">
+The entire resource <span class="normative">must</span> be bound to memory before use regardless of
+     regions actually accessed.
+</li><li class="listitem">
+No specific mapping of image region to memory offset is defined, i.e.
+     the location that each texel corresponds to in memory is
+     implementation-dependent.
+</li><li class="listitem">
+Sparse buffers have a well-defined mapping of buffer range to memory
+     range, where an offset into a range of the buffer that is bound to a
+     single contiguous range of memory corresponds to an identical offset
+     within that range of memory.
+</li><li class="listitem">
+Requested via the <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code> and
+     <code class="code">VK_BUFFER_CREATE_SPARSE_BINDING_BIT</code> bits.
+</li><li class="listitem">
+A sparse image created using <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>
+     (but not <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>) supports all
+     formats that non-sparse usage supports, and supports both
+     <code class="code">VK_IMAGE_TILING_OPTIMAL</code> and <code class="code">VK_IMAGE_TILING_LINEAR</code> tiling.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+<span class="emphasis"><em>Sparse Residency</em></span> builds on (and requires) the <em class="parameter"><code>sparseBinding</code></em>
+    feature.
+    It includes the following capabilities:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+Resources do not have to be completely bound to memory before use on
+     the device.
+</li><li class="listitem">
+Images have a prescribed sparse image block layout, allowing specific
+     rectangular regions of the image to be bound to specific offsets in
+     memory allocations.
+</li><li class="listitem">
+Consistency of access to unbound regions of the resource is defined by
+     the absence or presence of
+     <code class="code">VkPhysicalDeviceSparseProperties</code>::<em class="parameter"><code>residencyNonResidentStrict</code></em>.
+     If this property is present, accesses to unbound regions of the
+     resource are well defined and behave as if the data bound is populated
+     with all zeros; writes are discarded.
+     When this property is absent, accesses are considered safe, but reads
+     will return undefined values.
+</li><li class="listitem">
+Requested via the <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> and
+     <code class="code">VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT</code> bits.
+</li><li class="listitem"><p class="simpara">
+<a id="features-features-sparseResidency"></a> is
+     advertised on a finer grain via the following features:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: square; "><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidencyBuffer"><em class="parameter"><code>sparseResidencyBuffer</code></em></a>:
+      Support for creating <code class="code">VkBuffer</code> objects with the
+      <code class="code">VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidencyImage2D"><em class="parameter"><code>sparseResidencyImage2D</code></em></a>:
+      Support for creating 2D single-sampled <code class="code">VkImage</code> objects with
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidencyImage3D"><em class="parameter"><code>sparseResidencyImage3D</code></em></a>:
+      Support for creating 3D <code class="code">VkImage</code> objects with
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidency2Samples"><em class="parameter"><code>sparseResidency2Samples</code></em></a>:
+      Support for creating 2D <code class="code">VkImage</code> objects with 2 samples and
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidency4Samples"><em class="parameter"><code>sparseResidency4Samples</code></em></a>:
+      Support for creating 2D <code class="code">VkImage</code> objects with 4 samples and
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidency8Samples"><em class="parameter"><code>sparseResidency8Samples</code></em></a>:
+      Support for creating 2D <code class="code">VkImage</code> objects with 8 samples and
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li><li class="listitem">
+<a class="link" href="ch31s01.html#features-features-sparseResidency16Samples"><em class="parameter"><code>sparseResidency16Samples</code></em></a>:
+      Support for creating 2D <code class="code">VkImage</code> objects with 16 samples and
+      <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.
+</li></ul></div><p class="simpara">Implementations supporting <em class="parameter"><code>sparseResidencyImage2D</code></em> are only <span class="normative">required</span>
+to support sparse 2D, single-sampled images.
+Support is not <span class="normative">required</span> for sparse 3D and MSAA images and is enabled via
+<em class="parameter"><code>sparseResidencyImage3D</code></em>, <em class="parameter"><code>sparseResidency2Samples</code></em>,
+<em class="parameter"><code>sparseResidency4Samples</code></em>, <em class="parameter"><code>sparseResidency8Samples</code></em>, and
+<em class="parameter"><code>sparseResidency16Samples</code></em>.</p></li><li class="listitem">
+A sparse image created using <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+     supports all non-compressed color formats with power-of-two texel size
+     that non-sparse usage supports.
+     Additional formats <span class="normative">may</span> also be supported and <span class="normative">can</span> be queried via
+     <code class="code"><a class="link" href="ch28s07.html#vkGetPhysicalDeviceSparseImageFormatProperties">vkGetPhysicalDeviceSparseImageFormatProperties</a></code>.
+     <code class="code">VK_IMAGE_TILING_LINEAR</code> tiling is not supported.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+<a class="link" href="ch31s01.html#features-features-sparseResidencyAliased">Sparse aliasing</a> provides
+    the following capability that <span class="normative">can</span> be enabled per resource:
+</p><p class="simpara">Allows physical memory ranges to be shared between multiple locations in the
+same sparse resource or between multiple sparse resources, with each binding
+of a memory location observing a consistent interpretation of the memory
+contents.</p><p class="simpara">See <a class="link" href="ch28s05.html" title="28.5. Sparse Memory Aliasing">Sparse Memory Aliasing</a> for more
+information.</p></li></ul></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch28.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch28.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch28s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

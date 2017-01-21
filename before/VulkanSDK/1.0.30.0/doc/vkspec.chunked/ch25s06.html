@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>25.6. Multisample Coverage</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch25.html" title="Chapter 25. Fragment Operations" /><link rel="prev" href="ch25s05.html" title="25.5. Late Per-Fragment Tests" /><link rel="next" href="ch25s07.html" title="25.7. Depth and Stencil Operations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch25s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch25s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fragops-covg"></a>25.6. Multisample Coverage</h2></div></div></div><p>If a fragment shader is active and its entry point’s interface includes a
+built-in output variable decorated with <span class="strong"><strong><code class="code">SampleMask</code></strong></span>, the fragment
+coverage is <span class="strong"><strong><code class="code">ANDed</code></strong></span> with the bits of the sample mask to generate a new
+fragment coverage value.
+If such a fragment shader did not assign a value to <span class="strong"><strong><code class="code">SampleMask</code></strong></span> due to
+flow of control, the value <span class="strong"><strong><code class="code">ANDed</code></strong></span> with the fragment coverage is
+undefined.
+If no fragment shader is active, or if the active fragment shader does not
+include <span class="strong"><strong><code class="code">SampleMask</code></strong></span> in its interface, the fragment coverage is not
+modified.</p><p>Next, the fragment alpha and coverage values are modified based on the
+<em class="parameter"><code>alphaToCoverageEnable</code></em> and <em class="parameter"><code>alphaToOneEnable</code></em> members of the
+<code class="code"><a class="link" href="ch24.html#VkPipelineMultisampleStateCreateInfo">VkPipelineMultisampleStateCreateInfo</a></code> structure.</p><p>All alpha values in this section refer only to the alpha component of the
+fragment shader output that has a <span class="strong"><strong><code class="code">Location</code></strong></span> and <span class="strong"><strong><code class="code">Index</code></strong></span> decoration of
+zero (see the <a class="link" href="ch14s03.html" title="14.3. Fragment Output Interface">Fragment Output Interface</a>
+section).
+If that shader output has an integer or unsigned integer type, then these
+operations are skipped.</p><p>If <em class="parameter"><code>alphaToCoverageEnable</code></em> is enabled, a temporary coverage value is
+generated where each bit is determined by the fragment’s alpha value.
+The temporary coverage value is then ANDed with the fragment coverage value
+to generate a new fragment coverage value.</p><p>No specific algorithm is specified for converting the alpha value to a
+temporary coverage mask.
+It is intended that the number of 1’s in this value be proportional to the
+alpha value (clamped to <span class="eq">[0,1]</span>), with all 1’s corresponding to a value
+of 1.0 and all 0’s corresponding to 0.0.
+The algorithm <span class="normative">may</span> be different at different pixel locations.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Using different algorithms at different pixel location <span class="normative">may</span> help to avoid
+artifacts caused by regular coverage sample locations.</p></td></tr></table></div><p>Next, if <em class="parameter"><code>alphaToOneEnable</code></em> is enabled, each alpha value is replaced by
+the maximum representable alpha value for fixed-point color buffers, or by
+1.0 for floating-point buffers.
+Otherwise, the alpha values are not changed.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch25s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch25.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch25s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

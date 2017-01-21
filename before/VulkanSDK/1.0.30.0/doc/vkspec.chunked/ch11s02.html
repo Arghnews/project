@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.2. Buffer Views</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch11.html" title="Chapter 11. Resource Creation" /><link rel="prev" href="ch11s01.html" title="11.1. Buffers" /><link rel="next" href="ch11s03.html" title="11.3. Images" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch11s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="resources-buffer-views"></a>11.2. Buffer Views</h2></div></div></div><p>A <span class="emphasis"><em>buffer view</em></span> represents a contiguous range of a buffer and a specific
+format to be used to interpret the data.
+Buffer views are used to enable shaders to access buffer contents
+interpreted as formatted data.
+In order to create a valid buffer view, the buffer <span class="normative">must</span> have been created
+with at least one of the following usage flags:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</code>
+</li><li class="listitem">
+<code class="code">VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</code>
+</li></ul></div><p>Buffer views are represented by <code class="code">VkBufferView</code> handles:</p><p><a id="VkBufferView"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkBufferView)</pre><p>
+</p><p>To create a buffer view, call:</p><p><a id="vkCreateBufferView"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateBufferView(
+    VkDevice                                    device,
+    const VkBufferViewCreateInfo*               pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferView*                               pView);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the buffer view.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkBufferViewCreateInfo</code> structure containing parameters to be used
+    to create the buffer.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pView</code></em> points to a <code class="code">VkBufferView</code> handle in which the resulting
+    buffer view object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkBufferViewCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pView</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkBufferView</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkBufferViewCreateInfo</code> structure is defined as:</p><p><a id="VkBufferViewCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkBufferViewCreateInfo {
+    VkStructureType            sType;
+    const void*                pNext;
+    VkBufferViewCreateFlags    flags;
+    VkBuffer                   buffer;
+    VkFormat                   format;
+    VkDeviceSize               offset;
+    VkDeviceSize               range;
+} VkBufferViewCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> is a <code class="code">VkBuffer</code> on which the view will be created.
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> is a <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> describing the format of the data
+    elements in the buffer.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is an offset in bytes from the base address of the buffer.
+    Accesses to the buffer view from shaders use addressing that is relative
+    to this starting offset.
+</li><li class="listitem">
+<em class="parameter"><code>range</code></em> is a size in bytes of the buffer view.
+    If <em class="parameter"><code>range</code></em> is equal to <code class="code">VK_WHOLE_SIZE</code>, the range from
+    <em class="parameter"><code>offset</code></em> to the end of the buffer is used.
+    If <code class="code">VK_WHOLE_SIZE</code> is used and the remaining size of the buffer is
+    not a multiple of the element size of <em class="parameter"><code>format</code></em>, then the nearest
+    smaller multiple is used.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be less than the size of <em class="parameter"><code>buffer</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be a multiple of
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>minTexelBufferOffsetAlignment</code></em>
+</li><li class="listitem"><p class="simpara">
+If <em class="parameter"><code>range</code></em> is not equal to <code class="code">VK_WHOLE_SIZE</code>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<em class="parameter"><code>range</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>range</code></em> <span class="normative">must</span> be a multiple of the element size of <em class="parameter"><code>format</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>range</code></em> divided by the size of an element of <em class="parameter"><code>format</code></em>, <span class="normative">must</span> be
+     less than or equal to
+     <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxTexelBufferElements</code></em>
+</li><li class="listitem">
+the sum of <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>range</code></em> <span class="normative">must</span> be less than or equal to
+     the size of <em class="parameter"><code>buffer</code></em>
+</li></ul></div></li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> have been created with a <em class="parameter"><code>usage</code></em> value containing
+    at least one of <code class="code">VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</code> or
+    <code class="code">VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>buffer</code></em> was created with <em class="parameter"><code>usage</code></em> containing
+    <code class="code">VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</code>, <em class="parameter"><code>format</code></em> <span class="normative">must</span> be
+    supported for uniform texel buffers, as specified by the
+    <code class="code">VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT</code> flag in
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>bufferFeatures</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span>
+</li><li class="listitem">
+If <em class="parameter"><code>buffer</code></em> was created with <em class="parameter"><code>usage</code></em> containing
+    <code class="code">VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</code>, <em class="parameter"><code>format</code></em> <span class="normative">must</span> be
+    supported for storage texel buffers, as specified by the
+    <code class="code">VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT</code> flag in
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>bufferFeatures</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> value
+</li></ul></div></div><p>To destroy a buffer view, call:</p><p><a id="vkDestroyBufferView"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyBufferView(
+    VkDevice                                    device,
+    VkBufferView                                bufferView,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the buffer view.
+</li><li class="listitem">
+<em class="parameter"><code>bufferView</code></em> is the buffer view to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All submitted commands that refer to <em class="parameter"><code>bufferView</code></em> <span class="normative">must</span> have
+    completed execution
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>bufferView</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>bufferView</code></em>
+    was created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>bufferView</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>bufferView</code></em> <span class="normative">must</span> be a valid <code class="code">VkBufferView</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>bufferView</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>bufferView</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

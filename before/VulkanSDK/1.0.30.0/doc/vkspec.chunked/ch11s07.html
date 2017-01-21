@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.7. Resource Sharing Mode</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch11.html" title="Chapter 11. Resource Creation" /><link rel="prev" href="ch11s06.html" title="11.6. Resource Memory Association" /><link rel="next" href="ch11s08.html" title="11.8. Memory Aliasing" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch11s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s08.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="resources-sharing"></a>11.7. Resource Sharing Mode</h2></div></div></div><p>Buffer and image objects are created with a <span class="emphasis"><em>sharing mode</em></span> controlling how
+they <span class="normative">can</span> be accessed from queues.
+The supported sharing modes are:</p><p><a id="VkSharingMode"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkSharingMode {
+    VK_SHARING_MODE_EXCLUSIVE = 0,
+    VK_SHARING_MODE_CONCURRENT = 1,
+} VkSharingMode;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SHARING_MODE_EXCLUSIVE</code> specifies that access to any range or
+    image subresource of the object will be exclusive to a single queue
+    family at a time.
+</li><li class="listitem">
+<code class="code">VK_SHARING_MODE_CONCURRENT</code> specifies that concurrent access to any
+    range or image subresource of the object from multiple queue families is
+    supported.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p><code class="code">VK_SHARING_MODE_CONCURRENT</code> <span class="normative">may</span> result in lower performance access to
+the buffer or image than <code class="code">VK_SHARING_MODE_EXCLUSIVE</code>.</p></td></tr></table></div><p>Ranges of buffers and image subresources of image objects created using
+<code class="code">VK_SHARING_MODE_EXCLUSIVE</code> <span class="normative">must</span> only be accessed by queues in the same
+queue family at any given time.
+In order for a different queue family to be able to interpret the memory
+contents of a range or image subresource, the application <span class="normative">must</span> transfer
+exclusive ownership of the range or image subresource between the source and
+destination queue families with the following sequence of operations:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+Release exclusive ownership from the source queue family to the
+    destination queue family.
+</li><li class="listitem">
+Use semaphores to ensure proper execution control for the ownership
+    transfer.
+</li><li class="listitem">
+Acquire exclusive ownership for the destination queue family from the
+    source queue family.
+</li></ol></div><p>To release exclusive ownership of a range of a buffer or image subresource
+of an image object, the application <span class="normative">must</span> execute a buffer or image memory
+barrier, respectively (see <code class="code"><a class="link" href="ch06s05.html#VkBufferMemoryBarrier">VkBufferMemoryBarrier</a></code> and
+<code class="code"><a class="link" href="ch06s05.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a></code>) on a queue from the source queue family.
+The <em class="parameter"><code>srcQueueFamilyIndex</code></em> parameter of the barrier <span class="normative">must</span> be set to the
+source queue family index, and the <em class="parameter"><code>dstQueueFamilyIndex</code></em> parameter to
+the destination queue family index.</p><p>To acquire exclusive ownership, the application <span class="normative">must</span> execute the same
+buffer or image memory barrier (i.e. an identically defined instance of the
+<code class="code"><a class="link" href="ch06s05.html#VkBufferMemoryBarrier">VkBufferMemoryBarrier</a></code> or <code class="code"><a class="link" href="ch06s05.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a></code> structure that was
+used for the exclusive ownership release) on a queue from the destination
+queue family.</p><p>Upon creation, resources using <code class="code">VK_SHARING_MODE_EXCLUSIVE</code> are not owned
+by any queue family.
+A buffer or image memory barrier is not required to acquire ownership when
+no queue family owns the resource - it is implicitly acquired upon first use
+within a queue.
+However, images still require a <a class="link" href="ch11s04.html" title="11.4. Image Layouts">layout transition</a> from <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code> before being used on the first queue.
+This layout transition <span class="normative">can</span> either be accomplished by an image memory
+barrier or by use in a render pass instance.</p><p>Once a queue family has used a range or image subresource of an
+<code class="code">VK_SHARING_MODE_EXCLUSIVE</code> resource, its contents are undefined to
+other queue families unless ownership is transferred.
+The contents <span class="normative">may</span> also become undefined for other reasons, e.g. as a result
+of writes to an image subresource that aliases the same memory.
+A queue family <span class="normative">can</span> take ownership of a range or image subresource without
+an ownership transfer in the same way as for a resource that was just
+created, however doing so means any contents written by other queue families
+or via incompatible aliases are undefined.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s08.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

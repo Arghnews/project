@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>1.3. Terminology</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch01.html" title="Chapter 1. Introduction" /><link rel="prev" href="ch01s02.html" title="1.2. Filing Bug Reports" /><link rel="next" href="ch01s04.html" title="1.4. Normative References" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch01s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch01s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="introduction-terminology"></a>1.3. Terminology</h2></div></div></div><p>The key words <span class="strong"><strong>must</strong></span>, <span class="strong"><strong>required</strong></span>, <span class="strong"><strong>shall</strong></span> <span class="strong"><strong>should</strong></span>, <span class="strong"><strong>recommend</strong></span>, <span class="strong"><strong>may</strong></span>, and
+<span class="strong"><strong>optional</strong></span> in this document are to be interpreted as described in RFC 2119:</p><p><a class="ulink" href="http://www.ietf.org/rfc/rfc2119.txt" target="_top">http://www.ietf.org/rfc/rfc2119.txt</a></p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>must</strong></span>
+</span></dt><dd>
+When used alone, this word, or the term <span class="strong"><strong>required</strong></span>, means that the
+definition is an absolute requirement of the specification.
+When followed by <span class="strong"><strong>not</strong></span> (“<span class="normative">must</span> not” ), the phrase means that the
+definition is an absolute prohibition of the specification.
+</dd><dt><span class="term">
+<span class="strong"><strong>should</strong></span>
+</span></dt><dd>
+When used alone, this word, or the adjective <span class="strong"><strong>recommended</strong></span>, means that there
+may exist valid reasons in particular circumstances to ignore a particular
+item, but the full implications must be understood and carefully weighed
+before choosing a different course.
+When followed by <span class="strong"><strong>not</strong></span> (“<span class="normative">should</span> not”), the phrase means that there may
+exist valid reasons in particular circumstances when the particular behavior
+is acceptable or even useful, but the full implications <span class="normative">should</span> be
+understood and the case carefully weighed before implementing any behavior
+described with this label.
+</dd><dt><span class="term">
+<span class="strong"><strong>may</strong></span>
+</span></dt><dd>
+This word, or the adjective <span class="strong"><strong>optional</strong></span>, means that an item is truly
+optional.
+One vendor may choose to include the item because a particular marketplace
+requires it or because the vendor feels that it enhances the product while
+another vendor may omit the same item.
+An implementation which does not include a particular option must be
+prepared to interoperate with another implementation which does include the
+option, though perhaps with reduced functionality.
+In the same vein an implementation which does include a particular option
+must be prepared to interoperate with another implementation which does not
+include the option (except, of course, for the feature the option provides).
+</dd></dl></div><p>The additional terms <span class="strong"><strong>can</strong></span> and <span class="strong"><strong>cannot</strong></span> are to be interpreted as follows:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="strong"><strong>can</strong></span>
+</span></dt><dd>
+This word means that the particular behavior described is a valid choice for
+an application, and is never used to refer to implementation behavior.
+</dd><dt><span class="term">
+<span class="strong"><strong>cannot</strong></span>
+</span></dt><dd>
+This word means that the particular behavior described is not achievable by
+an application.
+For example, an entry point does not exist, or shader code is not capable of
+expressing an operation.
+</dd></dl></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>There is an important distinction between <span class="strong"><strong>cannot</strong></span> and <span class="strong"><strong>must not</strong></span>, as used
+in this Specification.
+<span class="strong"><strong>Cannot</strong></span> means something the application literally is unable to express or
+accomplish through the API, while <span class="strong"><strong>must not</strong></span> means something that the
+application is capable of expressing through the API, but that the
+consequences of doing so are undefined and potentially unrecoverable for the
+implementation.</p></td></tr></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>TODO (Jon) - We might need to augment the RFC 2119 definition of <span class="strong"><strong>must not</strong></span>
+to include some of the previous note, since at present it is defined solely
+in terms of implementation behavior.
+See Gitlab issue #9.</p></td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch01.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch01s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

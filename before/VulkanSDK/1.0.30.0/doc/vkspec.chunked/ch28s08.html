@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>28.8. Examples</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch28.html" title="Chapter 28. Sparse Resources" /><link rel="prev" href="ch28s07.html" title="28.7. Sparse Resource API" /><link rel="next" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch28s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch29.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="sparsememory-examples"></a>28.8. Examples</h2></div></div></div><p>The following examples illustrate basic creation of sparse images and
+binding them to physical memory.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="sparsememory-examples-basic"></a>28.8.1. Basic Sparse Resources</h3></div></div></div><p>This basic example creates a normal <code class="code">VkImage</code> object but uses
+fine-grained memory allocation to back the resource with multiple memory
+ranges.</p><pre class="programlisting">VkDevice                device;
+VkQueue                 queue;
+VkImage                 sparseImage;
+VkMemoryRequirements    memoryRequirements = {};
+VkDeviceSize            offset = 0;
+VkSparseMemoryBind      binds[MAX_CHUNKS] = {}; // MAX_CHUNKS is NOT part of Vulkan
+uint32_t                bindCount = 0;
+
+// ...
+
+// Allocate image object
+const VkImageCreateInfo sparseImageInfo =
+{
+    VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,        // sType
+    NULL,                                       // pNext
+    VK_IMAGE_CREATE_SPARSE_BINDING_BIT | ...,   // flags
+    ...
+};
+vkCreateImage(device, &amp;sparseImageInfo, &amp;sparseImage);
+
+// Get memory requirements
+vkGetImageMemoryRequirements(
+    device,
+    sparseImage,
+    &amp;memoryRequirements);
+
+// Bind memory in fine-grained fashion, find available memory ranges
+// from potentially multiple VkDeviceMemory pools.
+// (Illustration purposes only, can be optimized for perf)
+while (memoryRequirements.size &amp;&amp; bindCount &lt; MAX_CHUNKS)
+{
+    VkSparseMemoryBind* pBind = &amp;binds[bindCount];
+    pBind-&gt;resourceOffset = offset;
+
+    AllocateOrGetMemoryRange(
+        device,
+        &amp;memoryRequirements,
+        &amp;pBind-&gt;memory,
+        &amp;pBind-&gt;memoryOffset,
+        &amp;pBind-&gt;size);
+
+    // memory ranges must be sized as multiples of the alignment
+    assert(IsMultiple(pBind-&gt;size, memoryRequirements.alignment));
+    assert(IsMultiple(pBind-&gt;memoryOffset, memoryRequirements.alignment));
+
+    memoryRequirements.size -= pBind-&gt;size;
+    offset                  += pBind-&gt;size;
+    bindCount++;
+}
+
+// Ensure all image has backing
+if (memoryRequirements.size)
+{
+    // Error condition - too many chunks
+}
+
+const VkSparseImageOpaqueMemoryBindInfo opaqueBindInfo =
+{
+    sparseImage,                                // image
+    bindCount,                                  // bindCount
+    binds                                       // pBinds
+};
+
+const VkBindSparseInfo bindSparseInfo =
+{
+    VK_STRUCTURE_TYPE_BIND_SPARSE_INFO,         // sType
+    NULL,                                       // pNext
+    ...
+    1,                                          // imageOpaqueBindCount
+    &amp;opaqueBindInfo,                            // pImageOpaqueBinds
+    ...
+};
+
+// vkQueueBindSparse is application synchronized per queue object.
+AcquireQueueOwnership(queue);
+
+// Actually bind memory
+vkQueueBindSparse(queue, 1, &amp;bindSparseInfo, VK_NULL_HANDLE);
+
+ReleaseQueueOwnership(queue);</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="sparsememory-examples-advanced"></a>28.8.2. Advanced Sparse Resources</h3></div></div></div><p>This more advanced example creates an arrayed color attachment / texture
+image and binds only LOD zero and the <span class="normative">required</span> metadata to physical memory.</p><pre class="programlisting">VkDevice                            device;
+VkQueue                             queue;
+VkImage                             sparseImage;
+VkMemoryRequirements                memoryRequirements = {};
+uint32_t                            sparseRequirementsCount = 0;
+VkSparseImageMemoryRequirements*    pSparseReqs = NULL;
+VkSparseMemoryBind                  binds[MY_IMAGE_ARRAY_SIZE] = {};
+VkSparseImageMemoryBind             imageBinds[MY_IMAGE_ARRAY_SIZE] = {};
+uint32_t                            bindCount = 0;
+
+// Allocate image object (both renderable and sampleable)
+const VkImageCreateInfo sparseImageInfo =
+{
+    VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,        // sType
+    NULL,                                       // pNext
+    VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT | ..., // flags
+    ...
+    VK_FORMAT_R8G8B8A8_UNORM,                   // format
+    ...
+    MY_IMAGE_ARRAY_SIZE,                        // arrayLayers
+    ...
+    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+    VK_IMAGE_USAGE_SAMPLED_BIT,                 // usage
+    ...
+};
+vkCreateImage(device, &amp;sparseImageInfo, &amp;sparseImage);
+
+// Get memory requirements
+vkGetImageMemoryRequirements(
+    device,
+    sparseImage,
+    &amp;memoryRequirements);
+
+// Get sparse image aspect properties
+vkGetImageSparseMemoryRequirements(
+    device,
+    sparseImage,
+    &amp;sparseRequirementsCount,
+    NULL);
+
+pSparseReqs = (VkSparseImageMemoryRequirements*)
+    malloc(sparseRequirementsCount * sizeof(VkSparseImageMemoryRequirements));
+
+vkGetImageSparseMemoryRequirements(
+    device,
+    sparseImage,
+    &amp;sparseRequirementsCount,
+    pSparseReqs);
+
+// Bind LOD level 0 and any required metadata to memory
+for (uint32_t i = 0; i &lt; sparseRequirementsCount; ++i)
+{
+    if (pSparseReqs[i].formatProperties.aspectMask &amp;
+        VK_IMAGE_ASPECT_METADATA_BIT)
+    {
+        // Metadata must not be combined with other aspects
+        assert(pSparseReqs[i].formatProperties.aspectMask ==
+               VK_IMAGE_ASPECT_METADATA_BIT);
+
+        if (pSparseReqs[i].formatProperties.flags &amp;
+            VK_SPARSE_IMAGE_FORMAT_SINGLE_MIPTAIL_BIT)
+        {
+            VkSparseMemoryBind* pBind = &amp;binds[bindCount];
+            pBind-&gt;memorySize = pSparseReqs[i].imageMipTailSize;
+            bindCount++;
+
+            // ... Allocate memory range
+
+            pBind-&gt;resourceOffset = pSparseReqs[i].imageMipTailOffset;
+            pBind-&gt;memoryOffset = /* allocated memoryOffset */;
+            pBind-&gt;memory = /* allocated memory */;
+            pBind-&gt;flags = VK_SPARSE_MEMORY_BIND_METADATA_BIT;
+
+        }
+        else
+        {
+            // Need a mip tail region per array layer.
+            for (uint32_t a = 0; a &lt; sparseImageInfo.arrayLayers; ++a)
+            {
+                VkSparseMemoryBind* pBind = &amp;binds[bindCount];
+                pBind-&gt;memorySize = pSparseReqs[i].imageMipTailSize;
+                bindCount++;
+
+                // ... Allocate memory range
+
+                pBind-&gt;resourceOffset = pSparseReqs[i].imageMipTailOffset +
+                                        (a * pSparseReqs[i].imageMipTailStride);
+
+                pBind-&gt;memoryOffset = /* allocated memoryOffset */;
+                pBind-&gt;memory = /* allocated memory */
+                pBind-&gt;flags = VK_SPARSE_MEMORY_BIND_METADATA_BIT;
+            }
+        }
+    }
+    else
+    {
+        // resource data
+        VkExtent3D lod0BlockSize =
+        {
+            AlignedDivide(
+                sparseImageInfo.extent.width,
+                pSparseReqs[i].formatProperties.imageGranularity.width);
+            AlignedDivide(
+                sparseImageInfo.extent.height,
+                pSparseReqs[i].formatProperties.imageGranularity.height);
+            AlignedDivide(
+                sparseImageInfo.extent.depth,
+                pSparseReqs[i].formatProperties.imageGranularity.depth);
+        }
+        size_t totalBlocks =
+            lod0BlockSize.width *
+            lod0BlockSize.height *
+            lod0BlockSize.depth;
+
+        VkDeviceSize lod0MemSize = totalBlocks * memoryRequirements.alignment;
+
+        // Allocate memory for each array layer
+        for (uint32_t a = 0; a &lt; sparseImageInfo.arrayLayers; ++a)
+        {
+            // ... Allocate memory range
+
+            VkSparseImageMemoryBind* pBind = &amp;imageBinds[a];
+            pBind-&gt;subresource.aspectMask = pSparseReqs[i].formatProperties.aspectMask;
+            pBind-&gt;subresource.mipLevel = 0;
+            pBind-&gt;subresource.arrayLayer = a;
+
+            pBind-&gt;offset = (VkOffset3D){0, 0, 0};
+            pBind-&gt;extent = sparseImageInfo.extent;
+            pBind-&gt;memoryOffset = /* allocated memoryOffset */;
+            pBind-&gt;memory = /* allocated memory */;
+            pBind-&gt;flags = 0;
+        }
+    }
+
+    free(pSparseReqs);
+}
+
+const VkSparseImageOpaqueMemoryBindInfo opaqueBindInfo =
+{
+    sparseImage,                                // image
+    bindCount,                                  // bindCount
+    binds                                       // pBinds
+};
+
+const VkSparseImageMemoryBindInfo imageBindInfo =
+{
+    sparseImage,                                // image
+    sparseImageInfo.arrayLayers,                // bindCount
+    imageBinds                                  // pBinds
+};
+
+const VkBindSparseInfo bindSparseInfo =
+{
+    VK_STRUCTURE_TYPE_BIND_SPARSE_INFO,         // sType
+    NULL,                                       // pNext
+    ...
+    1,                                          // imageOpaqueBindCount
+    &amp;opaqueBindInfo,                            // pImageOpaqueBinds
+    1,                                          // imageBindCount
+    &amp;imageBindInfo,                             // pImageBinds
+    ...
+};
+
+// vkQueueBindSparse is application synchronized per queue object.
+AcquireQueueOwnership(queue);
+
+// Actually bind memory
+vkQueueBindSparse(queue, 1, &amp;bindSparseInfo, VK_NULL_HANDLE);
+
+ReleaseQueueOwnership(queue);</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch28s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch28.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch29.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>15.6. Normalized Texel Coordinate Operations</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch15.html" title="Chapter 15. Image Operations" /><link rel="prev" href="ch15s05.html" title="15.5. Derivative Operations" /><link rel="next" href="ch15s07.html" title="15.7. Unnormalized Texel Coordinate Operations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch15s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="textures-normalized-operations"></a>15.6. Normalized Texel Coordinate Operations</h2></div></div></div><p>If the image sampler instruction provides normalized texel coordinates, some
+of the following operations are performed.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-projection"></a>15.6.1. Projection Operation</h3></div></div></div><p>For <span class="strong"><strong><code class="code">Proj</code></strong></span> image operations, the normalized texel coordinates
+<span class="eq">(s,t,r,q,a)</span> and (if present) the <span class="eq">D<sub>ref</sub></span> coordinate are
+transformed as follows:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+s       &amp; = \frac{s}{q},       &amp; \textrm{for 1D, 2D, or 3D image} \\
+\\
+t       &amp; = \frac{t}{q},       &amp; \textrm{for 2D or 3D image} \\
+\\
+r       &amp; = \frac{r}{q},       &amp; \textrm{for 3D image} \\
+\\
+D_{ref} &amp; = \frac{D_{ref}}{q}, &amp; \textrm{if provided}
+\end{align*}</span></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_derivative_image_operations"></a>15.6.2. Derivative Image Operations</h3></div></div></div><p>Derivatives are used for level-of-detail selection.
+These derivatives are either implicit (in an <span class="strong"><strong><code class="code">ImplicitLod</code></strong></span> image
+instruction in a fragment shader) or explicit (provided explicitly by shader
+to the image instruction in any shader).</p><p>For implicit derivatives image instructions, the derivatives of texel
+coordinates are calculated in the same manner as derivative operations
+above.
+That is:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+\partial{s}/\partial{x} &amp; = dPdx(s), &amp; \partial{s}/\partial{y} &amp; = dPdy(s), &amp; \textrm{for 1D, 2D, Cube, or 3D image} \\
+\partial{t}/\partial{x} &amp; = dPdx(t), &amp; \partial{t}/\partial{y} &amp; = dPdy(t), &amp; \textrm{for 2D, Cube, or 3D image} \\
+\partial{u}/\partial{x} &amp; = dPdx(u), &amp; \partial{u}/\partial{y} &amp; = dPdy(u), &amp; \textrm{for Cube or 3D image}
+\end{align*}</span></div></div><p>Partial derivatives not defined above for certain image dimensionalities are
+set to zero.</p><p>For explicit level-of-detail image instructions, if the <span class="normative">optional</span> SPIR-V
+operand <span class="eq">Grad</span> is provided, then the operand values are used for the
+derivatives.
+The number of components present in each derivative for a given image
+dimensionality matches the number of partial derivatives computed above.</p><p>If the <span class="normative">optional</span> SPIR-V operand <span class="eq">Lod</span> is provided, then derivatives are
+set to zero, the cube map derivative transformation is skipped, and the
+scale factor operation is skipped.
+Instead, the floating point scalar coordinate is directly assigned to
+<span class="eq">λ<sub>base</sub></span> as described in
+<a class="link" href="ch15s06.html#textures-level-of-detail-operation" title="Level-of-Detail Operation">Level-of-Detail Operation</a>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_cube_map_face_selection_and_transformations"></a>15.6.3. Cube Map Face Selection and Transformations</h3></div></div></div><p>For cube map image instructions, the <span class="eq">(s,t,r)</span> coordinates are treated
+as a direction vector <span class="eq">(r<sub>x</sub>,r<sub>y</sub>,r<sub>z</sub>)</span>.
+The direction vector is used to select a cube map face.
+The direction vector is transformed to a per-face texel coordinate system
+<span class="eq">(s<sub>face</sub>,t<sub>face</sub>)</span>, The direction vector is also used to transform the
+derivatives to per-face derivatives.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_cube_map_face_selection"></a>15.6.4. Cube Map Face Selection</h3></div></div></div><p>The direction vector selects one of the cube map’s faces based on the
+largest magnitude coordinate direction (the major axis direction).
+Since two or more coordinates <span class="normative">can</span> have identical magnitude, the
+implementation <span class="normative">must</span> have rules to disambiguate this situation.</p><p>The rules <span class="normative">should</span> have as the first rule that <span class="eq">r<sub>z</sub></span> wins over
+<span class="eq">r<sub>y</sub></span> and <span class="eq">r<sub>x</sub></span>, and the second rule that <span class="eq">r<sub>y</sub></span> wins over
+<span class="eq">r<sub>x</sub></span>.
+An implementation <span class="normative">may</span> choose other rules, but the rules <span class="normative">must</span> be
+deterministic and depend only on <span class="eq">(r<sub>x</sub>,r<sub>y</sub>,r<sub>z</sub>)</span>.</p><p>The layer number (corresponding to a cube map face), the coordinate
+selections for <span class="eq">s<sub>c</sub></span>, <span class="eq">t<sub>c</sub></span>, <span class="eq">r<sub>c</sub></span>, and the selection of
+derivatives, are determined by the major axis direction as specified in the
+following two tables.</p><div class="table"><a id="id-1.17.7.6.5"></a><p class="title"><strong>Table 15.4. Cube map face and coordinate selection</strong></p><div class="table-contents"><table class="table" summary="Cube map face and coordinate selection" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="75%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /><col class="col_4" /><col class="col_5" /><col class="col_6" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Major Axis Direction </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Layer Number </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Cube Map Face </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">s<sub>c</sub></span>  </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">t<sub>c</sub></span>  </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">r<sub>c</sub></span></th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">0</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Positive X</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">r<sub>x</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">1</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Negative X</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">r<sub>x</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>y</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Positive Y</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>z</sub></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">r<sub>y</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">3</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Negative Y</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>z</sub></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">r<sub>y</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">4</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Positive Z</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">r<sub>z</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">5</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Negative Z</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="" align="left" valign="top"><p><span class="eq">r<sub>z</sub></span></p></td></tr></tbody></table></div></div><br class="table-break" /><div class="table"><a id="id-1.17.7.6.6"></a><p class="title"><strong>Table 15.5. Cube map derivative selection</strong></p><div class="table-contents"><table class="table" summary="Cube map derivative selection" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="75%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /><col class="col_4" /><col class="col_5" /><col class="col_6" /><col class="col_7" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Major Axis Direction </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂s<sub>c</sub> / ∂x</span> </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂s<sub>c</sub> / ∂y</span> </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂t<sub>c</sub> / ∂x</span> </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂t<sub>c</sub> / ∂y</span> </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂r<sub>c</sub> / ∂x</span> </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> <span class="eq">∂r<sub>c</sub> / ∂y</span></th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂x</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂y</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>x</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>x</sub> / ∂x</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>x</sub> / ∂y</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>y</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>y</sub> / ∂x</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>y</sub> / ∂y</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>y</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂x</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂y</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>x</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂x</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">+∂r<sub>z</sub> / ∂y</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-r<sub>z</sub></span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>x</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>x</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂x</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>y</sub> / ∂y</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂x</span></p></td><td style="" align="left" valign="top"><p><span class="eq">-∂r<sub>z</sub> / ∂y</span></p></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_cube_map_coordinate_transformation"></a>15.6.5. Cube Map Coordinate Transformation</h3></div></div></div><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+s_{face} &amp; =
+    \frac{1}{2} \times \frac{s_c}{|r_c|} + \frac{1}{2} \\
+t_{face} &amp; =
+    \frac{1}{2} \times \frac{t_c}{|r_c|} + \frac{1}{2} \\
+\end{align*}</span></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_cube_map_derivative_transformation"></a>15.6.6. Cube Map Derivative Transformation</h3></div></div></div><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+\frac{\partial{s_{face}}}{\partial{x}} &amp;=
+    \frac{\partial}{\partial{x}} \left ( \frac{1}{2} \times \frac{s_{c}}{|r_{c}|}
+    + \frac{1}{2}\right ) \\
+\frac{\partial{s_{face}}}{\partial{x}} &amp;=
+    \frac{1}{2} \times \frac{\partial}{\partial{x}}
+    \left ( \frac{s_{c}}{|r_{c}|}  \right ) \\
+\frac{\partial{s_{face}}}{\partial{x}} &amp;=
+    \frac{1}{2} \times
+    \left (
+    \frac{
+      |r_{c}| \times \partial{s_c}/\partial{x}
+      -s_c \times {\partial{r_{c}}}/{\partial{x}}}
+    {\left ( r_{c} \right )^2}
+    \right )
+\end{align*}</span></div></div><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+\frac{\partial{s_{face}}}{\partial{y}} &amp;=
+    \frac{1}{2} \times
+    \left (
+    \frac{
+      |r_{c}| \times \partial{s_c}/\partial{y}
+      -s_c \times {\partial{r_{c}}}/{\partial{y}}}
+    {\left ( r_{c} \right )^2}
+    \right )\\
+\frac{\partial{t_{face}}}{\partial{x}} &amp;=
+    \frac{1}{2} \times
+    \left (
+    \frac{
+      |r_{c}| \times \partial{t_c}/\partial{x}
+      -t_c \times {\partial{r_{c}}}/{\partial{x}}}
+    {\left ( r_{c} \right )^2}
+    \right ) \\
+\frac{\partial{t_{face}}}{\partial{y}} &amp;=
+    \frac{1}{2} \times
+    \left (
+    \frac{
+       |r_{c}| \times \partial{t_c}/\partial{y}
+      -t_c \times {\partial{r_{c}}}/{\partial{y}}}
+    {\left ( r_{c} \right )^2}
+    \right )
+\end{align*}</span></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>(Bill) Note that we never revisited ARB_texture_cubemap after we introduced
+dependent texture fetches (ARB_fragment_program and ARB_fragment_shader).</p><p>The derivatives of <span class="eq">s<sub>face</sub></span> and <span class="eq">t<sub>face</sub></span> are only valid for
+non-dependent texture fetches (pre OpenGL 2.0).</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_scale_factor_operation_level_of_detail_operation_and_image_level_s_selection"></a>15.6.7. Scale Factor Operation, Level-of-Detail Operation and Image Level(s) Selection</h3></div></div></div><p>Level-of-detail selection <span class="normative">can</span> be either explicit (provided explicitly by
+the image instruction) or implicit (determined from a scale factor
+calculated from the derivatives).</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-scale-factor"></a>Scale Factor Operation</h4></div></div></div><p>The magnitude of the derivatives are calculated by:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>ux</sub> = |∂s/∂x| × w<sub>base</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>vx</sub> = |∂t/∂x| × h<sub>base</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>wx</sub> = |∂r/∂x| × d<sub>base</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>uy</sub> = |∂s/∂y| × w<sub>base</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>vy</sub> = |∂t/∂y| × h<sub>base</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">m<sub>wy</sub> = |∂r/∂y| × d<sub>base</sub></span>
+</dd></dl></div><p>where:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">∂t/∂x = ∂t/∂y = 0</span> (for 1D images)
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">∂r/∂x = ∂r/∂y = 0</span> (for 1D, 2D or
+     Cube images)
+</dd></dl></div><p>and</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">w<sub>base</sub> = image.w</span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">h<sub>base</sub> = image.h</span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">d<sub>base</sub> = image.d</span>
+</dd></dl></div><p>(for the <em class="parameter"><code>baseMipLevel</code></em>, from the image descriptor).</p><p>The <span class="emphasis"><em>scale factors</em></span> <span class="eq">(ρ<sub>x</sub>, ρ<sub>y</sub>)</span> <span class="normative">should</span> be calculated by:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+\rho_{x} &amp; = \sqrt{ m_{ux} ^{2} + m_{vx} ^{2} + m_{wx} ^{2} } \\
+\rho_{y} &amp; = \sqrt{ m_{uy} ^{2} + m_{vy} ^{2} + m_{wy} ^{2} }
+\end{align*}</span></div></div><p>The ideal functions <span class="eq">ρ<sub>x</sub></span> and <span class="eq">ρ<sub>y</sub></span> <span class="normative">may</span> be approximated
+with functions <span class="eq">f<sub>x</sub></span> and <span class="eq">f<sub>y</sub></span>, subject to the following
+constraints:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+&amp; f_x \textrm{ is continuous and monotonically increasing in each of }
+    m_{ux},
+    m_{vx}, \textrm{ and }
+    m_{wx} \\
+&amp; f_y \textrm{ is continuous and monotonically increasing in each of }
+    m_{uy},
+    m_{vy}, \textrm{ and }
+    m_{wy}
+\end{align*}</span></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">max(|m<sub>ux</sub>|, |m<sub>vx</sub>|, |m<sub>wx</sub>|) ≤
+     f<sub>x</sub> ≤ |m<sub>ux</sub>| + |m<sub>vx</sub>| + |m<sub>wx</sub>|</span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">max(|m<sub>uy</sub>|, |m<sub>vy</sub>|, |m<sub>wy</sub>|) ≤
+     f<sub>y</sub> ≤ |m<sub>uy</sub>| + |m<sub>vy</sub>| + |m<sub>wy</sub>|</span>
+</dd></dl></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>(Bill) For reviewers only - anticipating questions.</p><p>We only support implicit derivatives for normalized texel coordinates.</p><p>So we are documenting the derivatives in s,t,r (normalized texel
+coordinates) rather than u,v,w (unnormalized texel coordinates) as in OpenGL
+and OpenGL ES specifications.
+(I know, u,v,w is the way it has been documented since OpenGL V1.0.)</p><p>Also there is no reason to have conditional application of <span class="eq">w<sub>base</sub>,
+h<sub>base</sub>, d<sub>base</sub></span> for rectangle textures either, since they do not support
+implicit derivatives.</p></td></tr></table></div><p>The minimum and maximum scale factors <span class="eq">(ρ<sub>min</sub>,ρ<sub>max</sub>)</span> are
+determined by:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">ρ<sub>max</sub> = max(ρ<sub>x</sub>, ρ<sub>y</sub>)</span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">ρ<sub>min</sub> = min(ρ<sub>x</sub>, ρ<sub>y</sub>)</span>
+</dd></dl></div><p>The sampling rate is determined by:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+N &amp; = \min \left (\left \lceil \frac{\rho_{max}}{\rho_{min}}  \right \rceil ,max_{Aniso} \right )
+\end{align*}</span></div></div><p>where:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">sampler.max<sub>Aniso</sub> = <em class="parameter"><code>maxAnisotropy</code></em></span> (from sampler
+     descriptor)
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">limits.max<sub>Aniso</sub> = <em class="parameter"><code>maxSamplerAnisotropy</code></em></span> (from physical
+     device limits)
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">max<sub>Aniso</sub> = min(sampler.max<sub>Aniso</sub>, limits.max<sub>Aniso</sub>)</span>
+</dd></dl></div><p>If <span class="eq">ρ<sub>max</sub> = ρ<sub>min</sub> = 0</span>, then all the partial derivatives are
+zero, the fragment’s footprint in texel space is a point, and <span class="eq">N</span>
+<span class="normative">should</span> be treated as 1.
+If <span class="eq">ρ<sub>max</sub> ≠ 0</span> and <span class="eq">ρ<sub>min</sub> = 0</span> then all partial
+derivatives along one axis are zero, the fragment’s footprint in texel space
+is a line segment, and <span class="eq">N</span> <span class="normative">should</span> be treated as <span class="eq">max<sub>Aniso</sub></span>.
+However, anytime the footprint is small in texel space the implementation
+<span class="normative">may</span> use a smaller value of <span class="eq">N</span>, even when <span class="eq">ρ<sub>min</sub></span> is zero or
+close to zero.</p><p>An implementation <span class="normative">may</span> round <span class="eq">N</span> up to the nearest supported sampling
+rate.</p><p>If <span class="eq">N = 1</span>, sampling is isotropic.
+If <span class="eq">N &gt; 1</span>, sampling is anisotropic.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-level-of-detail-operation"></a>Level-of-Detail Operation</h4></div></div></div><p>The <span class="emphasis"><em>level-of-detail</em></span> parameter <span class="eq">λ</span> is computed as follows:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+\lambda_{base}(x,y) &amp; =
+  \begin{cases}
+    shaderOp.Lod                               &amp; \textrm{(from optional SPIR-V operand)} \\
+    \log_2 \left ( \frac{\rho_{max}}{N} \right ) &amp; \textrm{otherwise}
+  \end{cases} \\
+\lambda'(x,y)       &amp; = \lambda_{base} + \operatorname{clamp}(sampler.bias + shaderOp.bias,-maxSamplerLodBias,maxSamplerLodBias) \\
+\lambda             &amp; =
+  \begin{cases}
+    lod_{max}, &amp; \lambda' &gt; lod_{max} \\
+    \lambda',  &amp; lod_{min} \leq \lambda' \leq lod_{max} \\
+    lod_{min}, &amp; \lambda' &lt; lod_{min} \\
+    undefined, &amp; lod_{min} &gt; lod_{max} \\
+  \end{cases}
+\end{align*}</span></div></div><p>where:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+sampler.bias       &amp; = mipLodBias &amp; \textrm{(from sampler descriptor)} \\
+shaderOp.bias      &amp; =
+  \begin{cases}
+    Bias &amp; \textrm{(from optional SPIR-V operand)} \\
+    0    &amp; \textrm{otherwise}
+  \end{cases} \\
+sampler.lod_{min}  &amp; = minLod &amp; \textrm{(from sampler descriptor)} \\
+shaderOp.lod_{min} &amp; =
+  \begin{cases}
+    MinLod &amp; \textrm{(from optional SPIR-V operand)} \\
+    0      &amp; \textrm{otherwise}
+  \end{cases} \\
+\\
+lod_{min}          &amp; = \max(sampler.lod_{min}, shaderOp.lod_{min}) \\
+lod_{max}          &amp; = maxLod &amp; \textrm{(from sampler descriptor)}
+\end{align*}</span></div></div><p>and <span class="eq">maxSamplerLodBias</span> is the value of the <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>
+feature <a class="link" href="ch31s02.html#features-limits-maxSamplerLodBias"><em class="parameter"><code>maxSamplerLodBias</code></em></a>.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-image-level-selection"></a>Image Level(s) Selection</h4></div></div></div><p>The image level(s) <span class="eq">d</span>, <span class="eq">d<sub>hi</sub></span>, and <span class="eq">d<sub>lo</sub></span> which texels are
+read from are selected based on the level-of-detail parameter, as follows.
+If the sampler’s <em class="parameter"><code>mipmapMode</code></em> is <code class="code">VK_SAMPLER_MIPMAP_MODE_NEAREST</code>,
+then level d is used:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+d =
+  \begin{cases}
+    level_{base},     &amp; \lambda \leq \frac{1}{2} \\
+    nearest(\lambda), &amp; \lambda &gt; \frac{1}{2},
+                        level_{base} + \lambda \leq
+                        q + \frac{1}{2} \\
+    q,                &amp; \lambda &gt; \frac{1}{2}, level_{base} + \lambda &gt; q + \frac{1}{2}
+  \end{cases}
+\end{align*}</span></div></div><p>where:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+nearest(\lambda) &amp; =
+  \begin{cases}
+    \left \lceil level_{base}+\lambda + \frac{1}{2}\right \rceil - 1, &amp;
+        \textrm{preferred} \\
+    \left \lfloor level_{base}+\lambda + \frac{1}{2}\right \rfloor,   &amp;
+        \textrm{alternative}
+  \end{cases}
+\end{align*}</span></div></div><p>and</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">q = <em class="parameter"><code>levelCount</code></em> - 1</span>
+</dd></dl></div><p><em class="parameter"><code>levelCount</code></em> is taken from the <em class="parameter"><code>subresourceRange</code></em> of the image view.</p><p>If the sampler’s <em class="parameter"><code>mipmapMode</code></em> is <code class="code">VK_SAMPLER_MIPMAP_MODE_LINEAR</code>,
+two neighboring levels are selected:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+d_{hi} &amp; =
+  \begin{cases}
+    q,                                                 &amp; level_{base} + \lambda \geq q \\
+    \left \lfloor level_{base}+\lambda \right \rfloor, &amp; \textrm{otherwise}
+  \end{cases} \\
+d_{lo} &amp; =
+  \begin{cases}
+    q,        &amp; level_{base} + \lambda \geq q \\
+    d_{hi}+1, &amp; \textrm{otherwise}
+  \end{cases}
+\end{align*}</span></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">δ = frac(λ)</span>
+</dd></dl></div><p>is the fractional value used for <a class="link" href="ch15s08.html#textures-texel-filtering" title="15.8.3. Texel Filtering">linear filtering</a> between levels.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-normalized-to-unnormalized"></a>15.6.8. (s,t,r,q,a) to (u,v,w,a) Transformation</h3></div></div></div><p>The normalized texel coordinates are scaled by the image level dimensions
+and the array layer is selected.
+This transformation is performed once for each level (<span class="eq">d</span> or <span class="eq">d<sub>hi</sub></span>
+and <span class="eq">d<sub>lo</sub></span>) used in <a class="link" href="ch15s08.html#textures-texel-filtering" title="15.8.3. Texel Filtering">filtering</a>.</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+u(x,y) &amp; = s(x,y) \times width_{level} \\
+v(x,y) &amp; =
+  \begin{cases}
+    0                         &amp; \textrm{for 1D images} \\
+    t(x,y) \times height_{level} &amp; \textrm{otherwise}
+  \end{cases} \\
+w(x,y) &amp; =
+  \begin{cases}
+    0                         &amp; \textrm{for 2D or Cube images} \\
+    r(x,y) \times depth_{level}  &amp; \textrm{otherwise}
+  \end{cases} \\
+\\
+a(x,y) &amp; =
+  \begin{cases}
+    a(x,y)                    &amp; \textrm{for array images} \\
+    0                         &amp; \textrm{otherwise}
+  \end{cases}
+\end{align*}</span></div></div><p>Operations then proceed to Unnormalized Texel Coordinate Operations.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

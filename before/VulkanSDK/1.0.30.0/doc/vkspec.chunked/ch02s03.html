@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>2.3. Object Model</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch02.html" title="Chapter 2. Fundamentals" /><link rel="prev" href="ch02s02.html" title="2.2. Execution Model" /><link rel="next" href="ch02s04.html" title="2.4. Command Syntax and Duration" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch02s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fundamentals-objectmodel-overview"></a>2.3. Object Model</h2></div></div></div><p>The devices, queues, and other entities in Vulkan are represented by Vulkan
+objects.
+At the API level, all objects are referred to by handles.
+There are two classes of handles, dispatchable and non-dispatchable.
+<span class="emphasis"><em>Dispatchable</em></span> handle types are a pointer to an opaque type.
+This pointer <span class="normative">may</span> be used by layers as part of intercepting API commands,
+and thus each API command takes a dispatchable type as its first parameter.
+Each object of a dispatchable type <span class="normative">must</span> have a unique handle value during
+its lifetime.</p><p><span class="emphasis"><em>Non-dispatchable</em></span> handle types are a 64-bit integer type whose meaning is
+implementation-dependent, and <span class="normative">may</span> encode object information directly in the
+handle rather than pointing to a software structure.
+Objects of a non-dispatchable type <span class="normative">may</span> not have unique handle values within
+a type or across types.
+If handle values are not unique, then destroying one such handle <span class="normative">must</span> not
+cause identical handles of other types to become invalid, and <span class="normative">must</span> not
+cause identical handles of the same type to become invalid if that handle
+value has been created more times than it has been destroyed.</p><p>All objects created or allocated from a <code class="code">VkDevice</code> (i.e. with a
+<code class="code">VkDevice</code> as the first parameter) are private to that device, and <span class="normative">must</span>
+not be used on other devices.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="fundamentals-objectmodel-lifetime"></a>2.3.1. Object Lifetime</h3></div></div></div><p>Objects are created or allocated by <span class="strong"><strong><code class="code">vkCreate*</code></strong></span> and <span class="strong"><strong><code class="code">vkAllocate*</code></strong></span>
+commands, respectively.
+Once an object is created or allocated, its “structure” is considered to
+be immutable, though the contents of certain object types is still free to
+change.
+Objects are destroyed or freed by <span class="strong"><strong><code class="code">vkDestroy*</code></strong></span> and <span class="strong"><strong><code class="code">vkFree*</code></strong></span>
+commands, respectively.</p><p>Objects that are allocated (rather than created) take resources from an
+existing pool object or memory heap, and when freed return resources to that
+pool or heap.
+While object creation and destruction are generally expected to be
+low-frequency occurrences during runtime, allocating and freeing objects
+<span class="normative">can</span> occur at high frequency.
+Pool objects help accommodate improved performance of the allocations and
+frees.</p><p>It is an application’s responsibility to track the lifetime of Vulkan
+objects, and not to destroy them while they are still in use.</p><p>Application-owned memory is immediately consumed by any Vulkan command it is
+passed into.
+The application <span class="normative">can</span> alter or free this memory as soon as the commands that
+consume it have returned.</p><p>The following object types are consumed when they are passed into a Vulkan
+command and not further accessed by the objects they are used to create.
+They <span class="normative">must</span> not be destroyed in the duration of any API command they are
+passed into:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkShaderModule</code>
+</li><li class="listitem">
+<code class="code">VkPipelineCache</code>
+</li></ul></div><p>A <code class="code">VkPipelineLayout</code> object <span class="normative">must</span> not be destroyed while any command
+buffer that uses it is in the recording state.</p><p><code class="code">VkDescriptorSetLayout</code> objects <span class="normative">may</span> be accessed by commands that
+operate on descriptor sets allocated using that layout, and those descriptor
+sets <span class="normative">must</span> not be updated with <code class="code"><a class="link" href="ch13s02.html#vkUpdateDescriptorSets">vkUpdateDescriptorSets</a></code> after the
+descriptor set layout has been destroyed.
+Otherwise, descriptor set layouts <span class="normative">can</span> be destroyed any time they are not in
+use by an API command.</p><p>The application <span class="normative">must</span> not destroy any other type of Vulkan object until all
+uses of that object by the device (such as via command buffer execution)
+have completed.</p><p>The following Vulkan objects <span class="normative">must</span> not be destroyed while any command
+buffers using the object are recording or pending execution:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkEvent</code>
+</li><li class="listitem">
+<code class="code">VkQueryPool</code>
+</li><li class="listitem">
+<code class="code">VkBuffer</code>
+</li><li class="listitem">
+<code class="code">VkBufferView</code>
+</li><li class="listitem">
+<code class="code">VkImage</code>
+</li><li class="listitem">
+<code class="code">VkImageView</code>
+</li><li class="listitem">
+<code class="code">VkPipeline</code>
+</li><li class="listitem">
+<code class="code">VkSampler</code>
+</li><li class="listitem">
+<code class="code">VkDescriptorPool</code>
+</li><li class="listitem">
+<code class="code">VkFramebuffer</code>
+</li><li class="listitem">
+<code class="code">VkRenderPass</code>
+</li><li class="listitem">
+<code class="code">VkCommandPool</code>
+</li><li class="listitem">
+<code class="code">VkDeviceMemory</code>
+</li><li class="listitem">
+<code class="code">VkDescriptorSet</code>
+</li></ul></div><p>The following Vulkan objects <span class="normative">must</span> not be destroyed while any queue is
+executing commands that use the object:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkFence</code>
+</li><li class="listitem">
+<code class="code">VkSemaphore</code>
+</li><li class="listitem">
+<code class="code">VkCommandBuffer</code>
+</li><li class="listitem">
+<code class="code">VkCommandPool</code>
+</li></ul></div><p>In general, objects <span class="normative">can</span> be destroyed or freed in any order, even if the
+object being freed is involved in the use of another object (e.g. use of a
+resource in a view, use of a view in a descriptor set, use of an object in a
+command buffer, binding of a memory allocation to a resource), as long as
+any object that uses the freed object is not further used in any way except
+to be destroyed or to be reset in such a way that it no longer uses the
+other object (such as resetting a command buffer).
+If the object has been reset, then it <span class="normative">can</span> be used as if it never used the
+freed object.
+An exception to this is when there is a parent/child relationship between
+objects.
+In this case, the application <span class="normative">must</span> not destroy a parent object before its
+children, except when the parent is explicitly defined to free its children
+when it is destroyed (e.g. for pool objects, as defined below).</p><p><code class="code">VkCommandPool</code> objects are parents of <code class="code">VkCommandBuffer</code> objects.
+<code class="code">VkDescriptorPool</code> objects are parents of <code class="code">VkDescriptorSet</code> objects.
+<code class="code">VkDevice</code> objects are parents of many object types (all that take a
+<code class="code">VkDevice</code> as a parameter to their creation).</p><p>The following Vulkan objects have specific restrictions for when they <span class="normative">can</span>
+be destroyed:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VkQueue</code> objects <span class="normative">cannot</span> be explicitly destroyed.
+    Instead, they are implicitly destroyed when the <code class="code">VkDevice</code> object
+    they are retrieved from is destroyed.
+</li><li class="listitem">
+Destroying a pool object implicitly frees all objects allocated from
+    that pool.
+    Specifically, destroying <code class="code">VkCommandPool</code> frees all
+    <code class="code">VkCommandBuffer</code> objects that were allocated from it, and
+    destroying <code class="code">VkDescriptorPool</code> frees all <code class="code">VkDescriptorSet</code>
+    objects that were allocated from it.
+</li><li class="listitem"><p class="simpara">
+<code class="code">VkDevice</code> objects <span class="normative">can</span> be destroyed when all <code class="code">VkQueue</code> objects
+    retrieved from them are idle, and all objects created from them have
+    been destroyed.
+    This includes the following objects:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VkFence</code>
+</li><li class="listitem">
+<code class="code">VkSemaphore</code>
+</li><li class="listitem">
+<code class="code">VkEvent</code>
+</li><li class="listitem">
+<code class="code">VkQueryPool</code>
+</li><li class="listitem">
+<code class="code">VkBuffer</code>
+</li><li class="listitem">
+<code class="code">VkBufferView</code>
+</li><li class="listitem">
+<code class="code">VkImage</code>
+</li><li class="listitem">
+<code class="code">VkImageView</code>
+</li><li class="listitem">
+<code class="code">VkShaderModule</code>
+</li><li class="listitem">
+<code class="code">VkPipelineCache</code>
+</li><li class="listitem">
+<code class="code">VkPipeline</code>
+</li><li class="listitem">
+<code class="code">VkPipelineLayout</code>
+</li><li class="listitem">
+<code class="code">VkSampler</code>
+</li><li class="listitem">
+<code class="code">VkDescriptorSetLayout</code>
+</li><li class="listitem">
+<code class="code">VkDescriptorPool</code>
+</li><li class="listitem">
+<code class="code">VkFramebuffer</code>
+</li><li class="listitem">
+<code class="code">VkRenderPass</code>
+</li><li class="listitem">
+<code class="code">VkCommandPool</code>
+</li><li class="listitem">
+<code class="code">VkCommandBuffer</code>
+</li><li class="listitem">
+<code class="code">VkDeviceMemory</code>
+</li></ul></div></li><li class="listitem">
+<code class="code">VkPhysicalDevice</code> objects <span class="normative">cannot</span> be explicitly destroyed.
+    Instead, they are implicitly destroyed when the <code class="code">VkInstance</code> object
+    they are retrieved from is destroyed.
+</li><li class="listitem">
+<code class="code">VkInstance</code> objects <span class="normative">can</span> be destroyed once all <code class="code">VkDevice</code>
+    objects created from any of its <code class="code">VkPhysicalDevice</code> objects have been
+    destroyed.
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.1. Primitive Topologies</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch19.html" title="Chapter 19. Drawing Commands" /><link rel="prev" href="ch19.html" title="Chapter 19. Drawing Commands" /><link rel="next" href="ch19s02.html" title="19.2. Programmable Primitive Shading" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch19.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch19s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="drawing-primitive-topologies"></a>19.1. Primitive Topologies</h2></div></div></div><p><span class="emphasis"><em>Primitive topology</em></span> determines how consecutive vertices are organized into
+primitives, and determines the type of primitive that is used at the
+beginning of the graphics pipeline.
+The effective topology for later stages of the pipeline is altered by
+tessellation or geometry shading (if either is in use) and depends on the
+execution modes of those shaders.
+Supported topologies are defined by <code class="code"><a class="link" href="ch19s01.html#VkPrimitiveTopology">VkPrimitiveTopology</a></code> and include:</p><p><a id="VkPrimitiveTopology"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkPrimitiveTopology {
+    VK_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
+    VK_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
+    VK_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
+    VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY = 6,
+    VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY = 7,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY = 8,
+    VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY = 9,
+    VK_PRIMITIVE_TOPOLOGY_PATCH_LIST = 10,
+} VkPrimitiveTopology;</pre><p>
+</p><p>Each primitive topology, and its construction from a list of vertices, is
+summarized below.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The terminology “the vertex <span class="eq">i</span> ” means “the vertex
+with index <span class="eq">i</span> in the ordered list of vertices defining this
+primitive”.</p></td></tr></table></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_points"></a>19.1.1. Points</h3></div></div></div><p>A series of individual points are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_POINT_LIST</code>.
+Each vertex defines a separate point.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_separate_lines"></a>19.1.2. Separate Lines</h3></div></div></div><p>Individual line segments, each defined by a pair of vertices, are specified
+with <em class="parameter"><code>topology</code></em> <code class="code">VK_PRIMITIVE_TOPOLOGY_LINE_LIST</code>.
+The first two vertices define the first segment, with subsequent pairs of
+vertices each defining one more segment.
+If the number of vertices is odd, then the last vertex is ignored.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_line_strips"></a>19.1.3. Line Strips</h3></div></div></div><p>A series of one or more connected line segments are specified with
+<em class="parameter"><code>topology</code></em> <code class="code">VK_PRIMITIVE_TOPOLOGY_LINE_STRIP</code>.
+In this case, the first vertex specifies the first segment’s start point
+while the second vertex specifies the first segment’s endpoint and the
+second segment’s start point.
+In general, vertex <span class="eq">i</span> (for <span class="eq">i &gt; 0</span>) specifies the beginning of the
+<span class="eq">i</span>th segment and the end of the previous segment.
+The last vertex specifies the end of the last segment.
+If only one vertex is specified, then no primitive is generated.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triangle_strips"></a>19.1.4. Triangle Strips</h3></div></div></div><p>A triangle strip is a series of triangles connected along shared edges, and
+is specified with <em class="parameter"><code>topology</code></em> <code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code>.
+In this case, the first three vertices define the first triangle, and their
+order is significant.
+Each subsequent vertex defines a new triangle using that point along with
+the last two vertices from the previous triangle, as shown in figure
+<a class="xref" href="ch19s01.html#fig-triangles" title="Figure 19.1. Triangle strips, fans, and lists">Figure 19.1, “Triangle strips, fans, and lists”</a>.
+If fewer than three vertices are specified, no primitive is produced.
+The order of vertices in successive triangles changes as shown in the
+figure, so that all triangle faces have the same orientation.</p><div class="figure"><a id="fig-triangles"></a><p class="title"><strong>Figure 19.1. Triangle strips, fans, and lists</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/triangles.svg" align="middle" width="800" alt="images/triangles.svg" /></div></div></div><br class="figure-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch19s01.html#fig-triangles" title="Figure 19.1. Triangle strips, fans, and lists">Triangle strips</a>, fans, and lists diagram, the
+sub-sections represent:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+(a) A triangle strip.
+</li><li class="listitem">
+(b) A triangle fan.
+</li><li class="listitem">
+(c) Independent triangles.
+</li></ul></div><p>The numbers give the sequencing of the vertices in order within the vertex
+arrays.
+Note that in (a) and (b) triangle edge ordering is determined by the first
+triangle, while in (c) the order of each triangle’s edges is independent of
+the other triangles.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triangle_fans"></a>19.1.5. Triangle Fans</h3></div></div></div><p>A triangle fan is specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN</code>.
+It is similar to a triangle strip, but changes the vertex replaced from the
+previous triangle as shown in figure <a class="xref" href="ch19s01.html#fig-triangles" title="Figure 19.1. Triangle strips, fans, and lists">Figure 19.1, “Triangle strips, fans, and lists”</a>, so that all
+triangles in the fan share a common vertex.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_separate_triangles"></a>19.1.6. Separate Triangles</h3></div></div></div><p>Separate triangles are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST</code>, as shown in figure
+<a class="xref" href="ch19s01.html#fig-triangles" title="Figure 19.1. Triangle strips, fans, and lists">Figure 19.1, “Triangle strips, fans, and lists”</a>.
+In this case, vertices <span class="eq">3 i</span>, <span class="eq">3 i + 1</span>, and <span class="eq">3 i + 2</span> (in that
+order) determine a triangle for each <span class="eq">i = 0, 1, …, n-1</span>, where there
+are <span class="eq">3 n + k</span> vertices drawn.
+<span class="eq">k</span> is either 0, 1, or 2; if <span class="eq">k</span> is not zero, the final <span class="eq">k</span>
+vertices are ignored.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_lines_with_adjacency"></a>19.1.7. Lines With Adjacency</h3></div></div></div><p>Lines with adjacency are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY</code>, and are independent
+line segments where each endpoint has a corresponding <span class="emphasis"><em>adjacent</em></span> vertex that
+is accessible in a <a class="link" href="ch22.html" title="Chapter 22. Geometry Shading">geometry shader</a>.
+If a geometry shader is not active, the adjacent vertices are ignored.</p><p>A line segment is drawn from vertex <span class="eq">4 i + 1</span> to vertex <span class="eq">4 i + 2</span>
+for each <span class="eq">i = 0, 1, …, n-1</span>, where there are <span class="eq">4 n + k</span> vertices.
+<span class="eq">k</span> is either 0, 1, 2, or 3; if <span class="eq">k</span> is not zero, the final <span class="eq">k</span>
+vertices are ignored.
+For line segment <span class="eq">i</span>, vertices <span class="eq">4 i</span> and <span class="eq">4 i + 3</span> vertices are
+considered adjacent to vertices <span class="eq">4 i + 1</span> and <span class="eq">4 i + 2</span>,
+respectively, as shown in figure <a class="xref" href="ch19s01.html#fig-lineadj" title="Figure 19.2. Lines with adjacency">Figure 19.2, “Lines with adjacency”</a>.</p><div class="figure"><a id="fig-lineadj"></a><p class="title"><strong>Figure 19.2. Lines with adjacency</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/lineadj.svg" align="middle" width="800" alt="images/lineadj.svg" /></div></div></div><br class="figure-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch19s01.html#fig-lineadj" title="Figure 19.2. Lines with adjacency">Lines with adjacency</a> diagram, the sub-sections
+represent:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+(a) Lines with adjacency.
+</li><li class="listitem">
+(b) Line strips with adjacency.
+</li></ul></div><p>The vertices connected with solid lines belong to the main primitives.
+The vertices connected by dashed lines are the adjacent vertices that are
+accessible in a geometry shader.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_line_strips_with_adjacency"></a>19.1.8. Line Strips With Adjacency</h3></div></div></div><p>Line strips with adjacency are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY</code> and are similar to
+line strips, except that each line segment has a pair of adjacent vertices
+that are accessible in a geometry shader.
+If a geometry shader is not active, the adjacent vertices are ignored.</p><p>A line segment is drawn from vertex <span class="eq">i + 1</span> vertex to vertex <span class="eq">i + 2</span>
+for each <span class="eq">i = 0, 1, …, n-1</span>, where there are <span class="eq">n + 3</span> vertices.
+If there are fewer than four vertices, all vertices are ignored.
+For line segment <span class="eq">i</span>, vertices <span class="eq">i</span> and <span class="eq">i + 3</span> are considered
+adjacent to vertices <span class="eq">i + 1</span> and <span class="eq">i + 2</span>, respectively, as shown in
+figure <a class="xref" href="ch19s01.html#fig-lineadj" title="Figure 19.2. Lines with adjacency">Figure 19.2, “Lines with adjacency”</a>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triangle_list_with_adjacency"></a>19.1.9. Triangle List With Adjacency</h3></div></div></div><p>Triangles with adjacency are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY</code>, and are similar to
+separate triangles except that each triangle edge has an adjacent vertex
+that is accessible in a geometry shader.
+If a geometry shader is not active, the adjacent vertices are ignored.</p><p>Vertices <span class="eq">6 i</span>, <span class="eq">6 i + 2</span>, and <span class="eq">6 i + 4</span> (in that order)
+determine a triangle for each <span class="eq">i = 0, 1, …, n-1</span>, where there are
+<span class="eq">6 n+k</span> vertices.
+<span class="eq">k</span> is either 0, 1, 2, 3, 4, or 5; if <span class="eq">k</span> is non-zero, the final
+<span class="eq">k</span> vertices are ignored.
+For triangle <span class="eq">i</span>, vertices <span class="eq">6 i + 1</span>, <span class="eq">6 i + 3</span>, and <span class="eq">6 i
++ 5</span> vertices are considered adjacent to edges from vertex <span class="eq">6 i</span> to
+<span class="eq">6 i + 2</span>, from <span class="eq">6 i + 2</span> to <span class="eq">6 i + 4</span>, and from <span class="eq">6 i + 4</span>
+to <span class="eq">6 i</span> vertices, respectively, as shown in figure <a class="xref" href="ch19s01.html#fig-triadj" title="Figure 19.3. Triangles with adjacency">Figure 19.3, “Triangles with adjacency”</a>.</p><div class="figure"><a id="fig-triadj"></a><p class="title"><strong>Figure 19.3. Triangles with adjacency</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/triadj.svg" align="middle" width="800" alt="images/triadj.svg" /></div></div></div><br class="figure-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch19s01.html#fig-triadj" title="Figure 19.3. Triangles with adjacency">Triangles with adjacency</a> diagram, the vertices
+connected with solid lines belong to the main primitive.
+The vertices connected by dashed lines are the adjacent vertices that are
+accessible in a geometry shader.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_triangle_strips_with_adjacency"></a>19.1.10. Triangle Strips With Adjacency</h3></div></div></div><p>Triangle strips with adjacency are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY</code>, and are similar
+to triangle strips except that each triangle edge has an adjacent vertex
+that is accessible in a geometry shader.
+If a geometry shader is not active, the adjacent vertices are ignored.</p><div class="figure"><a id="fig-tstripadj"></a><p class="title"><strong>Figure 19.4. Triangle strips with adjacency</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/tstripadj.svg" align="middle" width="800" alt="images/tstripadj.svg" /></div></div></div><br class="figure-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch19s01.html#fig-tstripadj" title="Figure 19.4. Triangle strips with adjacency">Triangle strips with adjacency</a> diagram, the
+vertices connected with solid lines belong to the main primitive; the
+vertices connected by dashed lines are the adjacent vertices that are
+accessible in a geometry shader.</p></div><p>In triangle strips with adjacency, <span class="eq">n</span> triangles are drawn where there
+are <span class="eq">2 (n + 2) + k</span> vertices.
+<span class="eq">k</span> is either 0 or 1; if <span class="eq">k</span> is 1, the final vertex is ignored.
+If there are fewer than 6 vertices, the entire primitive is ignored.
+Table <a class="xref" href="ch19s01.html#trigenadj" title="Table 19.1. Triangles generated by triangle strips with adjacency.">Table 19.1, “Triangles generated by triangle strips with adjacency.”</a> describes the vertices and order used to draw each
+triangle, and which vertices are considered adjacent to each edge of the
+triangle, as shown in figure <a class="xref" href="ch19s01.html#fig-tstripadj" title="Figure 19.4. Triangle strips with adjacency">Figure 19.4, “Triangle strips with adjacency”</a>.</p><div class="table"><a id="trigenadj"></a><p class="title"><strong>Table 19.1. Triangles generated by triangle strips with adjacency.</strong></p><div class="table-contents"><table class="table" summary="Triangles generated by triangle strips with adjacency." cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /><col class="col_4" /><col class="col_5" /><col class="col_6" /><col class="col_7" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">                                </th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " colspan="3" align="left" valign="top"> Primitive Vertices                             </th><th style="border-bottom: 1px solid #527bbd; " colspan="3" align="left" valign="top"> Adjacent Vertices</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Primitive</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>1st</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2nd</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3rd</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>1/2</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2/3</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3/1</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>only (<span class="eq">i = 0, n = 1</span>)</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>0</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>1</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>5</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>first (<span class="eq">i = 0</span>)</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>0</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>2</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>4</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>1</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>6</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>3</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>middle (<span class="eq">i</span> odd)</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 4</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i-2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 3</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 6</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>middle (<span class="eq">i</span> even)</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 4</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i-2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 6</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 3</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>last (<span class="eq">i=n-1</span>, <span class="eq">i</span> odd)</p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 4</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i-2</span></p></td><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 3</span></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 5</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>last (<span class="eq">i=n-1</span>, <span class="eq">i</span> even)</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 2</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 4</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i-2</span></p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">2 i + 5</span></p></td><td style="" align="left" valign="top"><p><span class="eq">2 i + 3</span></p></td></tr></tbody></table></div></div><br class="table-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch19s01.html#trigenadj" title="Table 19.1. Triangles generated by triangle strips with adjacency.">Triangles generated by triangle strips with adjacency</a>
+table, each triangle is drawn using the vertices whose numbers are in the
+<span class="strong"><strong>1st</strong></span>, <span class="strong"><strong>2nd</strong></span>, and <span class="strong"><strong>3rd</strong></span> columns under <span class="strong"><strong>Primitive Vertices</strong></span>, in that order.
+The vertices in the 1/2, 2/3, and 3/1 columns under <span class="strong"><strong>Adjacent Vertices</strong></span> are
+considered adjacent to the edges from the first to the second, from the
+second to the third, and from the third to the first vertex of the triangle,
+respectively.
+The six rows correspond to six cases: the first and only triangle <span class="eq">(i =
+0, n = 1)</span>, the first triangle of several <span class="eq">(i = 0, n &gt; 0)</span>, <span class="emphasis"><em>odd</em></span> middle
+triangles <span class="eq">(i = 1, 3, 5 …)</span>, <span class="emphasis"><em>even</em></span> middle triangles <span class="eq">(i = 2, 4,
+6, …)</span>, and special cases for the last triangle, when <span class="eq">i</span> is either
+even or odd.
+For the purposes of this table, both the first vertex and first triangle are
+numbered <span class="eq">0</span>.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="drawing-primitive-topologies-patches"></a>19.1.11. Separate Patches</h3></div></div></div><p>Separate patches are specified with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_PATCH_LIST</code>.
+A patch is an ordered collection of vertices used for
+<a class="link" href="ch21.html" title="Chapter 21. Tessellation">primitive tessellation</a>.
+The vertices comprising a patch have no implied geometric ordering, and are
+used by tessellation shaders and the fixed-function tessellator to generate
+new point, line, or triangle primitives.</p><p>Each patch in the series has a fixed number of vertices, specified by the
+<em class="parameter"><code>patchControlPoints</code></em> member of the
+<code class="code"><a class="link" href="ch21s07.html#VkPipelineTessellationStateCreateInfo">VkPipelineTessellationStateCreateInfo</a></code> structure passed to
+<code class="code"><a class="link" href="ch09s02.html#vkCreateGraphicsPipelines">vkCreateGraphicsPipelines</a></code>.
+Once assembled and vertex shaded, these patches are provided as input to the
+tessellation control shader stage.</p><p>If the number of vertices in a patch is given by <span class="eq">v</span>, vertices <span class="eq">v
+× i</span> through <span class="eq">v × i + v - 1</span> (in that order) determine a
+patch for each <span class="eq">i = 0, 1, …, n-1</span>, where there are <span class="eq">v × n
++ k</span> vertices.
+<span class="eq">k</span> is in the range <span class="eq">[0, v - 1]</span>; if <span class="eq">k</span> is not zero, the final
+<span class="eq">k</span> vertices are ignored.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_general_considerations_for_polygon_primitives"></a>19.1.12. General Considerations For Polygon Primitives</h3></div></div></div><p>Depending on the <a class="link" href="ch24s07.html#primsrast-polygonmode" title="24.7.2. Polygon Mode">polygon mode</a>, a <span class="emphasis"><em>polygon
+primitive</em></span> generated from a drawing command with <em class="parameter"><code>topology</code></em>
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN</code>,
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code>,
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST</code>,
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY</code>, or
+<code class="code">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY</code> is rendered in one
+of several ways, such as outlining its border or filling its interior.
+The order of vertices in such a primitive is significant during
+<a class="link" href="ch24s07.html#primsrast-polygons-basic" title="24.7.1. Basic Polygon Rasterization">polygon rasterization</a> and
+<a class="link" href="ch08s09.html" title="8.9. Fragment Shaders">fragment shading</a>.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch19.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch19.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch19s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

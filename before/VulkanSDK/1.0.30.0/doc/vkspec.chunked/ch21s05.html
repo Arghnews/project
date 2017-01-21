@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>21.5. Quad Tessellation</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch21.html" title="Chapter 21. Tessellation" /><link rel="prev" href="ch21s04.html" title="21.4. Triangle Tessellation" /><link rel="next" href="ch21s06.html" title="21.6. Isoline Tessellation" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch21s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch21s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="tessellation-quad-tessellation"></a>21.5. Quad Tessellation</h2></div></div></div><p>If the tessellation primitive mode is <span class="strong"><strong><code class="code">Quads</code></strong></span>, a rectangle is subdivided
+into a collection of triangles covering the area of the original rectangle.
+First, the original rectangle is subdivided into a regular mesh of
+rectangles, where the number of rectangles along the <span class="eq">u = 0</span> and <span class="eq">u
+= 1</span> (vertical) and <span class="eq">v = 0</span> and <span class="eq">v = 1</span> (horizontal) edges are
+derived from the first and second inner tessellation levels, respectively.
+All rectangles, except those adjacent to one of the outer rectangle edges,
+are decomposed into triangle pairs.
+The outermost rectangle edges are subdivided independently, using the first,
+second, third, and fourth outer tessellation levels to control the number of
+subdivisions of the <span class="eq">u = 0</span> (left), <span class="eq">v = 0</span> (bottom), <span class="eq">u = 1</span>
+(right), and <span class="eq">v = 1</span> (top) edges, respectively.
+The area between the inner rectangles of the mesh and the outer rectangle
+edges are filled by triangles produced by joining the vertices on the
+subdivided outer edges to the vertices on the edge of the inner rectangle
+mesh.</p><p>If both clamped inner tessellation levels and all four clamped outer
+tessellation levels are exactly one, only a single triangle pair covering
+the outer rectangle is generated.
+Otherwise, if either clamped inner tessellation level is one, that
+tessellation level is treated as though it were originally specified as
+<span class="eq">1 + ε</span> and will result in a two- or three-segment subdivision
+depending on the tessellation spacing.
+When used with fractional odd spacing, the three-segment subdivision <span class="normative">may</span>
+produce <span class="emphasis"><em>inner vertices</em></span> positioned on the edge of the rectangle.</p><p>If any tessellation level is greater than one, tessellation begins by
+subdividing the <span class="eq">u = 0</span> and <span class="eq">u = 1</span> edges of the outer rectangle
+into <span class="eq">m</span> segments using the clamped and rounded first inner tessellation
+level and the tessellation spacing.
+The <span class="eq">v = 0</span> and <span class="eq">v = 1</span> edges are subdivided into <span class="eq">n</span> segments
+using the second inner tessellation level.
+Each vertex on the <span class="eq">u = 0</span> and <span class="eq">v = 0</span> edges are joined with the
+corresponding vertex on the <span class="eq">u = 1</span> and <span class="eq">v = 1</span> edges to produce a
+set of vertical and horizontal lines that divide the rectangle into a grid
+of smaller rectangles.
+The primitive generator emits a pair of non-overlapping triangles covering
+each such rectangle not adjacent to an edge of the outer rectangle.
+The boundary of the region covered by these triangles forms an inner
+rectangle, the edges of which are subdivided by the grid vertices that lie
+on the edge.
+If either <span class="eq">m</span> or <span class="eq">n</span> is two, the inner rectangle is degenerate, and
+one or both of the rectangle’s <span class="emphasis"><em>edges</em></span> consist of a single point.
+This subdivision is illustrated in Figure <a class="link" href="ch21s05.html#img-innerquad" title="Figure 21.3. Inner Quad Tessellation">Inner Quad Tessellation</a>.</p><div class="figure"><a id="img-innerquad"></a><p class="title"><strong>Figure 21.3. Inner Quad Tessellation</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/innerquad.svg" align="middle" width="800" alt="images/innerquad.svg" /></div></div></div><br class="figure-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Caption</strong></p></div></div></div><p>In the <a class="link" href="ch21s05.html#img-innerquad" title="Figure 21.3. Inner Quad Tessellation">Inner Quad Tessellation</a> diagram, inner quad
+tessellation levels of (a) <span class="eq">(4,2)</span> and (b) <span class="eq">(7,4)</span> are shown.
+Gray regions in figure (b) depict the 10 inner rectangles, each of which
+will be subdivided into two triangles.
+Solid black circles depict vertices on the boundary of the outer and inner
+rectangles, where the inner rectangle on the top figure is degenerate (a
+single line segment).
+Dotted lines depict the horizontal and vertical edges connecting
+corresponding vertices on the inner and outer rectangle edges.</p></div><p>After the area corresponding to the inner rectangle is filled, the
+tessellator <span class="normative">must</span> produce triangles to cover the area between the inner and
+outer rectangles.
+To do this, the subdivision of the outer rectangle edge above is discarded.
+Instead, the <span class="eq">u = 0</span>, <span class="eq">v = 0</span>, <span class="eq">u = 1</span>, and <span class="eq">v = 1</span> edges
+are subdivided according to the first, second, third, and fourth outer
+tessellation levels, respectively, and the tessellation spacing.
+The original subdivision of the inner rectangle is retained.
+The area between the outer and inner rectangles is completely filled by
+non-overlapping triangles.
+Two of the three vertices of each triangle are adjacent vertices on a
+subdivided edge of one rectangle; the third is one of the vertices on the
+corresponding edge of the other triangle.
+If either edge of the innermost rectangle is degenerate, the area near the
+corresponding outer edges is filled by connecting each vertex on the outer
+edge with the single vertex making up the <span class="emphasis"><em>inner edge</em></span>.</p><p>The algorithm used to subdivide the rectangular domain in (u,v) space into
+individual triangles is implementation-dependent.
+However, the set of triangles produced will completely cover the domain, and
+no portion of the domain will be covered by multiple triangles.
+The order in which the generated triangles passed to subsequent pipeline
+stages and the order of the vertices in those triangles are both
+implementation-dependent.
+However, when depicted in a manner similar to <a class="link" href="ch21s05.html#img-innerquad" title="Figure 21.3. Inner Quad Tessellation">Inner Quad Tessellation</a>, the order of the vertices in the generated triangles will be
+either all clockwise or all counter-clockwise, according to the vertex order
+layout declaration.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch21s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch21.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch21s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

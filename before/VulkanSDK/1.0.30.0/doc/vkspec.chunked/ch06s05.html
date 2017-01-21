@@ -1,0 +1,765 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>6.5. Pipeline Barriers</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch06.html" title="Chapter 6. Synchronization and Cache Control" /><link rel="prev" href="ch06s04.html" title="6.4. Execution And Memory Dependencies" /><link rel="next" href="ch06s06.html" title="6.6. Host Write Ordering Guarantees" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch06s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch06s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="synchronization-pipeline-barriers"></a>6.5. Pipeline Barriers</h2></div></div></div><p>A <span class="emphasis"><em>pipeline barrier</em></span> inserts an execution dependency and a set of memory
+dependencies between a set of commands earlier in the command buffer and a
+set of commands later in the command buffer.</p><p>To record a pipeline barrier, call:</p><p><a id="vkCmdPipelineBarrier"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdPipelineBarrier(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineStageFlags                        srcStageMask,
+    VkPipelineStageFlags                        dstStageMask,
+    VkDependencyFlags                           dependencyFlags,
+    uint32_t                                    memoryBarrierCount,
+    const VkMemoryBarrier*                      pMemoryBarriers,
+    uint32_t                                    bufferMemoryBarrierCount,
+    const VkBufferMemoryBarrier*                pBufferMemoryBarriers,
+    uint32_t                                    imageMemoryBarrierCount,
+    const VkImageMemoryBarrier*                 pImageMemoryBarriers);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer into which the command is
+    recorded.
+</li><li class="listitem">
+<em class="parameter"><code>srcStageMask</code></em> is a bitmask of <code class="code"><a class="link" href="ch06s05.html#VkPipelineStageFlagBits">VkPipelineStageFlagBits</a></code>
+    specifying a set of source pipeline stages (see
+    <a class="xref" href="ch06s05.html#synchronization-pipeline-stage-flags" title="6.5.2. Pipeline Stage Flags">Section 6.5.2, “Pipeline Stage Flags”</a>).
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>dstStageMask</code></em> is a bitmask specifying a set of destination pipeline
+    stages.
+</p><p class="simpara">The pipeline barrier specifies an execution dependency such that all work
+performed by the set of pipeline stages included in <em class="parameter"><code>srcStageMask</code></em> of
+the first set of commands completes before any work performed by the set of
+pipeline stages included in <em class="parameter"><code>dstStageMask</code></em> of the second set of commands
+begins.</p></li><li class="listitem">
+<em class="parameter"><code>dependencyFlags</code></em> is a bitmask of <code class="code"><a class="link" href="ch07s01.html#VkDependencyFlagBits">VkDependencyFlagBits</a></code>.
+    The execution dependency is by-region if the mask includes
+    <code class="code">VK_DEPENDENCY_BY_REGION_BIT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>memoryBarrierCount</code></em> is the length of the <em class="parameter"><code>pMemoryBarriers</code></em>
+    array.
+</li><li class="listitem">
+<em class="parameter"><code>pMemoryBarriers</code></em> is a pointer to an array of <code class="code"><a class="link" href="ch06s05.html#VkMemoryBarrier">VkMemoryBarrier</a></code>
+    structures.
+</li><li class="listitem">
+<em class="parameter"><code>bufferMemoryBarrierCount</code></em> is the length of the
+    <em class="parameter"><code>pBufferMemoryBarriers</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pBufferMemoryBarriers</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch06s05.html#VkBufferMemoryBarrier">VkBufferMemoryBarrier</a></code> structures.
+</li><li class="listitem">
+<em class="parameter"><code>imageMemoryBarrierCount</code></em> is the length of the
+    <em class="parameter"><code>pImageMemoryBarriers</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pImageMemoryBarriers</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch06s05.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a></code> structures.
+</li></ul></div><p>Each element of the <em class="parameter"><code>pMemoryBarriers</code></em>, <em class="parameter"><code>pBufferMemoryBarriers</code></em> and
+<em class="parameter"><code>pImageMemoryBarriers</code></em> arrays specifies two halves of a memory
+dependency, as defined above.
+Specifics of each type of memory barrier and the memory access types are
+defined further in <a class="link" href="ch06s05.html#synchronization-memory-barriers" title="6.5.3. Memory Barriers">Memory Barriers</a>.</p><p>If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called outside a render pass instance, then
+the first set of commands is all prior commands submitted to the queue and
+recorded in the command buffer and the second set of commands is all
+subsequent commands recorded in the command buffer and submitted to the
+queue.
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called inside a render pass instance, then
+the first set of commands is all prior commands in the same subpass and the
+second set of commands is all subsequent commands in the same subpass.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-geometryShader">geometry shaders</a> feature is
+    not enabled, <em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-geometryShader">geometry shaders</a> feature is
+    not enabled, <em class="parameter"><code>dstStageMask</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-tessellationShader">tessellation shaders</a>
+    feature is not enabled, <em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT</code> or
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-tessellationShader">tessellation shaders</a>
+    feature is not enabled, <em class="parameter"><code>dstStageMask</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT</code> or
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT</code>
+</li><li class="listitem"><p class="simpara">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    the render pass <span class="normative">must</span> have been created with a <code class="code">VkSubpassDependency</code>
+    instance in <em class="parameter"><code>pDependencies</code></em> that expresses a dependency from the
+    current subpass to itself.
+    Additionally:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> contain a subset of the bit values in the
+     <em class="parameter"><code>srcStageMask</code></em> member of that instance of <code class="code">VkSubpassDependency</code>
+</li><li class="listitem">
+<em class="parameter"><code>dstStageMask</code></em> <span class="normative">must</span> contain a subset of the bit values in the
+     <em class="parameter"><code>dstStageMask</code></em> member of that instance of <code class="code">VkSubpassDependency</code>
+</li><li class="listitem">
+The <em class="parameter"><code>srcAccessMask</code></em> of any element of <em class="parameter"><code>pMemoryBarriers</code></em> or
+     <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> contain a subset of the bit values the
+     <em class="parameter"><code>srcAccessMask</code></em> member of that instance of
+     <code class="code">VkSubpassDependency</code>
+</li><li class="listitem">
+The <em class="parameter"><code>dstAccessMask</code></em> of any element of <em class="parameter"><code>pMemoryBarriers</code></em> or
+     <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> contain a subset of the bit values the
+     <em class="parameter"><code>dstAccessMask</code></em> member of that instance of
+     <code class="code">VkSubpassDependency</code>
+</li><li class="listitem">
+<em class="parameter"><code>dependencyFlags</code></em> <span class="normative">must</span> be equal to the <em class="parameter"><code>dependencyFlags</code></em>
+     member of that instance of <code class="code">VkSubpassDependency</code>
+</li></ul></div></li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    <em class="parameter"><code>bufferMemoryBarrierCount</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    the <em class="parameter"><code>image</code></em> member of any element of <em class="parameter"><code>pImageMemoryBarriers</code></em>
+    <span class="normative">must</span> be equal to one of the elements of <em class="parameter"><code>pAttachments</code></em> that the
+    current <em class="parameter"><code>framebuffer</code></em> was created with, that is also referred to by
+    one of the elements of the <em class="parameter"><code>pColorAttachments</code></em>,
+    <em class="parameter"><code>pResolveAttachments</code></em> or <em class="parameter"><code>pDepthStencilAttachment</code></em> members of
+    the <code class="code">VkSubpassDescription</code> instance that the current subpass was
+    created with
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    the <em class="parameter"><code>oldLayout</code></em> and <em class="parameter"><code>newLayout</code></em> members of any element of
+    <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> be equal to the <em class="parameter"><code>layout</code></em> member of
+    an element of the <em class="parameter"><code>pColorAttachments</code></em>, <em class="parameter"><code>pResolveAttachments</code></em> or
+    <em class="parameter"><code>pDepthStencilAttachment</code></em> members of the <code class="code">VkSubpassDescription</code>
+    instance that the current subpass was created with, that refers to the
+    same <em class="parameter"><code>image</code></em>
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    the <em class="parameter"><code>oldLayout</code></em> and <em class="parameter"><code>newLayout</code></em> members of an element of
+    <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> be equal
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called within a render pass instance,
+    the <em class="parameter"><code>srcQueueFamilyIndex</code></em> and <em class="parameter"><code>dstQueueFamilyIndex</code></em> members of
+    any element of <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> be
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkPipelineStageFlagBits">VkPipelineStageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>dstStageMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkPipelineStageFlagBits">VkPipelineStageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>dstStageMask</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>dependencyFlags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch07s01.html#VkDependencyFlagBits">VkDependencyFlagBits</a></code> values
+</li><li class="listitem">
+If <em class="parameter"><code>memoryBarrierCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pMemoryBarriers</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>memoryBarrierCount</code></em> valid <code class="code">VkMemoryBarrier</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>bufferMemoryBarrierCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pBufferMemoryBarriers</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>bufferMemoryBarrierCount</code></em> valid <code class="code">VkBufferMemoryBarrier</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>imageMemoryBarrierCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pImageMemoryBarriers</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>imageMemoryBarrierCount</code></em> valid <code class="code">VkImageMemoryBarrier</code> structures
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support transfer, graphics, or compute operations
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>TRANSFER
+GRAPHICS
+COMPUTE</p></td></tr></tbody></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-pipeline-barriers-subpass-self-dependencies"></a>6.5.1. Subpass Self-dependency</h3></div></div></div><p>If <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> is called inside a render pass instance, the
+following restrictions apply.
+For a given subpass to allow a pipeline barrier, the render pass <span class="normative">must</span>
+declare a <span class="emphasis"><em>self-dependency</em></span> from that subpass to itself.
+That is, there <span class="normative">must</span> exist a <code class="code">VkSubpassDependency</code> in the subpass
+dependency list for the render pass with <em class="parameter"><code>srcSubpass</code></em> and
+<em class="parameter"><code>dstSubpass</code></em> equal to that subpass index.
+More than one self-dependency <span class="normative">can</span> be declared for each subpass.
+Self-dependencies <span class="normative">must</span> only include pipeline stage bits that are graphics
+stages.
+Self-dependencies <span class="normative">must</span> not have any earlier pipeline stages depend on any
+later pipeline stages.
+More precisely, this means that whatever is the last pipeline stage in
+<em class="parameter"><code>srcStageMask</code></em> <span class="normative">must</span> be no later than whatever is the first pipeline
+stage in <em class="parameter"><code>dstStageMask</code></em> (the latest source stage <span class="normative">can</span> be equal to the
+earliest destination stage).
+If the source and destination stage masks both include framebuffer-space
+stages, then <em class="parameter"><code>dependencyFlags</code></em> <span class="normative">must</span> include
+<code class="code">VK_DEPENDENCY_BY_REGION_BIT</code>.</p><p>A <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> command inside a render pass instance <span class="normative">must</span> be
+a <span class="emphasis"><em>subset</em></span> of one of the self-dependencies of the subpass it is used in,
+meaning that the stage masks and access masks <span class="normative">must</span> each include only a
+subset of the bits of the corresponding mask in that self-dependency.
+If the self-dependency has <code class="code">VK_DEPENDENCY_BY_REGION_BIT</code> set, then so
+<span class="normative">must</span> the pipeline barrier.
+Pipeline barriers within a render pass instance <span class="normative">can</span> only be types
+<code class="code">VkMemoryBarrier</code> or <code class="code">VkImageMemoryBarrier</code>.
+If a <code class="code">VkImageMemoryBarrier</code> is used, the image and image subresource
+range specified in the barrier <span class="normative">must</span> be a subset of one of the image views
+used by the framebuffer in the current subpass.
+Additionally, <em class="parameter"><code>oldLayout</code></em> <span class="normative">must</span> be equal to <em class="parameter"><code>newLayout</code></em>, and both
+the <em class="parameter"><code>srcQueueFamilyIndex</code></em> and <em class="parameter"><code>dstQueueFamilyIndex</code></em> <span class="normative">must</span> be
+<code class="code">VK_QUEUE_FAMILY_IGNORED</code>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-pipeline-stage-flags"></a>6.5.2. Pipeline Stage Flags</h3></div></div></div><p>Several of the event commands, <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span>, and
+<code class="code">VkSubpassDependency</code> depend on being able to specify where in the
+logical pipeline events <span class="normative">can</span> be signaled, or the source and destination of
+an execution dependency.
+These pipeline stages are specified using a bitmask:</p><p><a id="VkPipelineStageFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkPipelineStageFlagBits {
+    VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT = 0x00000001,
+    VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT = 0x00000002,
+    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT = 0x00000004,
+    VK_PIPELINE_STAGE_VERTEX_SHADER_BIT = 0x00000008,
+    VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
+    VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
+    VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT = 0x00000040,
+    VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT = 0x00000080,
+    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
+    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = 0x00000200,
+    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT = 0x00000800,
+    VK_PIPELINE_STAGE_TRANSFER_BIT = 0x00001000,
+    VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT = 0x00002000,
+    VK_PIPELINE_STAGE_HOST_BIT = 0x00004000,
+    VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT = 0x00008000,
+    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT = 0x00010000,
+} VkPipelineStageFlagBits;</pre><p>
+</p><p>The meaning of each bit is:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT</code>: Stage of the pipeline where
+    commands are initially received by the queue.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code>: Stage of the pipeline where
+    Draw/DispatchIndirect data structures are consumed.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_VERTEX_INPUT_BIT</code>: Stage of the pipeline where
+    vertex and index buffers are consumed.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_VERTEX_SHADER_BIT</code>: Vertex shader stage.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT</code>: Tessellation
+    control shader stage.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT</code>: Tessellation
+    evaluation shader stage.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT</code>: Geometry shader stage.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT</code>: Fragment shader stage.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT</code>: Stage of the pipeline
+    where early fragment tests (depth and stencil tests before fragment
+    shading) are performed.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT</code>: Stage of the pipeline
+    where late fragment tests (depth and stencil tests after fragment
+    shading) are performed.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT</code>: Stage of the
+    pipeline after blending where the final color values are output from the
+    pipeline.
+    This stage also includes resolve operations that occur at the end of a
+    subpass.
+    Note that this does not necessarily indicate that the values have been
+    committed to memory.
+</li><li class="listitem">
+<a id="synchronization-transfer"></a><code class="code">VK_PIPELINE_STAGE_TRANSFER_BIT</code>:
+    Execution of copy commands.
+    This includes the operations resulting from all transfer commands.
+    The set of transfer commands comprises <span class="strong"><strong><code class="code">vkCmdCopyBuffer</code></strong></span>,
+    <span class="strong"><strong><code class="code">vkCmdCopyImage</code></strong></span>, <span class="strong"><strong><code class="code">vkCmdBlitImage</code></strong></span>,
+    <span class="strong"><strong><code class="code">vkCmdCopyBufferToImage</code></strong></span>, <span class="strong"><strong><code class="code">vkCmdCopyImageToBuffer</code></strong></span>,
+    <span class="strong"><strong><code class="code">vkCmdUpdateBuffer</code></strong></span>, <span class="strong"><strong><code class="code">vkCmdFillBuffer</code></strong></span>,
+    <span class="strong"><strong><code class="code">vkCmdClearColorImage</code></strong></span>, <span class="strong"><strong><code class="code">vkCmdClearDepthStencilImage</code></strong></span>,
+    <span class="strong"><strong><code class="code">vkCmdResolveImage</code></strong></span>, and <span class="strong"><strong><code class="code">vkCmdCopyQueryPoolResults</code></strong></span>.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code>: Execution of a compute
+    shader.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code>: Final stage in the pipeline
+    where commands complete execution.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_HOST_BIT</code>: A pseudo-stage indicating execution on
+    the host of reads/writes of device memory.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT</code>: Execution of all graphics
+    pipeline stages.
+</li><li class="listitem">
+<code class="code">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code>: Execution of all stages
+    supported on the queue.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The <code class="code">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code> and
+<code class="code">VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT</code> differ from
+<code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code> in that they correspond to all
+(or all graphics) stages, rather than to a specific stage at the end of the
+pipeline.
+An execution dependency with only <code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code>
+in <em class="parameter"><code>dstStageMask</code></em> will not delay subsequent commands, while including
+either of the other two bits will.
+Similarly, when defining a memory dependency, if the stage mask(s) refer to
+all stages, then the indicated access types from all stages will be made
+available and/or visible, but using only
+<code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code> would not make any accesses
+available and/or visible because this stage does not access memory.
+The <code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code> is useful for accomplishing
+memory barriers and layout transitions when the next accesses will be done
+in a different queue or by a presentation engine; in these cases subsequent
+commands in the same queue do not need to wait, but the barrier or
+transition <span class="normative">must</span> complete before semaphores associated with the batch
+signal.</p></td></tr></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>If an implementation is unable to update the state of an event at any
+specific stage of the pipeline, it <span class="normative">may</span> instead update the event at any
+logically later stage.
+For example, if an implementation is unable to signal an event immediately
+after vertex shader execution is complete, it <span class="normative">may</span> instead signal the event
+after color attachment output has completed.
+In the limit, an event <span class="normative">may</span> be signaled after all graphics stages complete.
+If an implementation is unable to wait on an event at any specific stage of
+the pipeline, it <span class="normative">may</span> instead wait on it at any logically earlier stage.</p><p>Similarly, if an implementation is unable to implement an execution
+dependency at specific stages of the pipeline, it <span class="normative">may</span> implement the
+dependency in a way where additional source pipeline stages complete and/or
+where additional destination pipeline stages' execution is blocked to
+satisfy the dependency.</p><p>If an implementation makes such a substitution, it <span class="normative">must</span> not affect the
+semantics of execution or memory dependencies or image and buffer memory
+barriers.</p></td></tr></table></div><p>Certain pipeline stages are only available on queues that support a
+particular set of operations.
+The following table lists, for each pipeline stage flag, which queue
+capability flag <span class="normative">must</span> be supported by the queue.
+When multiple flags are enumerated in the second column of the table, it
+means that the pipeline stage is supported on the queue if it supports any
+of the listed capability flags.
+For further details on queue capabilities see
+<a class="link" href="ch04s01.html" title="4.1. Physical Devices">Physical Device Enumeration</a>
+and <a class="link" href="ch04s03.html" title="4.3. Queues">Queues</a>.</p><div class="table"><a id="id-1.8.10.13.9"></a><p class="title"><strong>Table 6.2. Supported pipeline stage flags</strong></p><div class="table-contents"><table class="table" summary="Supported pipeline stage flags" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Pipeline stage flag                                          </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Required queue capability flag</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code> or <code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_VERTEX_INPUT_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_VERTEX_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_TRANSFER_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code>, <code class="code">VK_QUEUE_COMPUTE_BIT</code> or <code class="code">VK_QUEUE_TRANSFER_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_HOST_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code></p></td><td style="" align="left" valign="top"><p>None</p></td></tr></tbody></table></div></div><br class="table-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-memory-barriers"></a>6.5.3. Memory Barriers</h3></div></div></div><p><span class="emphasis"><em>Memory barriers</em></span> express the two halves of a memory dependency between an
+earlier set of memory accesses against a later set of memory accesses.
+Vulkan provides three types of memory barriers: global memory, buffer
+memory, and image memory.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-global-memory-barrier"></a>6.5.4. Global Memory Barriers</h3></div></div></div><p>The global memory barrier type is specified with an instance of the
+<code class="code">VkMemoryBarrier</code> structure.
+This type of barrier applies to memory accesses involving all memory objects
+that exist at the time of its execution.</p><p>The <code class="code">VkMemoryBarrier</code> structure is defined as:</p><p><a id="VkMemoryBarrier"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkMemoryBarrier {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkAccessFlags      srcAccessMask;
+    VkAccessFlags      dstAccessMask;
+} VkMemoryBarrier;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the first set of commands that will participate in the
+    dependency.
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the second set of commands that will participate in the
+    dependency.
+</li></ul></div><p><em class="parameter"><code>srcAccessMask</code></em> and <em class="parameter"><code>dstAccessMask</code></em>, along with <em class="parameter"><code>srcStageMask</code></em>
+and <em class="parameter"><code>dstStageMask</code></em> from <code class="code"><a class="link" href="ch06s05.html#vkCmdPipelineBarrier">vkCmdPipelineBarrier</a></code>, define the two
+halves of a memory dependency and an execution dependency.
+Memory accesses using the set of access types in <em class="parameter"><code>srcAccessMask</code></em>
+performed in pipeline stages in <em class="parameter"><code>srcStageMask</code></em> by the first set of
+commands <span class="normative">must</span> complete and be available to later commands.
+The side effects of the first set of commands will be visible to memory
+accesses using the set of access types in <em class="parameter"><code>dstAccessMask</code></em> performed in
+pipeline stages in <em class="parameter"><code>dstStageMask</code></em> by the second set of commands.
+If the barrier is by-region, these requirements only apply to invocations
+within the same framebuffer-space region, for pipeline stages that perform
+framebuffer-space work.
+The execution dependency guarantees that execution of work by the
+destination stages of the second set of commands will not begin until
+execution of work by the source stages of the first set of commands has
+completed.</p><p>A common type of memory dependency is to avoid a read-after-write hazard.
+In this case, the source access mask and stages will include writes from a
+particular stage, and the destination access mask and stages will indicate
+how those writes will be read in subsequent commands.
+However, barriers <span class="normative">can</span> also express write-after-read dependencies and
+write-after-write dependencies, and are even useful to express
+read-after-read dependencies across an image layout change.</p><p>Bits which <span class="normative">can</span> be set in <code class="code"><a class="link" href="ch06s05.html#VkMemoryBarrier">VkMemoryBarrier</a></code>::<em class="parameter"><code>srcAccessMask</code></em> and
+<code class="code"><a class="link" href="ch06s05.html#VkMemoryBarrier">VkMemoryBarrier</a></code>::<em class="parameter"><code>dstAccessMask</code></em> include:</p><p><a id="VkAccessFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkAccessFlagBits {
+    VK_ACCESS_INDIRECT_COMMAND_READ_BIT = 0x00000001,
+    VK_ACCESS_INDEX_READ_BIT = 0x00000002,
+    VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT = 0x00000004,
+    VK_ACCESS_UNIFORM_READ_BIT = 0x00000008,
+    VK_ACCESS_INPUT_ATTACHMENT_READ_BIT = 0x00000010,
+    VK_ACCESS_SHADER_READ_BIT = 0x00000020,
+    VK_ACCESS_SHADER_WRITE_BIT = 0x00000040,
+    VK_ACCESS_COLOR_ATTACHMENT_READ_BIT = 0x00000080,
+    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT = 0x00000100,
+    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT = 0x00000200,
+    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT = 0x00000400,
+    VK_ACCESS_TRANSFER_READ_BIT = 0x00000800,
+    VK_ACCESS_TRANSFER_WRITE_BIT = 0x00001000,
+    VK_ACCESS_HOST_READ_BIT = 0x00002000,
+    VK_ACCESS_HOST_WRITE_BIT = 0x00004000,
+    VK_ACCESS_MEMORY_READ_BIT = 0x00008000,
+    VK_ACCESS_MEMORY_WRITE_BIT = 0x00010000,
+} VkAccessFlagBits;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ACCESS_INDIRECT_COMMAND_READ_BIT</code> indicates that the access is
+    an indirect command structure read as part of an indirect drawing
+    command.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_INDEX_READ_BIT</code> indicates that the access is an index
+    buffer read.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT</code> indicates that the access is a
+    read via the vertex input bindings.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_UNIFORM_READ_BIT</code> indicates that the access is a read via
+    a uniform buffer or dynamic uniform buffer descriptor.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_INPUT_ATTACHMENT_READ_BIT</code> indicates that the access is a
+    read via an input attachment descriptor.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_SHADER_READ_BIT</code> indicates that the access is a read from
+    a shader via any other descriptor type.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_SHADER_WRITE_BIT</code> indicates that the access is a write or
+    atomic from a shader via the same descriptor types as in
+    <code class="code">VK_ACCESS_SHADER_READ_BIT</code>.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_COLOR_ATTACHMENT_READ_BIT</code> indicates that the access is a
+    read via a color attachment.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT</code> indicates that the access is
+    a write via a color or resolve attachment.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code> indicates that the
+    access is a read via a depth/stencil attachment.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code> indicates that the
+    access is a write via a depth/stencil attachment.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_TRANSFER_READ_BIT</code> indicates that the access is a read
+    from a transfer (copy, blit, resolve, etc.) operation.
+    For the complete set of transfer operations, see
+    <a class="link" href="ch06s05.html#synchronization-transfer"><code class="code">VK_PIPELINE_STAGE_TRANSFER_BIT</code></a>.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_TRANSFER_WRITE_BIT</code> indicates that the access is a write
+    from a transfer (copy, blit, resolve, etc.) operation.
+    For the complete set of transfer operations, see
+    <a class="link" href="ch06s05.html#synchronization-transfer"><code class="code">VK_PIPELINE_STAGE_TRANSFER_BIT</code></a>.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_HOST_READ_BIT</code> indicates that the access is a read via
+    the host.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_HOST_WRITE_BIT</code> indicates that the access is a write via
+    the host.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_MEMORY_READ_BIT</code> indicates that the access is a read via
+    a non-specific unit attached to the memory.
+    This unit <span class="normative">may</span> be external to the Vulkan device or otherwise not part of
+    the core Vulkan pipeline.
+    When included in <em class="parameter"><code>dstAccessMask</code></em>, all writes using access types in
+    <em class="parameter"><code>srcAccessMask</code></em> performed by pipeline stages in <em class="parameter"><code>srcStageMask</code></em>
+    <span class="normative">must</span> be visible in memory.
+</li><li class="listitem">
+<code class="code">VK_ACCESS_MEMORY_WRITE_BIT</code> indicates that the access is a write
+    via a non-specific unit attached to the memory.
+    This unit <span class="normative">may</span> be external to the Vulkan device or otherwise not part of
+    the core Vulkan pipeline.
+    When included in <em class="parameter"><code>srcAccessMask</code></em>, all access types in
+    <em class="parameter"><code>dstAccessMask</code></em> from pipeline stages in <em class="parameter"><code>dstStageMask</code></em> will
+    observe the side effects of commands that executed before the barrier.
+    When included in <em class="parameter"><code>dstAccessMask</code></em> all writes using access types in
+    <em class="parameter"><code>srcAccessMask</code></em> performed by pipeline stages in <em class="parameter"><code>srcStageMask</code></em>
+    <span class="normative">must</span> be visible in memory.
+</li></ul></div><p>Color attachment reads and writes are automatically (without memory or
+execution dependencies) coherent and ordered against themselves and each
+other for a given sample within a subpass of a render pass instance,
+executing in <a class="link" href="ch24s02.html" title="24.2. Rasterization Order">rasterization order</a>.
+Similarly, depth/stencil attachment reads and writes are automatically
+coherent and ordered against themselves and each other in the same
+circumstances.</p><p>Shader reads and/or writes through two variables (in the same or different
+shader invocations) decorated with <span class="strong"><strong><code class="code">Coherent</code></strong></span> and which use the same
+image view or buffer view are automatically coherent with each other, but
+require execution dependencies if a specific order is desired.
+Similarly, shader atomic operations are coherent with each other and with
+<span class="strong"><strong><code class="code">Coherent</code></strong></span> variables.
+Non-<span class="strong"><strong><code class="code">Coherent</code></strong></span> shader memory accesses require memory dependencies for
+writes to be available and reads to be visible.</p><p>Certain memory access types are only supported on queues that support a
+particular set of operations.
+The following table lists, for each access flag, which queue capability flag
+<span class="normative">must</span> be supported by the queue.
+When multiple flags are enumerated in the second column of the table it
+means that the access type is supported on the queue if it supports any of
+the listed capability flags.
+For further details on queue capabilities see
+<a class="link" href="ch04s01.html" title="4.1. Physical Devices">Physical Device Enumeration</a>
+and <a class="link" href="ch04s03.html" title="4.3. Queues">Queues</a>.</p><div class="table"><a id="id-1.8.10.15.14"></a><p class="title"><strong>Table 6.3. Supported access flags</strong></p><div class="table-contents"><table class="table" summary="Supported access flags" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Access flag                                                  </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Required queue capability flag</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_INDIRECT_COMMAND_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code> or <code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_INDEX_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_UNIFORM_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code> or <code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_INPUT_ATTACHMENT_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_SHADER_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code> or <code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_SHADER_WRITE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code> or <code class="code">VK_QUEUE_COMPUTE_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_COLOR_ATTACHMENT_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_TRANSFER_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code>, <code class="code">VK_QUEUE_COMPUTE_BIT</code> or <code class="code">VK_QUEUE_TRANSFER_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_TRANSFER_WRITE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_QUEUE_GRAPHICS_BIT</code>, <code class="code">VK_QUEUE_COMPUTE_BIT</code> or <code class="code">VK_QUEUE_TRANSFER_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_HOST_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_HOST_WRITE_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_MEMORY_READ_BIT</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>None</p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_ACCESS_MEMORY_WRITE_BIT</code></p></td><td style="" align="left" valign="top"><p>None</p></td></tr></tbody></table></div></div><br class="table-break" /><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_MEMORY_BARRIER</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-buffer-memory-barrier"></a>6.5.5. Buffer Memory Barriers</h3></div></div></div><p>The buffer memory barrier type is specified with an instance of the
+<code class="code">VkBufferMemoryBarrier</code> structure.
+This type of barrier only applies to memory accesses involving a specific
+range of the specified buffer object.
+That is, a memory dependency formed from a buffer memory barrier is
+<a class="link" href="ch06s04.html#synchronization-execution-and-memory-dependencies-types">scoped</a> to the
+specified range of the buffer.
+It is also used to transfer ownership of a buffer range from one queue
+family to another, as described in the <a class="link" href="ch11s07.html" title="11.7. Resource Sharing Mode">Resource Sharing</a> section.</p><p>The <code class="code">VkBufferMemoryBarrier</code> structure is defined as:</p><p><a id="VkBufferMemoryBarrier"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkBufferMemoryBarrier {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkAccessFlags      srcAccessMask;
+    VkAccessFlags      dstAccessMask;
+    uint32_t           srcQueueFamilyIndex;
+    uint32_t           dstQueueFamilyIndex;
+    VkBuffer           buffer;
+    VkDeviceSize       offset;
+    VkDeviceSize       size;
+} VkBufferMemoryBarrier;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the first set of commands that will participate in the
+    dependency.
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the second set of commands that will participate in the
+    dependency.
+</li><li class="listitem">
+<em class="parameter"><code>srcQueueFamilyIndex</code></em> is the queue family that is relinquishing
+    ownership of the range of <em class="parameter"><code>buffer</code></em> to another queue, or
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code> if there is no transfer of ownership.
+</li><li class="listitem">
+<em class="parameter"><code>dstQueueFamilyIndex</code></em> is the queue family that is acquiring
+    ownership of the range of <em class="parameter"><code>buffer</code></em> from another queue, or
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code> if there is no transfer of ownership.
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> is a handle to the buffer whose backing memory is affected
+    by the barrier.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is an offset in bytes into the backing memory for
+    <em class="parameter"><code>buffer</code></em>; this is relative to the base offset as bound to the buffer
+    (see <code class="code"><a class="link" href="ch11s06.html#vkBindBufferMemory">vkBindBufferMemory</a></code>).
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is a size in bytes of the affected area of backing memory for
+    <em class="parameter"><code>buffer</code></em>, or <code class="code">VK_WHOLE_SIZE</code> to use the range from <em class="parameter"><code>offset</code></em>
+    to the end of the buffer.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be less than the size of <em class="parameter"><code>buffer</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>size</code></em> is not equal to <code class="code">VK_WHOLE_SIZE</code>, <em class="parameter"><code>size</code></em> <span class="normative">must</span> be
+    greater than <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>size</code></em> is not equal to <code class="code">VK_WHOLE_SIZE</code>, <em class="parameter"><code>size</code></em> <span class="normative">must</span> be
+    less than or equal to than the size of <em class="parameter"><code>buffer</code></em> minus <em class="parameter"><code>offset</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>buffer</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_CONCURRENT</code>, <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> <span class="normative">must</span> both be <code class="code">VK_QUEUE_FAMILY_IGNORED</code>
+</li><li class="listitem">
+If <em class="parameter"><code>buffer</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_EXCLUSIVE</code>, <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> <span class="normative">must</span> either both be
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code>, or both be a valid queue family (see
+    <a class="xref" href="ch04s03.html#devsandqueues-queueprops" title="4.3.1. Queue Family Properties">Section 4.3.1, “Queue Family Properties”</a>)
+</li><li class="listitem">
+If <em class="parameter"><code>buffer</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_EXCLUSIVE</code>, and <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> are valid queue families, at least one of them
+    <span class="normative">must</span> be the same as the family of the queue that will execute this
+    barrier
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkBuffer</code> handle
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-image-memory-barrier"></a>6.5.6. Image Memory Barriers</h3></div></div></div><p>The image memory barrier type is specified with an instance of the
+<code class="code">VkImageMemoryBarrier</code> structure.
+This type of barrier only applies to memory accesses involving a specific
+image subresource range of the specified image object.
+That is, a memory dependency formed from an image memory barrier is
+<a class="link" href="ch06s04.html#synchronization-execution-and-memory-dependencies-types">scoped</a> to the
+specified image subresources of the image.
+It is also used to perform a layout transition for an image subresource
+range, or to transfer ownership of an image subresource range from one queue
+family to another as described in the <a class="link" href="ch11s07.html" title="11.7. Resource Sharing Mode">Resource Sharing</a>
+section.</p><p>The <code class="code">VkImageMemoryBarrier</code> structure is defined as:</p><p><a id="VkImageMemoryBarrier"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkImageMemoryBarrier {
+    VkStructureType            sType;
+    const void*                pNext;
+    VkAccessFlags              srcAccessMask;
+    VkAccessFlags              dstAccessMask;
+    VkImageLayout              oldLayout;
+    VkImageLayout              newLayout;
+    uint32_t                   srcQueueFamilyIndex;
+    uint32_t                   dstQueueFamilyIndex;
+    VkImage                    image;
+    VkImageSubresourceRange    subresourceRange;
+} VkImageMemoryBarrier;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the first set of commands that will participate in the
+    dependency.
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> is a bitmask of the classes of memory accesses
+    performed by the second set of commands that will participate in the
+    dependency.
+</li><li class="listitem">
+<em class="parameter"><code>oldLayout</code></em> describes the current layout of the image
+    subresource(s).
+</li><li class="listitem">
+<em class="parameter"><code>newLayout</code></em> describes the new layout of the image subresource(s).
+</li><li class="listitem">
+<em class="parameter"><code>srcQueueFamilyIndex</code></em> is the queue family that is relinquishing
+    ownership of the image subresource(s) to another queue, or
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code> if there is no transfer of ownership).
+</li><li class="listitem">
+<em class="parameter"><code>dstQueueFamilyIndex</code></em> is the queue family that is acquiring
+    ownership of the image subresource(s) from another queue, or
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code> if there is no transfer of ownership).
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> is a handle to the image whose backing memory is affected by
+    the barrier.
+</li><li class="listitem">
+<em class="parameter"><code>subresourceRange</code></em> describes an area of the backing memory for
+    <em class="parameter"><code>image</code></em> (see <a class="xref" href="ch11s05.html" title="11.5. Image Views">Section 11.5, “Image Views”</a> for the description of
+    <code class="code">VkImageSubresourceRange</code>), as well as the set of image subresources
+    whose image layouts are modified.
+</li></ul></div><p>If <em class="parameter"><code>oldLayout</code></em> differs from <em class="parameter"><code>newLayout</code></em>, a layout transition occurs
+as part of the image memory barrier, affecting the data contained in the
+region of the image defined by the <em class="parameter"><code>subresourceRange</code></em>.
+If <em class="parameter"><code>oldLayout</code></em> is <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code>, then the data is
+undefined after the layout transition.
+This <span class="normative">may</span> allow a more efficient transition, since the data <span class="normative">may</span> be
+discarded.
+The layout transition <span class="normative">must</span> occur after all operations using the old layout
+are completed and before all operations using the new layout are started.
+This is achieved by ensuring that there is a memory dependency between
+previous accesses and the layout transition, as well as between the layout
+transition and subsequent accesses, where the layout transition occurs
+between the two halves of a memory dependency in an image memory barrier.</p><p>Layout transitions that are performed via image memory barriers are
+automatically ordered against other layout transitions, including those that
+occur as part of a render pass instance.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>See <a class="xref" href="ch11s04.html" title="11.4. Image Layouts">Section 11.4, “Image Layouts”</a> for details on available image layouts and
+their usages.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>oldLayout</code></em> <span class="normative">must</span> be <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or the current
+    layout of the image subresources affected by the barrier
+</li><li class="listitem">
+<em class="parameter"><code>newLayout</code></em> <span class="normative">must</span> not be <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or
+    <code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_CONCURRENT</code>, <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> <span class="normative">must</span> both be <code class="code">VK_QUEUE_FAMILY_IGNORED</code>
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_EXCLUSIVE</code>, <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> <span class="normative">must</span> either both be
+    <code class="code">VK_QUEUE_FAMILY_IGNORED</code>, or both be a valid queue family (see
+    <a class="xref" href="ch04s03.html#devsandqueues-queueprops" title="4.3.1. Queue Family Properties">Section 4.3.1, “Queue Family Properties”</a>)
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> was created with a sharing mode of
+    <code class="code">VK_SHARING_MODE_EXCLUSIVE</code>, and <em class="parameter"><code>srcQueueFamilyIndex</code></em> and
+    <em class="parameter"><code>dstQueueFamilyIndex</code></em> are valid queue families, at least one of them
+    <span class="normative">must</span> be the same as the family of the queue that will execute this
+    barrier
+</li><li class="listitem">
+<em class="parameter"><code>subresourceRange</code></em> <span class="normative">must</span> be a valid image subresource range for the
+    image (see <a class="xref" href="ch11s05.html" title="11.5. Image Views">Section 11.5, “Image Views”</a>)
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> has a depth/stencil format with both depth and stencil
+    components, then <em class="parameter"><code>aspectMask</code></em> member of <em class="parameter"><code>subresourceRange</code></em> <span class="normative">must</span>
+    include both <code class="code">VK_IMAGE_ASPECT_DEPTH_BIT</code> and
+    <code class="code">VK_IMAGE_ASPECT_STENCIL_BIT</code>
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code> then <em class="parameter"><code>image</code></em> <span class="normative">must</span>
+    have been created with <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> set
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL</code> then <em class="parameter"><code>image</code></em>
+    <span class="normative">must</span> have been created with
+    <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> set
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL</code> then <em class="parameter"><code>image</code></em>
+    <span class="normative">must</span> have been created with
+    <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> set
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code> then <em class="parameter"><code>image</code></em> <span class="normative">must</span>
+    have been created with <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code> or
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> set
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code> then <em class="parameter"><code>image</code></em> <span class="normative">must</span> have
+    been created with <code class="code">VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code> set
+</li><li class="listitem">
+If either <em class="parameter"><code>oldLayout</code></em> or <em class="parameter"><code>newLayout</code></em> is
+    <code class="code">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code> then <em class="parameter"><code>image</code></em> <span class="normative">must</span> have
+    been created with <code class="code">VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> set
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>srcAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>dstAccessMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch06s05.html#VkAccessFlagBits">VkAccessFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>oldLayout</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>newLayout</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> <span class="normative">must</span> be a valid <code class="code">VkImage</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>subresourceRange</code></em> <span class="normative">must</span> be a valid <code class="code">VkImageSubresourceRange</code> structure
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="synchronization-waitidle"></a>6.5.7. Wait Idle Operations</h3></div></div></div><p>To wait on the host for the completion of outstanding queue operations for a
+given queue, call:</p><p><a id="vkQueueWaitIdle"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkQueueWaitIdle(
+    VkQueue                                     queue);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queue</code></em> is the queue on which to wait.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkQueueWaitIdle</code></strong></span> is equivalent to submitting a fence to a queue and
+waiting with an infinite timeout for that fence to signal.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queue</code></em> <span class="normative">must</span> be a valid <code class="code">VkQueue</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>-</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>-</p></td><td style="" align="left" valign="top"><p>Any</p></td></tr></tbody></table></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li></ul></div></dd></dl></div></div><p>To wait on the host for the completion of outstanding queue operations for
+all queues on a given logical device, call:</p><p><a id="vkDeviceWaitIdle"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkDeviceWaitIdle(
+    VkDevice                                    device);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device to idle.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkDeviceWaitIdle</code></strong></span> is equivalent to calling <span class="strong"><strong><code class="code">vkQueueWaitIdle</code></strong></span> for
+all queues owned by <em class="parameter"><code>device</code></em>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to all <code class="code">VkQueue</code> objects created from <em class="parameter"><code>device</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li></ul></div></dd></dl></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch06.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch06s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

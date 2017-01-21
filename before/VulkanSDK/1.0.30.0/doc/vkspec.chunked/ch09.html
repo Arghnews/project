@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 9. Pipelines</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="prev" href="ch08s13.html" title="8.13. Invocation and Derivative Groups" /><link rel="next" href="ch09s01.html" title="9.1. Compute Pipelines" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch08s13.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch09s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a id="pipelines"></a>Chapter 9. Pipelines</h1></div></div></div><p>The following <a class="link" href="ch09.html#pipelines-block-diagram" title="Figure 9.1. Block diagram of the Vulkan pipeline">figure</a> shows a block diagram of
+the Vulkan pipelines.
+Some Vulkan commands specify geometric objects to be drawn or computational
+work to be performed, while others specify state controlling how objects are
+handled by the various pipeline stages, or control data transfer between
+memory organized as images and buffers.
+Commands are effectively sent through a processing pipeline, either a
+<span class="emphasis"><em>graphics pipeline</em></span> or a <span class="emphasis"><em>compute pipeline</em></span>.</p><p>The first stage of the <a class="link" href="ch09s02.html" title="9.2. Graphics Pipelines">graphics pipeline</a>
+(<a class="link" href="ch19.html" title="Chapter 19. Drawing Commands">Input Assembler</a>) assembles vertices to form geometric
+primitives such as points, lines, and triangles, based on a requested
+primitive topology.
+In the next stage (<a class="link" href="ch08s05.html" title="8.5. Vertex Shaders">Vertex Shader</a>) vertices <span class="normative">can</span> be
+transformed, computing positions and attributes for each vertex.
+If <a class="link" href="ch21.html" title="Chapter 21. Tessellation">tessellation</a> and/or <a class="link" href="ch22.html" title="Chapter 22. Geometry Shading">geometry</a> shaders are
+supported, they <span class="normative">can</span> then generate multiple primitives from a single input
+primitive, possibly changing the primitive topology or generating additional
+attribute data in the process.</p><p>The final resulting primitives are <a class="link" href="ch23s02.html" title="23.2. Primitive Clipping">clipped</a> to a
+clip volume in preparation for the next stage, <a class="link" href="ch24.html" title="Chapter 24. Rasterization">Rasterization</a>.
+The rasterizer produces a series of framebuffer addresses and values using a
+two-dimensional description of a point, line segment, or triangle.
+Each <span class="emphasis"><em>fragment</em></span> so produced is fed to the next stage
+(<a class="link" href="ch08s09.html" title="8.9. Fragment Shaders">Fragment Shader</a>) that performs operations on
+individual fragments before they finally alter the framebuffer.
+These operations include conditional updates into the framebuffer based on
+incoming and previously stored depth values (to effect <a class="link" href="ch25s10.html" title="25.10. Depth Test">depth buffering</a>), <a class="link" href="ch26s01.html" title="26.1. Blending">blending</a> of incoming fragment colors
+with stored colors, as well as <a class="link" href="ch26s01.html#framebuffer-blendoperations" title="26.1.3. Blend Operations">masking</a>,
+<a class="link" href="ch25s09.html" title="25.9. Stencil Test">stenciling</a>, and other <a class="link" href="ch26s02.html" title="26.2. Logical Operations">logical operations</a> on fragment values.</p><p>Framebuffer operations read and write the color and depth/stencil
+attachments of the framebuffer for a given subpass of a <a class="link" href="ch07.html" title="Chapter 7. Render Pass">render pass instance</a>.
+The attachments <span class="normative">can</span> be used as input attachments in the fragment shader in
+a later subpass of the same render pass.</p><p>The <a class="link" href="ch09s01.html" title="9.1. Compute Pipelines">compute pipeline</a> is a separate pipeline from the
+graphics pipeline, which operates on one-, two-, or three-dimensional
+workgroups which <span class="normative">can</span> read from and write to buffer and image memory.</p><p>This ordering is meant only as a tool for describing Vulkan, not as a strict
+rule of how Vulkan is implemented, and we present it only as a means to
+organize the various operations of the pipelines.</p><div class="figure"><a id="pipelines-block-diagram"></a><p class="title"><strong>Figure 9.1. Block diagram of the Vulkan pipeline</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/pipeline.svg" align="middle" width="800" alt="images/pipeline.svg" /></div></div></div><br class="figure-break" /><p>Each pipeline is controlled by a monolithic object created from a
+description of all of the shader stages and any relevant fixed-function
+stages.
+<a class="link" href="ch14.html" title="Chapter 14. Shader Interfaces">Linking</a> the whole pipeline together allows the optimization
+of shaders based on their input/outputs and eliminates expensive draw time
+state validation.</p><p>A pipeline object is bound to the device state in command buffers.
+Any pipeline object state that is marked as dynamic is not applied to the
+device state when the pipeline is bound.
+Dynamic state not set by binding the pipeline object <span class="normative">can</span> be modified at any
+time and persists for the lifetime of the command buffer, or until modified
+by another dynamic state command or another pipeline bind.
+No state, including dynamic state, is inherited from one command buffer to
+another.
+Only dynamic state that is <span class="normative">required</span> for the operations performed in the
+command buffer needs to be set.
+For example, if blending is disabled by the pipeline state then the dynamic
+color blend constants do not need to be specified in the command buffer,
+even if this state is marked as dynamic in the pipeline state object.
+If a new pipeline object is bound with state not marked as dynamic after a
+previous pipeline object with that same state as dynamic, the new pipeline
+object state will override the dynamic state.
+Modifying dynamic state that is not set as dynamic by the pipeline state
+object will lead to undefined results.</p><p>Compute and graphics pipelines are each represented by <code class="code">VkPipeline</code>
+handles:</p><p><a id="VkPipeline"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipeline)</pre><p>
+</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s13.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch09s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

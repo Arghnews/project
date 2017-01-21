@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>31.1. Features</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch31.html" title="Chapter 31. Features, Limits, and Formats" /><link rel="prev" href="ch31.html" title="Chapter 31. Features, Limits, and Formats" /><link rel="next" href="ch31s02.html" title="31.2. Limits" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch31.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch31s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="features-features"></a>31.1. Features</h2></div></div></div><p>The Specification defines a set of fine-grained features that are not
+<span class="normative">required</span>, but <span class="normative">may</span> be supported by a Vulkan implementation.
+Support for features is reported and enabled on a per-feature basis.
+Features are properties of the physical device.</p><p>To query supported features, call:</p><p><a id="vkGetPhysicalDeviceFeatures"></a><strong> </strong>
+</p><pre class="programlisting">void vkGetPhysicalDeviceFeatures(
+    VkPhysicalDevice                            physicalDevice,
+    VkPhysicalDeviceFeatures*                   pFeatures);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device from which to query the
+    supported features.
+</li><li class="listitem">
+<em class="parameter"><code>pFeatures</code></em> is a pointer to a <code class="code"><a class="link" href="ch31s01.html#VkPhysicalDeviceFeatures">VkPhysicalDeviceFeatures</a></code>
+    structure in which the physical device features are returned.
+    For each feature, a value of <code class="code">VK_TRUE</code> indicates that the feature is
+    supported on this physical device, and <code class="code">VK_FALSE</code> indicates that the
+    feature is not supported.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pFeatures</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkPhysicalDeviceFeatures</code> structure
+</li></ul></div></div><p>Fine-grained features used by a logical device <span class="normative">must</span> be enabled at
+<code class="code">VkDevice</code> creation time.
+If a feature is enabled that the physical device does not support,
+<code class="code">VkDevice</code> creation will fail.
+If an application uses a feature without enabling it at <code class="code">VkDevice</code>
+creation time, the device behavior is undefined.
+The validation layer will warn if features are used without being enabled.</p><p>The fine-grained features are enabled by passing a pointer to the
+<code class="code">VkPhysicalDeviceFeatures</code> structure via the <em class="parameter"><code>pEnabledFeatures</code></em>
+member of the <code class="code">VkDeviceCreateInfo</code> structure that is passed into the
+<span class="strong"><strong><code class="code">vkCreateDevice</code></strong></span> call.
+If a member of <em class="parameter"><code>pEnabledFeatures</code></em> is set to <code class="code">VK_TRUE</code> or
+<code class="code">VK_FALSE</code>, then the device will be created with the indicated feature
+enabled or disabled, respectively.</p><p>If an application wishes to enable all features supported by a device, it
+<span class="normative">can</span> simply pass in the <code class="code">VkPhysicalDeviceFeatures</code> structure that was
+previously returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFeatures</code></strong></span>.
+To disable an individual feature, the application <span class="normative">can</span> set the desired
+member to <code class="code">VK_FALSE</code> in the same structure.
+Setting <em class="parameter"><code>pEnabledFeatures</code></em> to <code class="literal">NULL</code> is equivalent to setting all
+members of the structure to <code class="code">VK_FALSE</code>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Some features, such as <em class="parameter"><code>robustBufferAccess</code></em>, <span class="normative">may</span> incur a run-time
+performance cost.
+Application writers <span class="normative">should</span> carefully consider the implications of enabling
+all supported features.</p></td></tr></table></div><p>The <code class="code">VkPhysicalDeviceFeatures</code> structure is defined as:</p><p><a id="VkPhysicalDeviceFeatures"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkPhysicalDeviceFeatures {
+    VkBool32    robustBufferAccess;
+    VkBool32    fullDrawIndexUint32;
+    VkBool32    imageCubeArray;
+    VkBool32    independentBlend;
+    VkBool32    geometryShader;
+    VkBool32    tessellationShader;
+    VkBool32    sampleRateShading;
+    VkBool32    dualSrcBlend;
+    VkBool32    logicOp;
+    VkBool32    multiDrawIndirect;
+    VkBool32    drawIndirectFirstInstance;
+    VkBool32    depthClamp;
+    VkBool32    depthBiasClamp;
+    VkBool32    fillModeNonSolid;
+    VkBool32    depthBounds;
+    VkBool32    wideLines;
+    VkBool32    largePoints;
+    VkBool32    alphaToOne;
+    VkBool32    multiViewport;
+    VkBool32    samplerAnisotropy;
+    VkBool32    textureCompressionETC2;
+    VkBool32    textureCompressionASTC_LDR;
+    VkBool32    textureCompressionBC;
+    VkBool32    occlusionQueryPrecise;
+    VkBool32    pipelineStatisticsQuery;
+    VkBool32    vertexPipelineStoresAndAtomics;
+    VkBool32    fragmentStoresAndAtomics;
+    VkBool32    shaderTessellationAndGeometryPointSize;
+    VkBool32    shaderImageGatherExtended;
+    VkBool32    shaderStorageImageExtendedFormats;
+    VkBool32    shaderStorageImageMultisample;
+    VkBool32    shaderStorageImageReadWithoutFormat;
+    VkBool32    shaderStorageImageWriteWithoutFormat;
+    VkBool32    shaderUniformBufferArrayDynamicIndexing;
+    VkBool32    shaderSampledImageArrayDynamicIndexing;
+    VkBool32    shaderStorageBufferArrayDynamicIndexing;
+    VkBool32    shaderStorageImageArrayDynamicIndexing;
+    VkBool32    shaderClipDistance;
+    VkBool32    shaderCullDistance;
+    VkBool32    shaderFloat64;
+    VkBool32    shaderInt64;
+    VkBool32    shaderInt16;
+    VkBool32    shaderResourceResidency;
+    VkBool32    shaderResourceMinLod;
+    VkBool32    sparseBinding;
+    VkBool32    sparseResidencyBuffer;
+    VkBool32    sparseResidencyImage2D;
+    VkBool32    sparseResidencyImage3D;
+    VkBool32    sparseResidency2Samples;
+    VkBool32    sparseResidency4Samples;
+    VkBool32    sparseResidency8Samples;
+    VkBool32    sparseResidency16Samples;
+    VkBool32    sparseResidencyAliased;
+    VkBool32    variableMultisampleRate;
+    VkBool32    inheritedQueries;
+} VkPhysicalDeviceFeatures;</pre><p>
+</p><p>The members of the <code class="code">VkPhysicalDeviceFeatures</code> structure describe the
+following features:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+<a id="features-features-robustBufferAccess"></a> <em class="parameter"><code>robustBufferAccess</code></em>
+    indicates that accesses to buffers are bounds-checked against the range
+    of the buffer descriptor (as determined by
+    <code class="code">VkDescriptorBufferInfo</code>::<em class="parameter"><code>range</code></em>,
+    <code class="code">VkBufferViewCreateInfo</code>::<em class="parameter"><code>range</code></em>, or the size of the buffer).
+    Out of bounds accesses <span class="normative">must</span> not cause application termination, and the
+    effects of shader loads, stores, and atomics <span class="normative">must</span> conform to an
+    implementation-dependent behavior as described below.
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p class="simpara">
+A buffer access is considered to be out of bounds if any of the
+     following are true:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: square; "><li class="listitem">
+The pointer was formed by <span class="strong"><strong><code class="code">OpImageTexelPointer</code></strong></span> and the coordinate
+      is less than zero or greater than or equal to the number of whole
+      elements in the bound range.
+</li><li class="listitem"><p class="simpara">
+The pointer was not formed by <span class="strong"><strong><code class="code">OpImageTexelPointer</code></strong></span> and the object
+      pointed to is not wholly contained within the bound range.
+</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>If a SPIR-V <span class="strong"><strong><code class="code">OpLoad</code></strong></span> instruction loads a structure and the tail end of
+the structure is out of bounds, then all members of the structure are
+considered out of bounds even if the members at the end are not statically
+used.</p></td></tr></table></div></li><li class="listitem">
+If any buffer access in a given SPIR-V block is determined to be out
+      of bounds, then any other access of the same type (load, store, or
+      atomic) in the same SPIR-V block that accesses an address less than 16
+      bytes away from the out of bounds address <span class="normative">may</span> also be considered out
+      of bounds.
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Out-of-bounds buffer loads will return any of the following values:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: square; "><li class="listitem">
+Values from anywhere within the memory range(s) bound to the buffer
+      (possibly including bytes of memory past the end of the buffer, up to
+      the end of the bound range).
+</li><li class="listitem"><p class="simpara">
+Zero values, or <span class="eq">(0,0,0,x)</span> vectors for vector reads where x is a
+      valid value represented in the type of the vector components and <span class="normative">may</span>
+      be any of:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+0, 1, or the maximum representable positive integer value, for signed
+       or unsigned integer components
+</li><li class="listitem">
+0.0 or 1.0, for floating-point components
+</li></ul></div></li></ul></div></li><li class="listitem">
+Out-of-bounds writes <span class="normative">may</span> modify values within the memory range(s)
+     bound to the buffer, but <span class="normative">must</span> not modify any other memory.
+</li><li class="listitem">
+Out-of-bounds atomics <span class="normative">may</span> modify values within the memory range(s)
+     bound to the buffer, but <span class="normative">must</span> not modify any other memory, and return
+     an undefined value.
+</li><li class="listitem"><p class="simpara">
+Vertex input attributes are considered out of bounds if the address of
+     the attribute plus the size of the attribute is greater than the size
+     of the bound buffer.
+     Further, if any vertex input attribute using a specific vertex input
+     binding is out of bounds, then all vertex input attributes using that
+     vertex input binding for that vertex shader invocation are considered
+     out of bounds.
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: square; "><li class="listitem"><p class="simpara">
+If a vertex input attribute is out of bounds, it will be assigned one
+      of the following values:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Values from anywhere within the memory range(s) bound to the buffer,
+     converted according to the format of the attribute.
+</li><li class="listitem">
+Zero values, format converted according to the format of the
+       attribute.
+</li><li class="listitem">
+Zero values, or <span class="eq">(0,0,0,x)</span> vectors, as described above.
+</li></ul></div></li></ul></div></li><li class="listitem">
+If <em class="parameter"><code>robustBufferAccess</code></em> is not enabled, out of bounds accesses <span class="normative">may</span>
+     corrupt any memory within the process and cause undefined behavior up
+     to and including application termination.
+</li></ul></div></li><li class="listitem">
+<a id="features-features-fullDrawIndexUint32"></a> <em class="parameter"><code>fullDrawIndexUint32</code></em>
+    indicates the full 32-bit range of indices is supported for indexed draw
+    calls when using a <code class="code"><a class="link" href="ch19s02.html#VkIndexType">VkIndexType</a></code> of <code class="code">VK_INDEX_TYPE_UINT32</code>.
+    <em class="parameter"><code>maxDrawIndexedIndexValue</code></em> is the maximum index value that <span class="normative">may</span> be
+    used (aside from the primitive restart index, which is always 2<sup>32</sup>-1
+    when the <code class="code"><a class="link" href="ch19s02.html#VkIndexType">VkIndexType</a></code> is <code class="code">VK_INDEX_TYPE_UINT32</code>).
+    If this feature is supported, <em class="parameter"><code>maxDrawIndexedIndexValue</code></em> <span class="normative">must</span> be
+    2<sup>32</sup>-1; otherwise it <span class="normative">must</span> be no smaller than 2<sup>24</sup>-1.
+    See
+    <a class="link" href="ch31s02.html#features-limits-maxDrawIndexedIndexValue">maxDrawIndexedIndexValue</a>.
+</li><li class="listitem">
+<a id="features-features-imageCubeArray"></a> <em class="parameter"><code>imageCubeArray</code></em> indicates
+    whether image views with a <code class="code"><a class="link" href="ch11s05.html#VkImageViewType">VkImageViewType</a></code> of
+    <code class="code">VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code> <span class="normative">can</span> be created, and that the
+    corresponding <span class="strong"><strong><code class="code">SampledCubeArray</code></strong></span> and <span class="strong"><strong><code class="code">ImageCubeArray</code></strong></span> SPIR-V
+    capabilities <span class="normative">can</span> be used in shader code.
+</li><li class="listitem">
+<a id="features-features-independentBlend"></a> <em class="parameter"><code>independentBlend</code></em> indicates
+    whether the <code class="code">VkPipelineColorBlendAttachmentState</code> settings are
+    controlled independently per-attachment.
+    If this feature is not enabled, the
+    <code class="code">VkPipelineColorBlendAttachmentState</code> settings for all color
+    attachments <span class="normative">must</span> be identical.
+    Otherwise, a different <code class="code">VkPipelineColorBlendAttachmentState</code> <span class="normative">can</span> be
+    provided for each bound color attachment.
+</li><li class="listitem">
+<a id="features-features-geometryShader"></a> <em class="parameter"><code>geometryShader</code></em> indicates
+    whether geometry shaders are supported.
+    If this feature is not enabled, the <code class="code">VK_SHADER_STAGE_GEOMETRY_BIT</code>
+    and <code class="code">VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT</code> enum values <span class="normative">must</span> not be
+    used.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">Geometry</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-tessellationShader"></a> <em class="parameter"><code>tessellationShader</code></em>
+    indicates whether tessellation control and evaluation shaders are
+    supported.
+    If this feature is not enabled, the
+    <code class="code">VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT</code>,
+    <code class="code">VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT</code>,
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT</code>,
+    <code class="code">VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT</code>, and
+    <code class="code">VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO</code> enum
+    values <span class="normative">must</span> not be used.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">Tessellation</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-sampleRateShading"></a> <em class="parameter"><code>sampleRateShading</code></em>
+    indicates whether per-sample shading and multisample interpolation are
+    supported.
+    If this feature is not enabled, the <em class="parameter"><code>sampleShadingEnable</code></em> member of
+    the <code class="code">VkPipelineMultisampleStateCreateInfo</code> structure <span class="normative">must</span> be set to
+    <code class="code">VK_FALSE</code> and the <em class="parameter"><code>minSampleShading</code></em> member is ignored.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">SampleRateShading</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-dualSrcBlend"></a> <em class="parameter"><code>dualSrcBlend</code></em> indicates whether
+    blend operations which take two sources are supported.
+    If this feature is not enabled, the <code class="code">VK_BLEND_FACTOR_SRC1_COLOR</code>,
+    <code class="code">VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR</code>,
+    <code class="code">VK_BLEND_FACTOR_SRC1_ALPHA</code>, and
+    <code class="code">VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA</code> enum values <span class="normative">must</span> not be used
+    as source or destination blending factors.
+    See <a class="xref" href="ch26s01.html#framebuffer-dsb" title="26.1.2. Dual-Source Blending">Section 26.1.2, “Dual-Source Blending”</a>.
+</li><li class="listitem">
+<a id="features-features-logicOp"></a> <em class="parameter"><code>logicOp</code></em> indicates whether logic
+    operations are supported.
+    If this feature is not enabled, the <em class="parameter"><code>logicOpEnable</code></em> member of the
+    <code class="code">VkPipelineColorBlendStateCreateInfo</code> structure <span class="normative">must</span> be set to
+    <code class="code">VK_FALSE</code>, and the <em class="parameter"><code>logicOp</code></em> member is ignored.
+</li><li class="listitem">
+<a id="features-features-multiDrawIndirect"></a> <em class="parameter"><code>multiDrawIndirect</code></em>
+    indicates whether multiple draw indirect is supported.
+    If this feature is not enabled, the <em class="parameter"><code>drawCount</code></em> parameter to the
+    <span class="strong"><strong><code class="code">vkCmdDrawIndirect</code></strong></span> and <span class="strong"><strong><code class="code">vkCmdDrawIndexedIndirect</code></strong></span> commands
+    <span class="normative">must</span> be 0 or 1.
+    The <em class="parameter"><code>maxDrawIndirectCount</code></em> member of the
+    <code class="code">VkPhysicalDeviceLimits</code> structure <span class="normative">must</span> also be 1 if this feature
+    is not supported.
+    See <a class="link" href="ch31s02.html#features-limits-maxDrawIndirectCount">maxDrawIndirectCount</a>.
+</li><li class="listitem">
+<a id="features-features-drawIndirectFirstInstance"></a>
+    <em class="parameter"><code>drawIndirectFirstInstance</code></em> indicates whether indirect draw calls
+    support the <em class="parameter"><code>firstInstance</code></em> parameter.
+    If this feature is not enabled, the <em class="parameter"><code>firstInstance</code></em> member of all
+    <code class="code">VkDrawIndirectCommand</code> and <code class="code">VkDrawIndexedIndirectCommand</code>
+    structures that are provided to the <span class="strong"><strong><code class="code">vkCmdDrawIndirect</code></strong></span> and
+    <span class="strong"><strong><code class="code">vkCmdDrawIndexedIndirect</code></strong></span> commands <span class="normative">must</span> be 0.
+</li><li class="listitem">
+<a id="features-features-depthClamp"></a> <em class="parameter"><code>depthClamp</code></em> indicates whether
+    depth clamping is supported.
+    If this feature is not enabled, the <em class="parameter"><code>depthClampEnable</code></em> member of the
+    <code class="code">VkPipelineRasterizationStateCreateInfo</code> structure <span class="normative">must</span> be set to
+    <code class="code">VK_FALSE</code>.
+    Otherwise, setting <em class="parameter"><code>depthClampEnable</code></em> to <code class="code">VK_TRUE</code> will enable
+    depth clamping.
+</li><li class="listitem">
+<a id="features-features-depthBiasClamp"></a> <em class="parameter"><code>depthBiasClamp</code></em> indicates
+    whether depth bias clamping is supported.
+    If this feature is not enabled, the <em class="parameter"><code>depthBiasClamp</code></em> member of the
+    <code class="code">VkPipelineRasterizationStateCreateInfo</code> structure <span class="normative">must</span> be set to
+    0.0 unless the <code class="code">VK_DYNAMIC_STATE_DEPTH_BIAS</code> dynamic state is
+    enabled, and the <em class="parameter"><code>depthBiasClamp</code></em> parameter to
+    <span class="strong"><strong><code class="code">vkCmdSetDepthBias</code></strong></span> <span class="normative">must</span> be set to 0.0.
+</li><li class="listitem">
+<a id="features-features-fillModeNonSolid"></a> <em class="parameter"><code>fillModeNonSolid</code></em> indicates
+    whether point and wireframe fill modes are supported.
+    If this feature is not enabled, the <code class="code">VK_POLYGON_MODE_POINT</code> and
+    <code class="code">VK_POLYGON_MODE_LINE</code> enum values <span class="normative">must</span> not be used.
+</li><li class="listitem">
+<a id="features-features-depthBounds"></a> <em class="parameter"><code>depthBounds</code></em> indicates whether
+    depth bounds tests are supported.
+    If this feature is not enabled, the <em class="parameter"><code>depthBoundsTestEnable</code></em> member
+    of the <code class="code">VkPipelineDepthStencilStateCreateInfo</code> structure <span class="normative">must</span> be
+    set to <code class="code">VK_FALSE</code>.
+    When <em class="parameter"><code>depthBoundsTestEnable</code></em> is set to <code class="code">VK_FALSE</code>, the
+    <em class="parameter"><code>minDepthBounds</code></em> and <em class="parameter"><code>maxDepthBounds</code></em> members of the
+    <code class="code">VkPipelineDepthStencilStateCreateInfo</code> structure are ignored.
+</li><li class="listitem">
+<a id="features-features-wideLines"></a> <em class="parameter"><code>wideLines</code></em> indicates whether lines
+    with width other than 1.0 are supported.
+    If this feature is not enabled, the <em class="parameter"><code>lineWidth</code></em> member of the
+    <code class="code">VkPipelineRasterizationStateCreateInfo</code> structure <span class="normative">must</span> be set to
+    1.0 unless the <code class="code">VK_DYNAMIC_STATE_LINE_WIDTH</code> dynamic state is
+    enabled, and the <em class="parameter"><code>lineWidth</code></em> parameter to <span class="strong"><strong><code class="code">vkCmdSetLineWidth</code></strong></span>
+    <span class="normative">must</span> be set to 1.0.
+    When this feature is supported, the range and granularity of supported
+    line widths are indicated by the <em class="parameter"><code>lineWidthRange</code></em> and
+    <em class="parameter"><code>lineWidthGranularity</code></em> members of the <code class="code">VkPhysicalDeviceLimits</code>
+    structure, respectively.
+</li><li class="listitem">
+<a id="features-features-largePoints"></a> <em class="parameter"><code>largePoints</code></em> indicates whether
+    points with size greater than 1.0 are supported.
+    If this feature is not enabled, only a point size of 1.0 written by a
+    shader is supported.
+    The range and granularity of supported point sizes are indicated by the
+    <em class="parameter"><code>pointSizeRange</code></em> and <em class="parameter"><code>pointSizeGranularity</code></em> members of the
+    <code class="code">VkPhysicalDeviceLimits</code> structure, respectively.
+</li><li class="listitem">
+<a id="features-features-alphaToOne"></a> <em class="parameter"><code>alphaToOne</code></em> indicates whether the
+    implementation is able to replace the alpha value of the color fragment
+    output from the fragment shader with the maximum representable alpha
+    value for fixed-point colors or 1.0 for floating-point colors.
+    If this feature is not enabled, then the <em class="parameter"><code>alphaToOneEnable</code></em> member
+    of the <code class="code">VkPipelineMultisampleStateCreateInfo</code> structure <span class="normative">must</span> be set
+    to <code class="code">VK_FALSE</code>.
+    Otherwise setting <em class="parameter"><code>alphaToOneEnable</code></em> to <code class="code">VK_TRUE</code> will enable
+    alpha-to-one behavior.
+</li><li class="listitem">
+<a id="features-features-multiViewport"></a> <em class="parameter"><code>multiViewport</code></em> indicates
+    whether more than one viewport is supported.
+    If this feature is not enabled, the <em class="parameter"><code>viewportCount</code></em> and
+    <em class="parameter"><code>scissorCount</code></em> members of the
+    <code class="code">VkPipelineViewportStateCreateInfo</code> structure <span class="normative">must</span> be set to 1.
+    Similarly, the <em class="parameter"><code>viewportCount</code></em> parameter to the
+    <span class="strong"><strong><code class="code">vkCmdSetViewport</code></strong></span> command and the <em class="parameter"><code>scissorCount</code></em> parameter to
+    the <span class="strong"><strong><code class="code">vkCmdSetScissor</code></strong></span> command <span class="normative">must</span> be 1, and the
+    <em class="parameter"><code>firstViewport</code></em> parameter to the <span class="strong"><strong><code class="code">vkCmdSetViewport</code></strong></span> command and
+    the <em class="parameter"><code>firstScissor</code></em> parameter to the <span class="strong"><strong><code class="code">vkCmdSetScissor</code></strong></span> command
+    <span class="normative">must</span> be 0.
+</li><li class="listitem">
+<a id="features-features-samplerAnisotropy"></a> <em class="parameter"><code>samplerAnisotropy</code></em>
+    indicates whether anisotropic filtering is supported.
+    If this feature is not enabled, the <em class="parameter"><code>maxAnisotropy</code></em> member of the
+    <code class="code">VkSamplerCreateInfo</code> structure <span class="normative">must</span> be 1.0.
+</li><li class="listitem"><p class="simpara">
+<a id="features-features-textureCompressionETC2"></a>
+    <em class="parameter"><code>textureCompressionETC2</code></em> indicates whether the ETC2 and EAC
+    compressed texture formats are supported.
+    If this feature is not enabled, the following formats <span class="normative">must</span> not be used
+    to create images:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_EAC_R11_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_EAC_R11_SNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_EAC_R11G11_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_EAC_R11G11_SNORM_BLOCK</code>
+</li></ul></div><p class="simpara"><code class="code"><a class="link" href="ch31s03.html#vkGetPhysicalDeviceFormatProperties">vkGetPhysicalDeviceFormatProperties</a></code> is used to check for the supported
+properties of individual formats.</p></li><li class="listitem"><p class="simpara">
+<a id="features-features-textureCompressionASTC_LDR"></a>
+    <em class="parameter"><code>textureCompressionASTC_LDR</code></em> indicates whether the ASTC LDR
+    compressed texture formats are supported.
+    If this feature is not enabled, the following formats <span class="normative">must</span> not be used
+    to create images:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_4x4_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_4x4_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_5x4_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_5x4_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_5x5_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_5x5_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_6x5_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_6x5_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_6x6_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_6x6_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x5_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x5_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x6_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x6_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x8_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_8x8_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x5_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x5_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x6_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x6_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x8_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x8_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x10_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_10x10_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_12x10_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_12x10_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_12x12_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_ASTC_12x12_SRGB_BLOCK</code>
+</li></ul></div><p class="simpara"><code class="code"><a class="link" href="ch31s03.html#vkGetPhysicalDeviceFormatProperties">vkGetPhysicalDeviceFormatProperties</a></code> is used to check for the supported
+properties of individual formats.</p></li><li class="listitem"><p class="simpara">
+<a id="features-features-textureCompressionBC"></a> <em class="parameter"><code>textureCompressionBC</code></em>
+    indicates whether the BC compressed texture formats are supported.
+    If this feature is not enabled, the following formats <span class="normative">must</span> not be used
+    to create images:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_FORMAT_BC1_RGB_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC1_RGB_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC1_RGBA_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC1_RGBA_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC2_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC2_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC3_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC3_SRGB_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC4_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC4_SNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC5_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC5_SNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC6H_UFLOAT_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC6H_SFLOAT_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC7_UNORM_BLOCK</code>
+</li><li class="listitem">
+<code class="code">VK_FORMAT_BC7_SRGB_BLOCK</code>
+</li></ul></div><p class="simpara"><code class="code"><a class="link" href="ch31s03.html#vkGetPhysicalDeviceFormatProperties">vkGetPhysicalDeviceFormatProperties</a></code> is used to check for the supported
+properties of individual formats.</p></li><li class="listitem">
+<a id="features-features-occlusionQueryPrecise"></a> <em class="parameter"><code>occlusionQueryPrecise</code></em>
+    indicates whether occlusion queries returning actual sample counts are
+    supported.
+    Occlusion queries are created in a <code class="code">VkQueryPool</code> by specifying the
+    <em class="parameter"><code>queryType</code></em> of <code class="code">VK_QUERY_TYPE_OCCLUSION</code> in the
+    <code class="code">VkQueryPoolCreateInfo</code> structure which is passed to
+    <span class="strong"><strong><code class="code">vkCreateQueryPool</code></strong></span>.
+    If this feature is enabled, queries of this type <span class="normative">can</span> enable
+    <code class="code">VK_QUERY_CONTROL_PRECISE_BIT</code> in the <em class="parameter"><code>flags</code></em> parameter to
+    <span class="strong"><strong><code class="code">vkCmdBeginQuery</code></strong></span>.
+    If this feature is not supported, the implementation supports only
+    boolean occlusion queries.
+    When any samples are passed, boolean queries will return a non-zero
+    result value, otherwise a result value of zero is returned.
+    When this feature is enabled and <code class="code">VK_QUERY_CONTROL_PRECISE_BIT</code> is
+    set, occlusion queries will report the actual number of samples passed.
+</li><li class="listitem">
+<a id="features-features-pipelineStatisticsQuery"></a>
+    <em class="parameter"><code>pipelineStatisticsQuery</code></em> indicates whether the pipeline statistics
+    queries are supported.
+    If this feature is not enabled, queries of type
+    <code class="code">VK_QUERY_TYPE_PIPELINE_STATISTICS</code> <span class="normative">cannot</span> be created, and none of
+    the <code class="code"><a class="link" href="ch16s04.html#VkQueryPipelineStatisticFlagBits">VkQueryPipelineStatisticFlagBits</a></code> bits <span class="normative">can</span> be set in the
+    <em class="parameter"><code>pipelineStatistics</code></em> member of the <code class="code">VkQueryPoolCreateInfo</code>
+    structure.
+</li><li class="listitem">
+<a id="features-features-vertexPipelineStoresAndAtomics"></a>
+    <em class="parameter"><code>vertexPipelineStoresAndAtomics</code></em> indicates whether storage buffers
+    and images support stores and atomic operations in the vertex,
+    tessellation, and geometry shader stages.
+    If this feature is not enabled, all storage image, storage texel
+    buffers, and storage buffer variables used by these stages in shader
+    modules <span class="normative">must</span> be decorated with the <span class="strong"><strong><code class="code">NonWriteable</code></strong></span> decoration (or the
+    <span class="strong"><strong><code class="code">readonly</code></strong></span> memory qualifier in GLSL).
+</li><li class="listitem">
+<a id="features-features-fragmentStoresAndAtomics"></a>
+    <em class="parameter"><code>fragmentStoresAndAtomics</code></em> indicates whether storage buffers and
+    images support stores and atomic operations in the fragment shader
+    stage.
+    If this feature is not enabled, all storage image, storage texel
+    buffers, and storage buffer variables used by the fragment stage in
+    shader modules <span class="normative">must</span> be decorated with the <span class="strong"><strong><code class="code">NonWriteable</code></strong></span> decoration
+    (or the <span class="strong"><strong><code class="code">readonly</code></strong></span> memory qualifier in GLSL).
+</li><li class="listitem">
+<a id="features-features-shaderTessellationAndGeometryPointSize"></a>
+    <em class="parameter"><code>shaderTessellationAndGeometryPointSize</code></em> indicates whether the
+    <span class="strong"><strong><code class="code">PointSize</code></strong></span> built-in decoration is available in the tessellation
+    control, tessellation evaluation, and geometry shader stages.
+    If this feature is not enabled, members decorated with the
+    <span class="strong"><strong><code class="code">PointSize</code></strong></span> built-in decoration <span class="normative">must</span> not be read from or written to
+    and all points written from a tessellation or geometry shader will have
+    a size of 1.0.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">TessellationPointSize</code></strong></span> capability for tessellation control and
+    evaluation shaders, or if the shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">GeometryPointSize</code></strong></span> capability for geometry shaders.
+    An implementation supporting this feature <span class="normative">must</span> also support one or both
+    of the <a class="link" href="ch31s01.html#features-features-tessellationShader"><em class="parameter"><code>tessellationShader</code></em></a>
+    or <a class="link" href="ch31s01.html#features-features-geometryShader"><em class="parameter"><code>geometryShader</code></em></a> features.
+</li><li class="listitem">
+<a id="features-features-shaderImageGatherExtended"></a>
+    <em class="parameter"><code>shaderImageGatherExtended</code></em> indicates whether the extended set of
+    image gather instructions are available in shader code.
+    If this feature is not enabled, the <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Gather</code></strong></span>
+    instructions do not support the <span class="strong"><strong><code class="code">Offset</code></strong></span> and <span class="strong"><strong><code class="code">ConstOffsets</code></strong></span>
+    operands.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">ImageGatherExtended</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageImageExtendedFormats"></a>
+    <em class="parameter"><code>shaderStorageImageExtendedFormats</code></em> indicates whether the extended
+    storage image formats are available in shader code.
+    If this feature is not enabled, the formats requiring the
+    <span class="strong"><strong><code class="code">StorageImageExtendedFormats</code></strong></span> capability are not supported for
+    storage images.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageImageExtendedFormats</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageImageMultisample"></a>
+    <em class="parameter"><code>shaderStorageImageMultisample</code></em> indicates whether multisampled
+    storage images are supported.
+    If this feature is not enabled, images that are created with a
+    <em class="parameter"><code>usage</code></em> that includes <code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code> <span class="normative">must</span> be
+    created with <em class="parameter"><code>samples</code></em> equal to <code class="code">VK_SAMPLE_COUNT_1_BIT</code>.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageImageMultisample</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageImageReadWithoutFormat"></a>
+    <em class="parameter"><code>shaderStorageImageReadWithoutFormat</code></em> indicates whether storage
+    images require a format qualifier to be specified when reading from
+    storage images.
+    If this feature is not enabled, the <span class="strong"><strong><code class="code">OpImageRead</code></strong></span> instruction <span class="normative">must</span>
+    not have an <span class="strong"><strong><code class="code">OpTypeImage</code></strong></span> of <span class="strong"><strong><code class="code">Unknown</code></strong></span>.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageImageReadWithoutFormat</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageImageWriteWithoutFormat"></a>
+    <em class="parameter"><code>shaderStorageImageWriteWithoutFormat</code></em> indicates whether storage
+    images require a format qualifier to be specified when writing to
+    storage images.
+    If this feature is not enabled, the <span class="strong"><strong><code class="code">OpImageWrite</code></strong></span> instruction <span class="normative">must</span>
+    not have an <span class="strong"><strong><code class="code">OpTypeImage</code></strong></span> of <span class="strong"><strong><code class="code">Unknown</code></strong></span>.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageImageWriteWithoutFormat</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderUniformBufferArrayDynamicIndexing"></a>
+    <em class="parameter"><code>shaderUniformBufferArrayDynamicIndexing</code></em> indicates whether arrays
+    of uniform buffers <span class="normative">can</span> be indexed by dynamically uniform integer
+    expressions in shader code.
+    If this feature is not enabled, resources with a descriptor type of
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</code> <span class="normative">must</span> be indexed only by
+    constant integral expressions when aggregated into arrays in shader
+    code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">UniformBufferArrayDynamicIndexing</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderSampledImageArrayDynamicIndexing"></a>
+    <em class="parameter"><code>shaderSampledImageArrayDynamicIndexing</code></em> indicates whether arrays of
+    samplers or sampled images <span class="normative">can</span> be indexed by dynamically uniform
+    integer expressions in shader code.
+    If this feature is not enabled, resources with a descriptor type of
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLER</code>,
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, or
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code> <span class="normative">must</span> be indexed only by constant
+    integral expressions when aggregated into arrays in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">SampledImageArrayDynamicIndexing</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageBufferArrayDynamicIndexing"></a>
+    <em class="parameter"><code>shaderStorageBufferArrayDynamicIndexing</code></em> indicates whether arrays
+    of storage buffers <span class="normative">can</span> be indexed by dynamically uniform integer
+    expressions in shader code.
+    If this feature is not enabled, resources with a descriptor type of
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</code> <span class="normative">must</span> be indexed only by
+    constant integral expressions when aggregated into arrays in shader
+    code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageBufferArrayDynamicIndexing</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderStorageImageArrayDynamicIndexing"></a>
+    <em class="parameter"><code>shaderStorageImageArrayDynamicIndexing</code></em> indicates whether arrays of
+    storage images <span class="normative">can</span> be indexed by dynamically uniform integer
+    expressions in shader code.
+    If this feature is not enabled, resources with a descriptor type of
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code> <span class="normative">must</span> be indexed only by constant
+    integral expressions when aggregated into arrays in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">StorageImageArrayDynamicIndexing</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderClipDistance"></a> <em class="parameter"><code>shaderClipDistance</code></em>
+    indicates whether clip distances are supported in shader code.
+    If this feature is not enabled, any members decorated with the
+    <span class="strong"><strong><code class="code">ClipDistance</code></strong></span> built-in decoration <span class="normative">must</span> not be read from or written
+    to in shader modules.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">ClipDistance</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderCullDistance"></a> <em class="parameter"><code>shaderCullDistance</code></em>
+    indicates whether cull distances are supported in shader code.
+    If this feature is not enabled, any members decorated with the
+    <span class="strong"><strong><code class="code">CullDistance</code></strong></span> built-in decoration <span class="normative">must</span> not be read from or written
+    to in shader modules.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">CullDistance</code></strong></span> capability.
+</li><li class="listitem">
+<a id="features-features-shaderFloat64"></a> <em class="parameter"><code>shaderFloat64</code></em> indicates
+    whether 64-bit floats (doubles) are supported in shader code.
+    If this feature is not enabled, 64-bit floating-point types <span class="normative">must</span> not be
+    used in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the <span class="strong"><strong><code class="code">Float64</code></strong></span>
+    capability.
+</li><li class="listitem">
+<a id="features-features-shaderInt64"></a> <em class="parameter"><code>shaderInt64</code></em> indicates whether
+    64-bit integers (signed and unsigned) are supported in shader code.
+    If this feature is not enabled, 64-bit integer types <span class="normative">must</span> not be used
+    in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the <span class="strong"><strong><code class="code">Int64</code></strong></span>
+    capability.
+</li><li class="listitem">
+<a id="features-features-shaderInt16"></a> <em class="parameter"><code>shaderInt16</code></em> indicates whether
+    16-bit integers (signed and unsigned) are supported in shader code.
+    If this feature is not enabled, 16-bit integer types <span class="normative">must</span> not be used
+    in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the <span class="strong"><strong><code class="code">Int16</code></strong></span>
+    capability.
+</li><li class="listitem">
+<a id="features-features-shaderResourceResidency"></a>
+    <em class="parameter"><code>shaderResourceResidency</code></em> indicates whether image operations that
+    return resource residency information are supported in shader code.
+    If this feature is not enabled, the <span class="strong"><strong><code class="code">OpImageSparse</code></strong></span>* instructions
+    <span class="normative">must</span> not be used in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the
+    <span class="strong"><strong><code class="code">SparseResidency</code></strong></span> capability.
+    The feature requires at least one of the <em class="parameter"><code>sparseResidency*</code></em> features
+    to be supported.
+</li><li class="listitem">
+<a id="features-features-shaderResourceMinLod"></a> <em class="parameter"><code>shaderResourceMinLod</code></em>
+    indicates whether image operations that specify the minimum resource
+    level-of-detail (LOD) are supported in shader code.
+    If this feature is not enabled, the <span class="strong"><strong><code class="code">MinLod</code></strong></span> image operand <span class="normative">must</span> not
+    be used in shader code.
+    This also indicates whether shader modules <span class="normative">can</span> declare the <span class="strong"><strong><code class="code">MinLod</code></strong></span>
+    capability.
+</li><li class="listitem">
+<a id="features-features-sparseBinding"></a> <em class="parameter"><code>sparseBinding</code></em> indicates
+    whether resource memory <span class="normative">can</span> be managed at opaque sparse block level
+    instead of at the object level.
+    If this feature is not enabled, resource memory <span class="normative">must</span> be bound only on a
+    per-object basis using the <span class="strong"><strong><code class="code">vkBindBufferMemory</code></strong></span> and
+    <span class="strong"><strong><code class="code">vkBindImageMemory</code></strong></span> commands.
+    In this case, buffers and images <span class="normative">must</span> not be created with
+    <code class="code">VK_BUFFER_CREATE_SPARSE_BINDING_BIT</code> and
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkBufferCreateInfo</code> and <code class="code">VkImageCreateInfo</code> structures,
+    respectively.
+    Otherwise resource memory <span class="normative">can</span> be managed as described in
+    <a class="link" href="ch28s01.html" title="28.1. Sparse Resource Features">Sparse Resource Features</a>.
+</li><li class="listitem">
+<a id="features-features-sparseResidencyBuffer"></a> <em class="parameter"><code>sparseResidencyBuffer</code></em>
+    indicates whether the device <span class="normative">can</span> access partially resident buffers.
+    If this feature is not enabled, buffers <span class="normative">must</span> not be created with
+    <code class="code">VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em>
+    member of the <code class="code">VkBufferCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidencyImage2D"></a>
+    <em class="parameter"><code>sparseResidencyImage2D</code></em> indicates whether the device <span class="normative">can</span> access
+    partially resident 2D images with 1 sample per pixel.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>samples</code></em> set to
+    <code class="code">VK_SAMPLE_COUNT_1_BIT</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidencyImage3D"></a>
+    <em class="parameter"><code>sparseResidencyImage3D</code></em> indicates whether the device <span class="normative">can</span> access
+    partially resident 3D images.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_3D</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidency2Samples"></a>
+    <em class="parameter"><code>sparseResidency2Samples</code></em> indicates whether the physical device <span class="normative">can</span>
+    access partially resident 2D images with 2 samples per pixel.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>samples</code></em> set to
+    <code class="code">VK_SAMPLE_COUNT_2_BIT</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidency4Samples"></a>
+    <em class="parameter"><code>sparseResidency4Samples</code></em> indicates whether the physical device <span class="normative">can</span>
+    access partially resident 2D images with 4 samples per pixel.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>samples</code></em> set to
+    <code class="code">VK_SAMPLE_COUNT_4_BIT</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidency8Samples"></a>
+    <em class="parameter"><code>sparseResidency8Samples</code></em> indicates whether the physical device <span class="normative">can</span>
+    access partially resident 2D images with 8 samples per pixel.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>samples</code></em> set to
+    <code class="code">VK_SAMPLE_COUNT_8_BIT</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidency16Samples"></a>
+    <em class="parameter"><code>sparseResidency16Samples</code></em> indicates whether the physical device
+    <span class="normative">can</span> access partially resident 2D images with 16 samples per pixel.
+    If this feature is not enabled, images with an <em class="parameter"><code>imageType</code></em> of
+    <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>samples</code></em> set to
+    <code class="code">VK_SAMPLE_COUNT_16_BIT</code> <span class="normative">must</span> not be created with
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> set in the <em class="parameter"><code>flags</code></em> member
+    of the <code class="code">VkImageCreateInfo</code> structure.
+</li><li class="listitem">
+<a id="features-features-sparseResidencyAliased"></a>
+    <em class="parameter"><code>sparseResidencyAliased</code></em> indicates whether the physical device <span class="normative">can</span>
+    correctly access data aliased into multiple locations.
+    If this feature is not enabled, the
+    <code class="code">VK_BUFFER_CREATE_SPARSE_ALIASED_BIT</code> and
+    <code class="code">VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code> enum values <span class="normative">must</span> not be used
+    in <em class="parameter"><code>flags</code></em> members of the <code class="code">VkBufferCreateInfo</code> and
+    <code class="code">VkImageCreateInfo</code> structures, respectively.
+</li><li class="listitem">
+<a id="features-features-variableMultisampleRate"></a>
+    <em class="parameter"><code>variableMultisampleRate</code></em> indicates whether all pipelines that will
+    be bound to a command buffer during a subpass with no attachments <span class="normative">must</span>
+    have the same value for
+    <code class="code">VkPipelineMultisampleStateCreateInfo</code>::<em class="parameter"><code>rasterizationSamples</code></em>.
+    If set to <code class="code">VK_TRUE</code>, the implementation supports variable
+    multisample rates in a subpass with no attachments.
+    If set to <code class="code">VK_FALSE</code>, then all pipelines bound in such a subpass
+    <span class="normative">must</span> have the same multisample rate.
+    This has no effect in situations where a subpass uses any attachments.
+</li><li class="listitem">
+<a id="features-features-inheritedQueries"></a> <em class="parameter"><code>inheritedQueries</code></em> indicates
+    whether a secondary command buffer <span class="normative">may</span> be executed while a query is
+    active.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If any member of this structure is <code class="code">VK_FALSE</code>, as returned by
+    <code class="code"><a class="link" href="ch31s01.html#vkGetPhysicalDeviceFeatures">vkGetPhysicalDeviceFeatures</a></code>, then it <span class="normative">must</span> be <code class="code">VK_FALSE</code> when
+    passed as part of the <code class="code">VkDeviceCreateInfo</code> struct when creating a
+    device
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="features-features-requirements"></a>31.1.1. Feature Requirements</h3></div></div></div><p>All Vulkan graphics implementations <span class="normative">must</span> support the following features:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>robustBufferAccess</code></em>.
+</li></ul></div><p>All other features are not <span class="normative">required</span> by the Specification.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch31.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch31.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch31s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

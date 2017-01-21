@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.3. Shader Memory Access Ordering</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch08.html" title="Chapter 8. Shaders" /><link rel="prev" href="ch08s02.html" title="8.2. Shader Execution" /><link rel="next" href="ch08s04.html" title="8.4. Shader Inputs and Outputs" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch08s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="shaders-execution-memory-ordering"></a>8.3. Shader Memory Access Ordering</h2></div></div></div><p>The order in which image or buffer memory is read or written by shaders is
+largely undefined.
+For some shader types (vertex, tessellation evaluation, and in some cases,
+fragment), even the number of shader invocations that <span class="normative">may</span> perform loads and
+stores is undefined.</p><p>In particular, the following rules apply:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<a class="link" href="ch08s05.html#shaders-vertex-execution" title="8.5.1. Vertex Shader Execution">Vertex</a> and
+    <a class="link" href="ch08s07.html#shaders-tessellation-evaluation-execution" title="8.7.1. Tessellation Evaluation Shader Execution">tessellation evaluation</a>
+    shaders will be invoked at least once for each unique vertex, as defined
+    in those sections.
+</li><li class="listitem">
+<a class="link" href="ch08s09.html#shaders-fragment-execution" title="8.9.1. Fragment Shader Execution">Fragment</a> shaders will be invoked zero or
+    more times, as defined in that section.
+</li><li class="listitem">
+The relative order of invocations of the same shader type are undefined.
+    A store issued by a shader when working on primitive B might complete
+    prior to a store for primitive A, even if primitive A is specified prior
+    to primitive B.
+    This applies even to fragment shaders; while fragment shader outputs are
+    always written to the framebuffer
+    <a class="link" href="ch02s02.html#fundamentals-queueoperation-apiorder">in primitive order</a>, stores
+    executed by fragment shader invocations are not.
+</li><li class="listitem">
+The relative order of invocations of different shader types is largely
+    undefined.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The above limitations on shader invocation order make some forms of
+synchronization between shader invocations within a single set of primitives
+unimplementable.
+For example, having one invocation poll memory written by another invocation
+assumes that the other invocation has been launched and will complete its
+writes in finite time.</p></td></tr></table></div><p>Stores issued to different memory locations within a single shader
+invocation <span class="normative">may</span> not be visible to other invocations in the order they were
+performed.
+The <span class="strong"><strong><code class="code">OpMemoryBarrier</code></strong></span> instruction <span class="normative">can</span> be used to provide stronger
+ordering of reads and writes performed by a single invocation.
+<span class="strong"><strong><code class="code">OpMemoryBarrier</code></strong></span> guarantees that any memory transactions issued by the
+shader invocation prior to the instruction complete prior to the memory
+transactions issued after the instruction.
+Memory barriers are needed for algorithms that require multiple invocations
+to access the same memory and require the operations to be performed in a
+partially-defined relative order.
+For example, if one shader invocation does a series of writes, followed by
+an <span class="strong"><strong><code class="code">OpMemoryBarrier</code></strong></span> instruction, followed by another write, then the
+results of the series of writes before the barrier become visible to other
+shader invocations at a time earlier or equal to when the results of the
+final write become visible to those invocations.
+In practice it means that another invocation that sees the results of the
+final write would also see the previous writes.
+Without the memory barrier, the final write <span class="normative">may</span> be visible before the
+previous writes.</p><p>The built-in atomic memory transaction instructions <span class="normative">can</span> be used to read and
+write a given memory address atomically.
+While built-in atomic functions issued by multiple shader invocations are
+executed in undefined order relative to each other, these functions perform
+both a read and a write of a memory address and guarantee that no other
+memory transaction will write to the underlying memory between the read and
+write.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Atomics allow shaders to use shared global addresses for mutual exclusion or
+as counters, among other uses.</p></td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

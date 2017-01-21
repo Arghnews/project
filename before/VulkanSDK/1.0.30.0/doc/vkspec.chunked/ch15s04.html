@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>15.4. Texel Output Operations</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch15.html" title="Chapter 15. Image Operations" /><link rel="prev" href="ch15s03.html" title="15.3. Texel Input Operations" /><link rel="next" href="ch15s05.html" title="15.5. Derivative Operations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch15s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_texel_output_operations"></a>15.4. Texel Output Operations</h2></div></div></div><p><span class="emphasis"><em>Texel output instructions</em></span> are SPIR-V image instructions that write to an
+image.
+<span class="emphasis"><em>Texel output operations</em></span> are a set of steps that are performed on state,
+coordinates, and texel values while processing a texel output instruction,
+and which are common to some or all texel output instructions.
+They include the following steps, which are performed in the listed order:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+<a class="link" href="ch15s04.html#textures-output-validation" title="15.4.1. Texel Output Validation Operations">Validation operations</a>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<a class="link" href="ch15s04.html#textures-format-validation" title="Texel Format Validation">Format validation</a>
+</li><li class="listitem">
+<a class="link" href="ch15s04.html#textures-output-coordinate-validation" title="15.4.2. Integer Texel Coordinate Validation">Coordinate validation</a>
+</li><li class="listitem">
+<a class="link" href="ch15s04.html#textures-output-sparse-validation" title="15.4.3. Sparse Texel Operation">Sparse validation</a>
+</li></ul></div></li><li class="listitem">
+<a class="link" href="ch15s04.html#textures-output-format-conversion" title="15.4.4. Texel Output Format Conversion">Texel output format conversion</a>
+</li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-output-validation"></a>15.4.1. Texel Output Validation Operations</h3></div></div></div><p><span class="emphasis"><em>Texel output validation operations</em></span> inspect instruction/image state or
+coordinates, and in certain circumstances cause the write to have no effect.
+There are a series of validations that the texel undergoes.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-format-validation"></a>Texel Format Validation</h4></div></div></div><p>If the image format of the <span class="strong"><strong><code class="code">OpTypeImage</code></strong></span> is not compatible with the
+<code class="code">VkImageView</code>’s <em class="parameter"><code>format</code></em>, the effect of the write on the image
+view’s memory is undefined, but the write <span class="normative">must</span> not access memory outside of
+the image view.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-output-coordinate-validation"></a>15.4.2. Integer Texel Coordinate Validation</h3></div></div></div><p>The integer texel coordinates are validated according to the same rules as
+for texel input <a class="link" href="ch15s03.html#textures-integer-coordinate-validation" title="Integer Texel Coordinate Validation">coordinate validation</a>.</p><p>If the texel fails integer texel coordinate validation, then the write has
+no effect.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-output-sparse-validation"></a>15.4.3. Sparse Texel Operation</h3></div></div></div><p>If the texel attempts to write to an unbound region of a sparse image, the
+texel is a sparse unbound texel.
+In such a case, if the <code class="code">VkPhysicalDeviceSparseProperties</code> property
+<em class="parameter"><code>residencyNonResidentStrict</code></em> is <code class="code">VK_TRUE</code>, the sparse unbound texel
+write has no effect.
+If <em class="parameter"><code>residencyNonResidentStrict</code></em> is <code class="code">VK_FALSE</code>, the effect of the
+write is undefined but <span class="normative">must</span> be safe.
+In addition, the write <span class="normative">may</span> have a side effect that is visible to other
+image instructions, but <span class="normative">must</span> not be written to any device memory
+allocation.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-output-format-conversion"></a>15.4.4. Texel Output Format Conversion</h3></div></div></div><p>Texels undergo a format conversion from the floating point, signed, or
+unsigned integer type of the texel data to the <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> of the image
+view.
+Any unused components are ignored.</p><p>Each component is converted based on its type and size (as defined in the
+<a class="link" href="ch31s03.html#features-formats-definition" title="31.3.1. Format Definition">Format Definition</a> section for each
+<code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code>), using the appropriate equations in
+<a class="link" href="ch02s07.html#fundamentals-fp16" title="2.7.2. 16-Bit Floating-Point Numbers">16-Bit Floating-Point Numbers</a> and
+<a class="link" href="ch02s08.html" title="2.8. Fixed-Point Data Conversions">Fixed-Point Data Conversion</a>.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

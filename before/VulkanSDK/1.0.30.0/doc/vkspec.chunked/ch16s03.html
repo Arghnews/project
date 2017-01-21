@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>16.3. Occlusion Queries</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch16.html" title="Chapter 16. Queries" /><link rel="prev" href="ch16s02.html" title="16.2. Query Operation" /><link rel="next" href="ch16s04.html" title="16.4. Pipeline Statistics Queries" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch16s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch16s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="queries-occlusion"></a>16.3. Occlusion Queries</h2></div></div></div><p>Occlusion queries track the number of samples that pass the per-fragment
+tests for a set of drawing commands.
+As such, occlusion queries are only available on queue families supporting
+graphics operations.
+The application <span class="normative">can</span> then use these results to inform future rendering
+decisions.
+An occlusion query is begun and ended by calling <span class="strong"><strong><code class="code">vkCmdBeginQuery</code></strong></span> and
+<span class="strong"><strong><code class="code">vkCmdEndQuery</code></strong></span>, respectively.
+When an occlusion query begins, the count of passing samples always starts
+at zero.
+For each drawing command, the count is incremented as described in
+<a class="link" href="ch25s11.html" title="25.11. Sample Counting">Sample Counting</a>.
+If <em class="parameter"><code>flags</code></em> does not contain <code class="code">VK_QUERY_CONTROL_PRECISE_BIT</code> an
+implementation <span class="normative">may</span> generate any non-zero result value for the query if the
+count of passing samples is non-zero.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Not setting <code class="code">VK_QUERY_CONTROL_PRECISE_BIT</code> mode <span class="normative">may</span> be more efficient
+on some implementations, and <span class="normative">should</span> be used where it is sufficient to know
+a boolean result on whether any samples passed the per-fragment tests.
+In this case, some implementations <span class="normative">may</span> only return zero or one, indifferent
+to the actual number of samples passing the per-fragment tests.</p></td></tr></table></div><p>When an occlusion query finishes, the result for that query is marked as
+available.
+The application <span class="normative">can</span> then either copy the result to a buffer (via
+<span class="strong"><strong><code class="code">vkCmdCopyQueryPoolResults</code></strong></span>) or request it be put into host memory (via
+<span class="strong"><strong><code class="code">vkGetQueryPoolResults</code></strong></span>).</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>If occluding geometry is not drawn first, samples <span class="normative">can</span> pass the depth test,
+but still not be visible in a final image.</p></td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch16s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch16.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch16s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

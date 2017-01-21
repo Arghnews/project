@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.4. Image Layouts</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch11.html" title="Chapter 11. Resource Creation" /><link rel="prev" href="ch11s03.html" title="11.3. Images" /><link rel="next" href="ch11s05.html" title="11.5. Image Views" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch11s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="resources-image-layouts"></a>11.4. Image Layouts</h2></div></div></div><p>Images are stored in implementation-dependent opaque layouts in memory.
+Implementations <span class="normative">may</span> support several opaque layouts, and the layout used at
+any given time is determined by the <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code> state of the image
+subresource.
+Each layout has limitations on what kinds of operations are supported for
+image subresources using the layout.
+Applications have control over which layout each image subresource uses, and
+<span class="normative">can</span> transition an image subresource from one layout to another.
+Transitions <span class="normative">can</span> happen with an image memory barrier, included as part of a
+<span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> or a <span class="strong"><strong><code class="code">vkCmdWaitEvents</code></strong></span> command buffer command
+(see <a class="xref" href="ch06s05.html#synchronization-image-memory-barrier" title="6.5.6. Image Memory Barriers">Section 6.5.6, “Image Memory Barriers”</a>), or as part of a subpass
+dependency within a render pass (see <code class="code">VkSubpassDependency</code>).
+The image layout state is per-image subresource, and separate image
+subresources of the same image <span class="normative">can</span> be in different layouts at the same time
+with one exception - depth and stencil aspects of a given image subresource
+<span class="normative">must</span> always be in the same layout.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Each layout <span class="normative">may</span> offer optimal performance for a specific usage of image
+memory.
+For example, an image with a layout of
+<code class="code">VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code> <span class="normative">may</span> provide optimal
+performance for use as a color attachment, but be unsupported for use in
+transfer commands.
+Applications <span class="normative">can</span> transition an image subresource from one layout to another
+in order to achieve optimal performance when the image subresource is used
+for multiple kinds of operations.
+After initialization, applications need not use any layout other than the
+general layout, though this <span class="normative">may</span> produce suboptimal performance on some
+implementations.</p></td></tr></table></div><p>Upon creation, all image subresources of an image are initially in the same
+layout, where that layout is selected by the
+<code class="code">VkImageCreateInfo</code>::<em class="parameter"><code>initialLayout</code></em> member.
+The <em class="parameter"><code>initialLayout</code></em> <span class="normative">must</span> be either <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>.
+If it is <code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>, then the image data <span class="normative">can</span> be
+preinitialized by the host while using this layout, and the transition away
+from this layout will preserve that data.
+If it is <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code>, then the contents of the data are
+considered to be undefined, and the transition away from this layout is not
+guaranteed to preserve that data.
+For either of these initial layouts, any image subresources <span class="normative">must</span> be
+transitioned to another layout before they are accessed by the device.</p><p>Host access to image memory is only well-defined for images created with
+<code class="code">VK_IMAGE_TILING_LINEAR</code> tiling and for image subresources of those
+images which are currently in either the
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code> or <code class="code">VK_IMAGE_LAYOUT_GENERAL</code>
+layout.
+Calling <code class="code"><a class="link" href="ch11s03.html#vkGetImageSubresourceLayout">vkGetImageSubresourceLayout</a></code> for a linear image returns a
+subresource layout mapping that is valid for either of those image layouts.</p><p>The set of image layouts consists of:</p><p><a id="VkImageLayout"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkImageLayout {
+    VK_IMAGE_LAYOUT_UNDEFINED = 0,
+    VK_IMAGE_LAYOUT_GENERAL = 1,
+    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL = 2,
+    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL = 3,
+    VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL = 4,
+    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL = 5,
+    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL = 6,
+    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL = 7,
+    VK_IMAGE_LAYOUT_PREINITIALIZED = 8,
+    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR = 1000001002,
+} VkImageLayout;</pre><p>
+</p><p>The type(s) of device access supported by each layout are:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code>: Supports no device access.
+    This layout <span class="normative">must</span> only be used as the <em class="parameter"><code>initialLayout</code></em> member of
+    <code class="code">VkImageCreateInfo</code> or <code class="code">VkAttachmentDescription</code>, or as the
+    <em class="parameter"><code>oldLayout</code></em> in an image transition.
+    When transitioning out of this layout, the contents of the memory are
+    not guaranteed to be preserved.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>: Supports no device access.
+    This layout <span class="normative">must</span> only be used as the <em class="parameter"><code>initialLayout</code></em> member of
+    <code class="code">VkImageCreateInfo</code> or <code class="code">VkAttachmentDescription</code>, or as the
+    <em class="parameter"><code>oldLayout</code></em> in an image transition.
+    When transitioning out of this layout, the contents of the memory are
+    preserved.
+    This layout is intended to be used as the initial layout for an image
+    whose contents are written by the host, and hence the data <span class="normative">can</span> be
+    written to memory immediately, without first executing a layout
+    transition.
+    Currently, <code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code> is only useful with
+    <code class="code">VK_IMAGE_TILING_LINEAR</code> images because there is not a standard
+    layout defined for <code class="code">VK_IMAGE_TILING_OPTIMAL</code> images.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_GENERAL</code>: Supports all types of device access.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code>: <span class="normative">must</span> only be used as a
+    color or resolve attachment in a <code class="code">VkFramebuffer</code>.
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> usage bit enabled.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL</code>: <span class="normative">must</span> only be
+    used as a depth/stencil attachment in a <code class="code">VkFramebuffer</code>.
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> usage bit enabled.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL</code>: <span class="normative">must</span> only be
+    used as a read-only depth/stencil attachment in a <code class="code">VkFramebuffer</code>
+    and/or as a read-only image in a shader (which <span class="normative">can</span> be read as a sampled
+    image, combined image/sampler and/or input attachment).
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> usage bit enabled.
+    Only image subresources of images created with
+    <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code> <span class="normative">can</span> be used as sampled image or
+    combined image/sampler in a shader.
+    Similarly, only image subresources of images created with
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> <span class="normative">can</span> be used as input
+    attachments.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code>: <span class="normative">must</span> only be used as a
+    read-only image in a shader (which <span class="normative">can</span> be read as a sampled image,
+    combined image/sampler and/or input attachment).
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code> or
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> usage bit enabled.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</code>: <span class="normative">must</span> only be used as a
+    source image of a transfer command (see the definition of
+    <a class="link" href="ch06s05.html#synchronization-transfer"><code class="code">VK_PIPELINE_STAGE_TRANSFER_BIT</code></a>).
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code> usage bit enabled.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</code>: <span class="normative">must</span> only be used as a
+    destination image of a transfer command.
+    This layout is valid only for image subresources of images created with
+    the <code class="code">VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> usage bit enabled.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code>: <span class="normative">must</span> only be used for presenting
+    a swapchain image for display.
+    A swapchain’s image <span class="normative">must</span> be transitioned to this layout before calling
+    <code class="code"><a class="link" href="ch29s06.html#vkQueuePresentKHR">vkQueuePresentKHR</a></code>, and <span class="normative">must</span> be transitioned away from this layout
+    after calling <code class="code"><a class="link" href="ch29s06.html#vkAcquireNextImageKHR">vkAcquireNextImageKHR</a></code>.
+</li></ul></div><p>For each mechanism of accessing an image in the API, there is a parameter or
+structure member that controls the image layout used to access the image.
+For transfer commands, this is a parameter to the command (see <a class="xref" href="ch17.html" title="Chapter 17. Clear Commands">Chapter 17, <em>Clear Commands</em></a>
+and <a class="xref" href="ch18.html" title="Chapter 18. Copy Commands">Chapter 18, <em>Copy Commands</em></a>).
+For use as a framebuffer attachment, this is a member in the substructures
+of the <code class="code">VkRenderPassCreateInfo</code> (see <a class="link" href="ch07.html" title="Chapter 7. Render Pass">Render Pass</a>).
+For use in a descriptor set, this is a member in the
+<code class="code">VkDescriptorImageInfo</code> structure (see <a class="xref" href="ch13s02.html#descriptorsets-updates" title="13.2.4. Descriptor Set Updates">Section 13.2.4, “Descriptor Set Updates”</a>).
+At the time that any command buffer command accessing an image executes on
+any queue, the layouts of the image subresources that are accessed <span class="normative">must</span> all
+match the layout specified via the API controlling those accesses.</p><p>The image layout of each image subresource <span class="normative">must</span> be well-defined at each
+point in the image subresource’s lifetime.
+This means that when performing a layout transition on the image
+subresource, the old layout value <span class="normative">must</span> either equal the current layout of
+the image subresource (at the time the transition executes), or else be
+<code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> (implying that the contents of the image
+subresource need not be preserved).
+The new layout used in a transition <span class="normative">must</span> not be
+<code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or <code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

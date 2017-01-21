@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 27. Dispatching Commands</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="prev" href="ch26s02.html" title="26.2. Logical Operations" /><link rel="next" href="ch28.html" title="Chapter 28. Sparse Resources" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch26s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch28.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a id="dispatch"></a>Chapter 27. Dispatching Commands</h1></div></div></div><p><span class="emphasis"><em>Dispatching commands</em></span> (commands with <span class="strong"><strong><code class="code">Dispatch</code></strong></span> in the name) provoke
+work in a compute pipeline.
+Dispatching commands are recorded into a command buffer and when executed by
+a queue, will produce work which executes according to the currently bound
+compute pipeline.
+A compute pipeline <span class="normative">must</span> be bound to a command buffer before any dispatch
+commands are recorded in that command buffer.</p><p>To record a dispatch, call:</p><p><a id="vkCmdDispatch"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdDispatch(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    x,
+    uint32_t                                    y,
+    uint32_t                                    z);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer into which the command will be
+    recorded.
+</li><li class="listitem">
+<em class="parameter"><code>x</code></em> is the number of local workgroups to dispatch in the X
+    dimension.
+</li><li class="listitem">
+<em class="parameter"><code>y</code></em> is the number of local workgroups to dispatch in the Y
+    dimension.
+</li><li class="listitem">
+<em class="parameter"><code>z</code></em> is the number of local workgroups to dispatch in the Z
+    dimension.
+</li></ul></div><p>When the command is executed, a global workgroup consisting of <span class="eq">x
+× y × z</span> local workgroups is assembled.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>x</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[0]
+</li><li class="listitem">
+<em class="parameter"><code>y</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[1]
+</li><li class="listitem">
+<em class="parameter"><code>z</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[2]
+</li><li class="listitem">
+For each set <span class="emphasis"><em>n</em></span> that is statically used by the <code class="code">VkPipeline</code>
+    currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, a descriptor
+    set <span class="normative">must</span> have been bound to <span class="emphasis"><em>n</em></span> at
+    <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, with a <code class="code">VkPipelineLayout</code> that
+    is compatible for set <span class="emphasis"><em>n</em></span>, with the <code class="code">VkPipelineLayout</code> used to
+    create the current <code class="code">VkPipeline</code>, as described in
+    <a class="xref" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">the section called “Pipeline Layout Compatibility”</a>
+</li><li class="listitem">
+Descriptors in each bound descriptor set, specified via
+    <span class="strong"><strong><code class="code">vkCmdBindDescriptorSets</code></strong></span>, <span class="normative">must</span> be valid if they are statically
+    used by the currently bound <code class="code">VkPipeline</code> object, specified via
+    <span class="strong"><strong><code class="code">vkCmdBindPipeline</code></strong></span>
+</li><li class="listitem">
+A valid compute pipeline <span class="normative">must</span> be bound to the current command buffer
+    with <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+</li><li class="listitem">
+For each push constant that is statically used by the <code class="code">VkPipeline</code>
+    currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, a push constant
+    value <span class="normative">must</span> have been set for <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, with
+    a <code class="code">VkPipelineLayout</code> that is compatible for push constants with the
+    one used to create the current <code class="code">VkPipeline</code>, as described in
+    <a class="xref" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">the section called “Pipeline Layout Compatibility”</a>
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used to sample from any
+    <code class="code">VkImage</code> with a <code class="code">VkImageView</code> of the type
+    <code class="code">VK_IMAGE_VIEW_TYPE_3D</code>, <code class="code">VK_IMAGE_VIEW_TYPE_CUBE</code>,
+    <code class="code">VK_IMAGE_VIEW_TYPE_1D_ARRAY</code>, <code class="code">VK_IMAGE_VIEW_TYPE_2D_ARRAY</code> or
+    <code class="code">VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code>, in any shader stage
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used with any of the
+    SPIR-V <code class="literal">OpImageSample*</code> or <code class="literal">OpImageSparseSample*</code> instructions with
+    <span class="strong"><strong><code class="code">ImplicitLod</code></strong></span>, <span class="strong"><strong><code class="code">Dref</code></strong></span> or <span class="strong"><strong><code class="code">Proj</code></strong></span> in their name, in any shader
+    stage
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used with any of the
+    SPIR-V <code class="literal">OpImageSample*</code> or <code class="literal">OpImageSparseSample*</code> instructions that
+    includes a LOD bias or any offset values, in any shader stage
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-robustBufferAccess">robust buffer access</a>
+    feature is not enabled, and any shader stage in the <code class="code">VkPipeline</code>
+    object currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code> accesses
+    a uniform buffer, it <span class="normative">must</span> not access values outside of the range of
+    that buffer specified in the currently bound descriptor set
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-robustBufferAccess">robust buffer access</a>
+    feature is not enabled, and any shader stage in the <code class="code">VkPipeline</code>
+    object currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code> accesses
+    a storage buffer, it <span class="normative">must</span> not access values outside of the range of
+    that buffer specified in the currently bound descriptor set
+</li><li class="listitem">
+Any <code class="code">VkImageView</code> being sampled with <code class="code">VK_FILTER_LINEAR</code> as a
+    result of this command <span class="normative">must</span> be of a format which supports linear
+    filtering, as specified by the
+    <code class="code">VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT</code> flag in
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (for a linear
+    image) or <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em>(for an
+    optimally tiled image) returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support compute operations
+</li><li class="listitem">
+This command <span class="normative">must</span> only be called outside of a render pass instance
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Outside</p></td><td style="" align="left" valign="top"><p>COMPUTE</p></td></tr></tbody></table></div></div><p>To record an indirect command dispatch, call:</p><p><a id="vkCmdDispatchIndirect"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdDispatchIndirect(
+    VkCommandBuffer                             commandBuffer,
+    VkBuffer                                    buffer,
+    VkDeviceSize                                offset);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer into which the command will be
+    recorded.
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> is the buffer containing dispatch parameters.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is the byte offset into <em class="parameter"><code>buffer</code></em> where parameters
+    begin.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkCmdDispatchIndirect</code></strong></span> behaves similarly to <code class="code"><a class="link" href="ch27.html#vkCmdDispatch">vkCmdDispatch</a></code> except
+that the parameters are read by the device from a buffer during execution.
+The parameters of the dispatch are encoded in a
+<code class="code"><a class="link" href="ch27.html#VkDispatchIndirectCommand">VkDispatchIndirectCommand</a></code> structure taken from <em class="parameter"><code>buffer</code></em> starting
+at <em class="parameter"><code>offset</code></em>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+For each set <span class="emphasis"><em>n</em></span> that is statically used by the <code class="code">VkPipeline</code>
+    currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, a descriptor
+    set <span class="normative">must</span> have been bound to <span class="emphasis"><em>n</em></span> at
+    <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, with a <code class="code">VkPipelineLayout</code> that
+    is compatible for set <span class="emphasis"><em>n</em></span>, with the <code class="code">VkPipelineLayout</code> used to
+    create the current <code class="code">VkPipeline</code>, as described in
+    <a class="xref" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">the section called “Pipeline Layout Compatibility”</a>
+</li><li class="listitem">
+Descriptors in each bound descriptor set, specified via
+    <span class="strong"><strong><code class="code">vkCmdBindDescriptorSets</code></strong></span>, <span class="normative">must</span> be valid if they are statically
+    used by the currently bound <code class="code">VkPipeline</code> object, specified via
+    <span class="strong"><strong><code class="code">vkCmdBindPipeline</code></strong></span>
+</li><li class="listitem">
+A valid compute pipeline <span class="normative">must</span> be bound to the current command buffer
+    with <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> have been created with the
+    <code class="code">VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT</code> bit set
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> <span class="normative">must</span> be a multiple of <code class="literal">4</code>
+</li><li class="listitem">
+The sum of <em class="parameter"><code>offset</code></em> and the size of <code class="code">VkDispatchIndirectCommand</code>
+    <span class="normative">must</span> be less than or equal to the size of <em class="parameter"><code>buffer</code></em>
+</li><li class="listitem">
+For each push constant that is statically used by the <code class="code">VkPipeline</code>
+    currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, a push constant
+    value <span class="normative">must</span> have been set for <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>, with
+    a <code class="code">VkPipelineLayout</code> that is compatible for push constants with the
+    one used to create the current <code class="code">VkPipeline</code>, as described in
+    <a class="xref" href="ch13s02.html#descriptorsets-compatibility" title="Pipeline Layout Compatibility">the section called “Pipeline Layout Compatibility”</a>
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used to sample from any
+    <code class="code">VkImage</code> with a <code class="code">VkImageView</code> of the type
+    <code class="code">VK_IMAGE_VIEW_TYPE_3D</code>, <code class="code">VK_IMAGE_VIEW_TYPE_CUBE</code>,
+    <code class="code">VK_IMAGE_VIEW_TYPE_1D_ARRAY</code>, <code class="code">VK_IMAGE_VIEW_TYPE_2D_ARRAY</code> or
+    <code class="code">VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code>, in any shader stage
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used with any of the
+    SPIR-V <code class="literal">OpImageSample*</code> or <code class="literal">OpImageSparseSample*</code> instructions with
+    <span class="strong"><strong><code class="code">ImplicitLod</code></strong></span>, <span class="strong"><strong><code class="code">Dref</code></strong></span> or <span class="strong"><strong><code class="code">Proj</code></strong></span> in their name, in any shader
+    stage
+</li><li class="listitem">
+If any <code class="code">VkSampler</code> object that is accessed from a shader by the
+    <code class="code">VkPipeline</code> currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code>
+    uses unnormalized coordinates, it <span class="normative">must</span> not be used with any of the
+    SPIR-V <code class="literal">OpImageSample*</code> or <code class="literal">OpImageSparseSample*</code> instructions that
+    includes a LOD bias or any offset values, in any shader stage
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-robustBufferAccess">robust buffer access</a>
+    feature is not enabled, and any shader stage in the <code class="code">VkPipeline</code>
+    object currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code> accesses
+    a uniform buffer, it <span class="normative">must</span> not access values outside of the range of
+    that buffer specified in the currently bound descriptor set
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-robustBufferAccess">robust buffer access</a>
+    feature is not enabled, and any shader stage in the <code class="code">VkPipeline</code>
+    object currently bound to <code class="code">VK_PIPELINE_BIND_POINT_COMPUTE</code> accesses
+    a storage buffer, it <span class="normative">must</span> not access values outside of the range of
+    that buffer specified in the currently bound descriptor set
+</li><li class="listitem">
+Any <code class="code">VkImageView</code> being sampled with <code class="code">VK_FILTER_LINEAR</code> as a
+    result of this command <span class="normative">must</span> be of a format which supports linear
+    filtering, as specified by the
+    <code class="code">VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT</code> flag in
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (for a linear
+    image) or <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em>(for an
+    optimally tiled image) returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>buffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support compute operations
+</li><li class="listitem">
+This command <span class="normative">must</span> only be called outside of a render pass instance
+</li><li class="listitem">
+Both of <em class="parameter"><code>buffer</code></em>, and <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Outside</p></td><td style="" align="left" valign="top"><p>COMPUTE</p></td></tr></tbody></table></div></div><p>The <code class="code">VkDispatchIndirectCommand</code> structure is defined as:</p><p><a id="VkDispatchIndirectCommand"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDispatchIndirectCommand {
+    uint32_t    x;
+    uint32_t    y;
+    uint32_t    z;
+} VkDispatchIndirectCommand;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>x</code></em> is the number of local workgroups to dispatch in the X
+    dimension.
+</li><li class="listitem">
+<em class="parameter"><code>y</code></em> is the number of local workgroups to dispatch in the Y
+    dimension.
+</li><li class="listitem">
+<em class="parameter"><code>z</code></em> is the number of local workgroups to dispatch in the Z
+    dimension.
+</li></ul></div><p>The members of <code class="code">VkDispatchIndirectCommand</code> structure have the same
+meaning as the similarly named parameters of <code class="code"><a class="link" href="ch27.html#vkCmdDispatch">vkCmdDispatch</a></code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>x</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[0]
+</li><li class="listitem">
+<em class="parameter"><code>y</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[1]
+</li><li class="listitem">
+<em class="parameter"><code>z</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxComputeWorkGroupCount</code></em>[2]
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch26s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch28.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

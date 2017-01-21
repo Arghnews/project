@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 7. Render Pass</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="prev" href="ch06s06.html" title="6.6. Host Write Ordering Guarantees" /><link rel="next" href="ch07s01.html" title="7.1. Render Pass Creation" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch06s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch07s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a id="renderpass"></a>Chapter 7. Render Pass</h1></div></div></div><p>A <span class="emphasis"><em>render pass</em></span> represents a collection of attachments, subpasses, and
+dependencies between the subpasses, and describes how the attachments are
+used over the course of the subpasses.
+The use of a render pass in a command buffer is a <span class="emphasis"><em>render pass instance</em></span>.</p><p>Render passes are represented by <code class="code">VkRenderPass</code> handles:</p><p><a id="VkRenderPass"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkRenderPass)</pre><p>
+</p><p>An <span class="emphasis"><em>attachment description</em></span> describes the properties of an attachment
+including its format, sample count, and how its contents are treated at the
+beginning and end of each render pass instance.</p><p>A <span class="emphasis"><em>subpass</em></span> represents a phase of rendering that reads and writes a subset
+of the attachments in a render pass.
+Rendering commands are recorded into a particular subpass of a render pass
+instance.</p><p>A <span class="emphasis"><em>subpass description</em></span> describes the subset of attachments that is involved
+in the execution of a subpass.
+Each subpass <span class="normative">can</span> read from some attachments as <span class="emphasis"><em>input attachments</em></span>, write
+to some as <span class="emphasis"><em>color attachments</em></span> or <span class="emphasis"><em>depth/stencil attachments</em></span>, and do
+resolve operations to others as <span class="emphasis"><em>resolve attachments</em></span>.
+A subpass description <span class="normative">can</span> also include a set of <span class="emphasis"><em>preserve attachments</em></span>,
+which are attachments that are not read or written by the subpass but whose
+contents <span class="normative">must</span> be preserved throughout the subpass.</p><p>A subpass <span class="emphasis"><em>uses</em></span> an attachment if the attachment is a color, depth/stencil,
+resolve, or input attachment for that subpass.
+A subpass does not use an attachment if that attachment is preserved by the
+subpass.
+The first use of an attachment is in the lowest numbered subpass that uses
+that attachment.
+Similarly, the last use of an attachment is in the highest numbered subpass
+that uses that attachment.</p><p>The subpasses in a render pass all render to the same dimensions, and
+fragments for pixel (x,y,layer) in one subpass <span class="normative">can</span> only read attachment
+contents written by previous subpasses at that same (x,y,layer) location.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>By describing a complete set of subpasses in advance, render passes provide
+the implementation an opportunity to optimize the storage and transfer of
+attachment data between subpasses.</p><p>In practice, this means that subpasses with a simple framebuffer-space
+dependency <span class="normative">may</span> be merged into a single tiled rendering pass, keeping the
+attachment data on-chip for the duration of a render pass instance.
+However, it is also quite common for a render pass to only contain a single
+subpass.</p></td></tr></table></div><p><span class="emphasis"><em>Subpass dependencies</em></span> describe ordering restrictions between pairs of
+subpasses.
+If no dependencies are specified, implementations <span class="normative">may</span> reorder or overlap
+portions (e.g., certain shader stages) of the execution of subpasses.
+Dependencies limit the extent of overlap or reordering, and are defined
+using masks of pipeline stages and memory access types.
+Each dependency acts as an
+<a class="link" href="ch06s04.html" title="6.4. Execution And Memory Dependencies">execution and memory dependency</a>, similarly to how <a class="link" href="ch06s05.html" title="6.5. Pipeline Barriers">pipeline barriers</a> are defined.
+Dependencies are needed if two subpasses operate on attachments with
+overlapping ranges of the same <code class="code">VkDeviceMemory</code> object and at least one
+subpass writes to that range.</p><p>A <span class="emphasis"><em>subpass dependency chain</em></span> is a sequence of subpass dependencies in a
+render pass, where the source subpass of each subpass dependency (after the
+first) equals the destination subpass of the previous dependency.</p><p>A render pass describes the structure of subpasses and attachments
+independent of any specific image views for the attachments.
+The specific image views that will be used for the attachments, and their
+dimensions, are specified in <code class="code">VkFramebuffer</code> objects.
+Framebuffers are created with respect to a specific render pass that the
+framebuffer is compatible with (see <a class="link" href="ch07s02.html" title="7.2. Render Pass Compatibility">Render Pass Compatibility</a>).
+Collectively, a render pass and a framebuffer define the complete render
+target state for one or more subpasses as well as the algorithmic
+dependencies between the subpasses.</p><p>The various pipeline stages of the drawing commands for a given subpass <span class="normative">may</span>
+execute concurrently and/or out of order, both within and across drawing
+commands.
+However for a given (x,y,layer,sample) sample location, certain per-sample
+operations are performed in <a class="link" href="ch24s02.html" title="24.2. Rasterization Order">rasterization order</a>.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch07s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

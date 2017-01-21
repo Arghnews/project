@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>30.2. Extensions</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch30.html" title="Chapter 30. Extended Functionality" /><link rel="prev" href="ch30s01.html" title="30.1. Layers" /><link rel="next" href="ch31.html" title="Chapter 31. Features, Limits, and Formats" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch30s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch31.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="extended-functionality-extensions"></a>30.2. Extensions</h2></div></div></div><p>Extensions <span class="normative">may</span> define new Vulkan commands, structures, and enumerants.
+For compilation purposes, the interfaces defined by registered extensions,
+including new structures and enumerants as well as function pointer types
+for new commands, are defined in the Khronos-supplied <code class="literal">vulkan.h</code> together
+with the core API.
+However, commands defined by extensions <span class="normative">may</span> not be available for static
+linking - in which case function pointers to these commands <span class="normative">should</span> be
+queried at runtime as described in <a class="xref" href="ch03s01.html" title="3.1. Command Function Pointers">Section 3.1, “Command Function Pointers”</a>.
+Extensions <span class="normative">may</span> be provided by layers as well as by a Vulkan implementation.</p><p>Because extensions <span class="normative">may</span> extend or change the behavior of the Vulkan API,
+extension authors <span class="normative">should</span> add support for their extensions to the Khronos
+validation layers.
+This is especially important for new commands whose parameters have been
+wrapped by the validation layers.
+See the <a class="link" href="ch01s04.html#LoaderAndValidationLayers">"Vulkan Loader Specification and Architecture Overview"</a> document for additional information.</p><p>To query the available instance extensions, call:</p><p><a id="vkEnumerateInstanceExtensionProperties"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkEnumerateInstanceExtensionProperties(
+    const char*                                 pLayerName,
+    uint32_t*                                   pPropertyCount,
+    VkExtensionProperties*                      pProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pLayerName</code></em> is either <code class="literal">NULL</code> or a pointer to a null-terminated
+    UTF-8 string naming the layer to retrieve extensions from.
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> is a pointer to an integer related to the number of
+    extension properties available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pProperties</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code"><a class="link" href="ch30s02.html#VkExtensionProperties">VkExtensionProperties</a></code> structures.
+</li></ul></div><p>When <em class="parameter"><code>pLayerName</code></em> parameter is NULL, only extensions provided by the
+Vulkan implementation or by implicitly enabled layers are returned.
+When <em class="parameter"><code>pLayerName</code></em> is the name of a layer, the instance extensions
+provided by that layer are returned.</p><p>If <em class="parameter"><code>pProperties</code></em> is <code class="literal">NULL</code>, then the number of extensions properties
+available is returned in <em class="parameter"><code>pPropertyCount</code></em>.
+Otherwise, <em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> point to a variable set by the user to
+the number of elements in the <em class="parameter"><code>pProperties</code></em> array, and on return the
+variable is overwritten with the number of structures actually written to
+<em class="parameter"><code>pProperties</code></em>.
+If <em class="parameter"><code>pPropertyCount</code></em> is less than the number of extension properties
+available, at most <em class="parameter"><code>pPropertyCount</code></em> structures will be written.
+If <em class="parameter"><code>pPropertyCount</code></em> is smaller than the number of extensions available,
+<code class="code">VK_INCOMPLETE</code> will be returned instead of <code class="code">VK_SUCCESS</code>, to
+indicate that not all the available properties were returned.</p><p>Because the list of available layers may change externally between calls to
+<em class="parameter"><code>vkEnumerateInstanceExtensionProperties</code></em>, two calls may retrieve
+different results if a <em class="parameter"><code>pLayerName</code></em> is available in one call but not in
+another.
+The extensions supported by a layer may also change between two calls, e.g.
+if the layer implementation is replaced by a different version between those
+calls.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>pLayerName</code></em> is not <code class="literal">NULL</code>, it <span class="normative">must</span> be the name of a layer
+    returned by <code class="code"><a class="link" href="ch30s01.html#vkEnumerateInstanceLayerProperties">vkEnumerateInstanceLayerProperties</a></code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>pLayerName</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pLayerName</code></em> <span class="normative">must</span> be a null-terminated string
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPropertyCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pProperties</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pProperties</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPropertyCount</code></em> <code class="code">VkExtensionProperties</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_LAYER_NOT_PRESENT</code>
+</li></ul></div></dd></dl></div></div><p>To enable an instance extension, the name of the extension <span class="normative">should</span> be added
+to the <em class="parameter"><code>ppEnabledExtensionNames</code></em> member of <code class="code"><a class="link" href="ch03s02.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a></code>
+when creating a <code class="code">VkInstance</code>.</p><p>Enabling an extension does not change behavior of functionality exposed by
+the core Vulkan API or any other extension, other than making valid the use
+of the commands, enums and structures defined by that extension.</p><p>To query the extensions available to a given physical device, call:</p><p><a id="vkEnumerateDeviceExtensionProperties"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkEnumerateDeviceExtensionProperties(
+    VkPhysicalDevice                            physicalDevice,
+    const char*                                 pLayerName,
+    uint32_t*                                   pPropertyCount,
+    VkExtensionProperties*                      pProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device that will be queried.
+</li><li class="listitem">
+<em class="parameter"><code>pLayerName</code></em> is either <code class="literal">NULL</code> or a pointer to a null-terminated
+    UTF-8 string naming the layer to retrieve extensions from.
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> is a pointer to an integer related to the number of
+    extension properties available or queried, and is treated in the same
+    fashion as the
+    <code class="code"><a class="link" href="ch30s02.html#vkEnumerateInstanceExtensionProperties">vkEnumerateInstanceExtensionProperties</a></code>::<em class="parameter"><code>pPropertyCount</code></em>
+    parameter.
+</li><li class="listitem">
+<em class="parameter"><code>pProperties</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code"><a class="link" href="ch30s02.html#VkExtensionProperties">VkExtensionProperties</a></code> structures.
+</li></ul></div><p>When <em class="parameter"><code>pLayerName</code></em> parameter is NULL, only extensions provided by the
+Vulkan implementation or by implicitly enabled layers are returned.
+When <em class="parameter"><code>pLayerName</code></em> is the name of a layer, the device extensions provided
+by that layer are returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>pLayerName</code></em> is not <code class="literal">NULL</code>, it <span class="normative">must</span> be the name of a layer
+    returned by <code class="code"><a class="link" href="ch30s01.html#vkEnumerateDeviceLayerProperties">vkEnumerateDeviceLayerProperties</a></code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pLayerName</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pLayerName</code></em> <span class="normative">must</span> be a null-terminated string
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPropertyCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pProperties</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pProperties</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPropertyCount</code></em> <code class="code">VkExtensionProperties</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_LAYER_NOT_PRESENT</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkExtensionProperties</code> structure is defined as:</p><p><a id="VkExtensionProperties"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkExtensionProperties {
+    char        extensionName[VK_MAX_EXTENSION_NAME_SIZE];
+    uint32_t    specVersion;
+} VkExtensionProperties;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>extensionName</code></em> is a null-terminated string specifying the name of
+    the extension.
+</li><li class="listitem">
+<em class="parameter"><code>specVersion</code></em> is the version of this extension.
+    It is an integer, incremented with backward compatible changes.
+</li></ul></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="extended-functionality-instance-extensions-and-devices"></a>30.2.1. Instance Extensions and Device Extensions</h3></div></div></div><p>Because an instance extension can affect the operation of an instance and
+any of its child objects, the decision to expose functionality as an
+instance extension or as a device extension is not always clear.
+This section provides some guidelines and rules for when to expose new
+functionality as an instance extension, device extension, or both.</p><p>The decision is influenced by whether extension functionality affects
+instance-level objects (e.g. instances and physical devices) and commands,
+or device-level objects (e.g. logical devices, queues, and command buffers)
+and commands, or both.</p><p>In some cases, the decision is clear:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Functionality that is restricted to the instance-level <span class="normative">must</span> be
+    implemented as an instance extension.
+</li><li class="listitem">
+Functionality that is restricted to the device-level <span class="normative">must</span> be
+    implemented as a device extension.
+</li></ul></div><p>In other cases, the decision is not so clear:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Global functionality that affects the entire Vulkan API, including
+    instance and device-level objects and commands, <span class="normative">should</span> be an instance
+    extension.
+</li><li class="listitem">
+Device-level functionality that contains physical-device queries, <span class="normative">can</span>
+    be implemented as an instance extension.
+    If some part of an instance extension’s functionality might not be
+    available on all physical devices, the extension <span class="normative">should</span> provide a query
+    to determine which physical devices provide the functionality.
+</li><li class="listitem">
+For a set of global functionality that provides new instance-level and
+    device-level commands, and <span class="normative">can</span> be enabled for a subset of devices, it
+    is recommended that the functionality be partitioned across two
+    extensions—one for the instance-level functionality, and one for the
+    device-specific functionality.
+    In this latter case, it is generally recommended that the two extensions
+    have unique names.
+</li></ul></div><p>Examples of instance extensions include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Logging of debug messages by any enabled layers for all Vulkan commands.
+</li><li class="listitem">
+Functionality creating new objects which are direct children of an
+    instance.
+</li><li class="listitem">
+Functionality creating new objects which are direct children of a
+    physical device and intended to work with any logical device created
+    from the physical device.
+</li><li class="listitem">
+Functionality adding new instance-level Vulkan commands that do not
+    affect any device-level commands.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Instance extensions generally require support in the Vulkan loader.
+This is especially true for commands that are dispatched from instances and
+physical devices.
+Additional information about supporting instance-level commands may be found
+in the <a class="link" href="ch01s04.html#LoaderAndValidationLayers"><span class="emphasis"><em>Vulkan Loader Specification and Architecture Overview</em></span></a> document.</p><p>Please see the "Architectural overview of layers and loader" section for
+information about how both instance-level and device-level commands are
+supported and dispatched.</p></td></tr></table></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch30s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch30.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch31.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

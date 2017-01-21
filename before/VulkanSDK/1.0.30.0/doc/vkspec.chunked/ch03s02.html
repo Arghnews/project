@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3.2. Instances</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch03.html" title="Chapter 3. Initialization" /><link rel="prev" href="ch03s01.html" title="3.1. Command Function Pointers" /><link rel="next" href="ch04.html" title="Chapter 4. Devices and Queues" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch03s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="initialization-instances"></a>3.2. Instances</h2></div></div></div><p>There is no global state in Vulkan and all per-application state is stored
+in a <code class="code">VkInstance</code> object.
+Creating a <code class="code">VkInstance</code> object initializes the Vulkan library and allows
+the application to pass information about itself to the implementation.</p><p>Instances are represented by <code class="code">VkInstance</code> handles:</p><p><a id="VkInstance"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_HANDLE(VkInstance)</pre><p>
+</p><p>To create an instance object, call:</p><p><a id="vkCreateInstance"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateInstance(
+    const VkInstanceCreateInfo*                 pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkInstance*                                 pInstance);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> points to an instance of <code class="code"><a class="link" href="ch03s02.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a></code>
+    controlling creation of the instance.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pInstance</code></em> points a <code class="code">VkInstance</code> handle in which the resulting
+    instance is returned.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span> creates the instance, then enables and initializes
+global layers and extensions requested by the application.
+If an extension is provided by a layer, both the layer and extension <span class="normative">must</span>
+be specified at <span class="strong"><strong><code class="code">vkCreateInstance</code></strong></span> time.
+If a specified layer cannot be found, no <code class="code">VkInstance</code> will be created
+and the function will return <code class="code">VK_ERROR_LAYER_NOT_PRESENT</code>.
+Likewise, if a specified extension cannot be found the call will return
+<code class="code">VK_ERROR_EXTENSION_NOT_PRESENT</code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkInstanceCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pInstance</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkInstance</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_INITIALIZATION_FAILED</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_LAYER_NOT_PRESENT</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_EXTENSION_NOT_PRESENT</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_INCOMPATIBLE_DRIVER</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkInstanceCreateInfo</code> structure is defined as:</p><p><a id="VkInstanceCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkInstanceCreateInfo {
+    VkStructureType             sType;
+    const void*                 pNext;
+    VkInstanceCreateFlags       flags;
+    const VkApplicationInfo*    pApplicationInfo;
+    uint32_t                    enabledLayerCount;
+    const char* const*          ppEnabledLayerNames;
+    uint32_t                    enabledExtensionCount;
+    const char* const*          ppEnabledExtensionNames;
+} VkInstanceCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>pApplicationInfo</code></em> is <code class="literal">NULL</code> or a pointer to an instance of
+    <code class="code">VkApplicationInfo</code>.
+    If not <code class="literal">NULL</code>, this information helps implementations recognize behavior
+    inherent to classes of applications.
+    <code class="code"><a class="link" href="ch03s02.html#VkApplicationInfo">VkApplicationInfo</a></code> is defined in detail below.
+</li><li class="listitem">
+<em class="parameter"><code>enabledLayerCount</code></em> is the number of global layers to enable.
+</li><li class="listitem">
+<em class="parameter"><code>ppEnabledLayerNames</code></em> is a pointer to an array of
+    <em class="parameter"><code>enabledLayerCount</code></em> null-terminated UTF-8 strings containing the
+    names of layers to enable for the created instance.
+    See the <a class="link" href="ch30s01.html" title="30.1. Layers">Layers</a> section for further
+    details.
+</li><li class="listitem">
+<em class="parameter"><code>enabledExtensionCount</code></em> is the number of global extensions to
+    enable.
+</li><li class="listitem">
+<em class="parameter"><code>ppEnabledExtensionNames</code></em> is a pointer to an array of
+    <em class="parameter"><code>enabledExtensionCount</code></em> null-terminated UTF-8 strings containing the
+    names of extensions to enable.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>pApplicationInfo</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pApplicationInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkApplicationInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>enabledLayerCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>ppEnabledLayerNames</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>enabledLayerCount</code></em> null-terminated strings
+</li><li class="listitem">
+If <em class="parameter"><code>enabledExtensionCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>ppEnabledExtensionNames</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>enabledExtensionCount</code></em> null-terminated strings
+</li></ul></div></div><p>When creating a Vulkan instance for which you wish to disable validation
+checks, add a <code class="code"><a class="link" href="ch03s02.html#VkValidationFlagsEXT">VkValidationFlagsEXT</a></code> structure to the <em class="parameter"><code>pNext</code></em> chain
+of the <code class="code"><a class="link" href="ch03s02.html#VkInstanceCreateInfo">VkInstanceCreateInfo</a></code> structure, specifying the checks to be
+disabled.</p><p><a id="VkValidationFlagsEXT"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkValidationFlagsEXT {
+    VkStructureType          sType;
+    const void*              pNext;
+    uint32_t                 disabledValidationCheckCount;
+    VkValidationCheckEXT*    pDisabledValidationChecks;
+} VkValidationFlagsEXT;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>disabledValidationCheckCount</code></em> is the number of checks to disable.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>pDisabledValidationChecks</code></em> is a pointer to an array of values
+    specifying the validation checks to be disabled.
+    Checks which <span class="normative">may</span> be specified include:
+</p><p><a id="VkValidationCheckEXT"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkValidationCheckEXT {
+    VK_VALIDATION_CHECK_ALL_EXT = 0,
+} VkValidationCheckEXT;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<code class="code">VK_VALIDATION_CHECK_ALL_EXT</code> disables all validation checks.
+</li></ul></div></li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_VALIDATION_FLAGS_EXT</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>pDisabledValidationChecks</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>disabledValidationCheckCount</code></em> <code class="code"><a class="link" href="ch03s02.html#VkValidationCheckEXT">VkValidationCheckEXT</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>disabledValidationCheckCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><p>The <code class="code">VkApplicationInfo</code> structure is defined as:</p><p><a id="VkApplicationInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkApplicationInfo {
+    VkStructureType    sType;
+    const void*        pNext;
+    const char*        pApplicationName;
+    uint32_t           applicationVersion;
+    const char*        pEngineName;
+    uint32_t           engineVersion;
+    uint32_t           apiVersion;
+} VkApplicationInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>pApplicationName</code></em> is a pointer to a null-terminated UTF-8 string
+    containing the name of the application.
+</li><li class="listitem">
+<em class="parameter"><code>applicationVersion</code></em> is an unsigned integer variable containing the
+    developer-supplied version number of the application.
+</li><li class="listitem">
+<em class="parameter"><code>pEngineName</code></em> is a pointer to a null-terminated UTF-8 string
+    containing the name of the engine (if any) used to create the
+    application.
+</li><li class="listitem">
+<em class="parameter"><code>engineVersion</code></em> is an unsigned integer variable containing the
+    developer-supplied version number of the engine used to create the
+    application.
+</li><li class="listitem">
+<em class="parameter"><code>apiVersion</code></em> is the version of the Vulkan API against which the
+    application expects to run, encoded as described in the
+    <a class="link" href="ch02s09.html" title="2.9. API Version Numbers and Semantics">API Version Numbers and Semantics</a> section.
+    If <em class="parameter"><code>apiVersion</code></em> is 0 the implementation <span class="normative">must</span> ignore it, otherwise
+    if the implementation does not support the requested <em class="parameter"><code>apiVersion</code></em> it
+    <span class="normative">must</span> return <code class="code">VK_ERROR_INCOMPATIBLE_DRIVER</code>.
+    The patch version number specified in <em class="parameter"><code>apiVersion</code></em> is ignored when
+    creating an instance object.
+    Only the major and minor versions of the instance <span class="normative">must</span> match those
+    requested in <em class="parameter"><code>apiVersion</code></em>.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>apiVersion</code></em> <span class="normative">must</span> be zero, or otherwise it <span class="normative">must</span> be a version that
+    the implementation supports, or supports an effective substitute for
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_APPLICATION_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+If <em class="parameter"><code>pApplicationName</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pApplicationName</code></em> <span class="normative">must</span> be a null-terminated string
+</li><li class="listitem">
+If <em class="parameter"><code>pEngineName</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pEngineName</code></em> <span class="normative">must</span> be a null-terminated string
+</li></ul></div></div><p>To destroy an instance, call:</p><p><a id="vkDestroyInstance"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyInstance(
+    VkInstance                                  instance,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the handle of the instance to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All child objects created using <em class="parameter"><code>instance</code></em> <span class="normative">must</span> have been destroyed
+    prior to destroying <em class="parameter"><code>instance</code></em>
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>instance</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>instance</code></em> was
+    created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>instance</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>instance</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch03.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

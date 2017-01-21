@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.8. Memory Aliasing</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch11.html" title="Chapter 11. Resource Creation" /><link rel="prev" href="ch11s07.html" title="11.7. Resource Sharing Mode" /><link rel="next" href="ch12.html" title="Chapter 12. Samplers" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch11s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch12.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="resources-memory-aliasing"></a>11.8. Memory Aliasing</h2></div></div></div><p>A range of a <code class="code">VkDeviceMemory</code> allocation is <span class="emphasis"><em>aliased</em></span> if it is bound to
+multiple resources simultaneously, via <code class="code"><a class="link" href="ch11s06.html#vkBindImageMemory">vkBindImageMemory</a></code>,
+<code class="code"><a class="link" href="ch11s06.html#vkBindBufferMemory">vkBindBufferMemory</a></code>, or via <a class="link" href="ch28s07.html#sparsememory-resource-binding" title="28.7.6. Binding Resource Memory">sparse memory bindings</a>.
+A memory range aliased between two images or two buffers is defined to be
+the intersection of the memory ranges bound to the two resources.
+A memory range aliased between two resources where one is a buffer or a
+linear image, and the other is an optimal image, is defined to be the
+intersection of the memory ranges bound to the two resources, where each
+range is first padded to be aligned to the <em class="parameter"><code>bufferImageGranularity</code></em>.
+Applications <span class="normative">can</span> alias memory, but use of multiple aliases is subject to
+several constraints.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Memory aliasing <span class="normative">can</span> be useful to reduce the total device memory footprint
+of an application, if some large resources are used for disjoint periods of
+time.</p></td></tr></table></div><p>When an opaque, non-<code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> image is
+bound to an aliased range, all image subresources of the image <span class="emphasis"><em>overlap</em></span> the
+range.
+When a linear image is bound to an aliased range, the image subresources
+that (according to the image’s advertised layout) include bytes from the
+aliased range overlap the range.
+When a <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> image has sparse image
+blocks bound to an aliased range, only image subresources including those
+sparse image blocks overlap the range, and when the memory bound to the
+image’s mip tail overlaps an aliased range all image subresources in the mip
+tail overlap the range.</p><p>Buffers, and linear image subresources in either the
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code> or <code class="code">VK_IMAGE_LAYOUT_GENERAL</code>
+layouts, are <span class="emphasis"><em>host-accessible subresources</em></span>.
+That is, the host has a well-defined addressing scheme to interpret the
+contents, and thus the layout of the data in memory <span class="normative">can</span> be consistently
+interpreted across aliases if each of those aliases is a host-accessible
+subresource.
+Opaque images and linear image subresources in other layouts are not
+host-accessible.</p><p>If two aliases are both host-accessible, then they interpret the contents of
+the memory in consistent ways, and data written to one alias <span class="normative">can</span> be read by
+the other alias.</p><p>If either of two aliases is not host-accessible, then the aliases interpret
+the contents of the memory differently, and writes via one alias make the
+contents of memory partially or completely undefined to the other alias.
+If the first alias is a host-accessible subresource, then the bytes affected
+are those written by the memory operations according to its addressing
+scheme.
+If the first alias is not host-accessible, then the bytes affected are those
+overlapped by the image subresources that were written.
+If the second alias is a host-accessible subresource, the affected bytes
+become undefined.
+If the second alias is a not host-accessible, all sparse image blocks (for
+sparse partially-resident images) or all image subresources (for non-sparse
+image and fully resident sparse images) that overlap the affected bytes
+become undefined.</p><p>If any image subresources are made undefined due to writes to an alias, then
+each of those image subresources <span class="normative">must</span> have its layout transitioned from
+<code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> to a valid layout before it is used, or from
+<code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code> if the memory has been written by the
+host.
+If any sparse blocks of a sparse image have been made undefined, then only
+the image subresources containing them <span class="normative">must</span> be transitioned.</p><p>Use of an overlapping range by two aliases <span class="normative">must</span> be separated by a memory
+dependency using the appropriate access types if at least one of those uses
+performs writes, whether the aliases interpret memory consistently or not.
+If buffer or image memory barriers are used, the scope of the barrier <span class="normative">must</span>
+contain the entire range and/or set of image subresources that overlap.</p><p>If two aliasing image views are used in the same framebuffer, then the
+render pass <span class="normative">must</span> declare the attachments using the
+<a class="link" href="ch07s01.html#renderpass-aliasing"><code class="code">VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT</code></a>, and
+follow the other rules listed in that section.</p><p>Access to resources which alias memory from shaders using variables
+decorated with <span class="strong"><strong><code class="code">Coherent</code></strong></span> are not automatically coherent with each other.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Memory recycled via an application suballocator (i.e. without freeing and
+reallocating the memory objects) is not substantially different from memory
+aliasing.
+However, a suballocator usually waits on a fence before recycling a region
+of memory, and signaling a fence involves sufficient implicit dependencies
+to satisfy all the above requirements.</p></td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch12.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

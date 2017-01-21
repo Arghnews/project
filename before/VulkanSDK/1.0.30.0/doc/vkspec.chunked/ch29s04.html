@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.4. Querying for WSI Support</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><link rel="prev" href="ch29s03.html" title="29.3. Presenting Directly to Display Devices" /><link rel="next" href="ch29s05.html" title="29.5. Surface Queries" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch29s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch29s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_querying_for_wsi_support"></a>29.4. Querying for WSI Support</h2></div></div></div><p>Not all physical devices will include WSI support.
+Within a physical device, not all queue families will support presentation.
+WSI support and compatibility <span class="normative">can</span> be determined in a platform-neutral
+manner (which determines support for presentation to a particular surface
+object) and additionally <span class="normative">may</span> be determined in platform-specific manners
+(which determine support for presentation on the specified physical device
+but do not guarantee support for presentation to a particular surface
+object).</p><p>To determine whether a queue family of a physical device supports
+presentation to a given surface, call:</p><p><a id="vkGetPhysicalDeviceSurfaceSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceSurfaceSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    VkSurfaceKHR                                surface,
+    VkBool32*                                   pSupported);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface.
+</li><li class="listitem">
+<em class="parameter"><code>pSupported</code></em> is a pointer to a <code class="code">VkBool32</code>, which is set to
+    <code class="code">VK_TRUE</code> to indicate support, and <code class="code">VK_FALSE</code> otherwise.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSupported</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkBool32</code> value
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_android"></a>29.4.1. Android Platform</h3></div></div></div><p>On Android, all physical devices and queue families <span class="normative">must</span> be capable of
+presentation with any native window.
+As a result there is no Android-specific query for these capabilities.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_mir"></a>29.4.2. Mir Platform</h3></div></div></div><p>To determine whether a queue family of a physical device supports
+presentation to the Mir compositor, call:</p><p><a id="vkGetPhysicalDeviceMirPresentationSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkBool32 vkGetPhysicalDeviceMirPresentationSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    MirConnection*                              connection);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family index.
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> is a pointer to the <span class="strong"><strong><code class="code">MirConnection</code></strong></span>, and identifies
+    the desired Mir compositor.
+</li></ul></div><p>This platform-specific function <span class="normative">can</span> be called prior to creating a surface.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> <span class="normative">must</span> be a pointer to a <code class="code">MirConnection</code> value
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_walyand"></a>29.4.3. Wayland Platform</h3></div></div></div><p>To determine whether a queue family of a physical device supports
+presentation to a Wayland compositor, call:</p><p><a id="vkGetPhysicalDeviceWaylandPresentationSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkBool32 vkGetPhysicalDeviceWaylandPresentationSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    struct wl_display*                          display);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family index.
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> is a pointer to the <span class="strong"><strong><code class="code">wl_display</code></strong></span> associated with a
+    Wayland compositor.
+</li></ul></div><p>This platform-specific function <span class="normative">can</span> be called prior to creating a surface.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> <span class="normative">must</span> be a pointer to a <code class="code">wl_display</code> value
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_win32"></a>29.4.4. Win32 Platform</h3></div></div></div><p>To determine whether a queue family of a physical device supports
+presentation to the Microsoft Windows desktop, call:</p><p><a id="vkGetPhysicalDeviceWin32PresentationSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkBool32 vkGetPhysicalDeviceWin32PresentationSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family index.
+</li></ul></div><p>This platform-specific function <span class="normative">can</span> be called prior to creating a surface.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_xcb"></a>29.4.5. XCB Platform</h3></div></div></div><p>To determine whether a queue family of a physical device supports
+presentation to an X11 server, using the XCB client-side library, call:</p><p><a id="vkGetPhysicalDeviceXcbPresentationSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkBool32 vkGetPhysicalDeviceXcbPresentationSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    xcb_connection_t*                           connection,
+    xcb_visualid_t                              visual_id);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family index.
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> is a pointer to an <span class="strong"><strong><code class="code">xcb_connection_t</code></strong></span> to the X
+    server.
+    <em class="parameter"><code>visual_id</code></em> is an X11 visual (<span class="strong"><strong><code class="code">xcb_visualid_t</code></strong></span>).
+</li></ul></div><p>This platform-specific function <span class="normative">can</span> be called prior to creating a surface.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> <span class="normative">must</span> be a pointer to a <code class="code">xcb_connection_t</code> value
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformQuerySupport_xlib"></a>29.4.6. Xlib Platform</h3></div></div></div><p>To determine whether a queue family of a physical device supports
+presentation to an X11 server, using the Xlib client-side library, call:</p><p><a id="vkGetPhysicalDeviceXlibPresentationSupportKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkBool32 vkGetPhysicalDeviceXlibPresentationSupportKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    queueFamilyIndex,
+    Display*                                    dpy,
+    VisualID                                    visualID);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> is the queue family index.
+</li><li class="listitem">
+<em class="parameter"><code>dpy</code></em> is a pointer to an Xlib <span class="strong"><strong><code class="code">Display</code></strong></span> connection to the server.
+</li><li class="listitem">
+<em class="parameter"><code>visualId</code></em> is an X11 visual (<span class="strong"><strong><code class="code">VisualID</code></strong></span>).
+</li></ul></div><p>This platform-specific function <span class="normative">can</span> be called prior to creating a surface.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queueFamilyIndex</code></em> <span class="normative">must</span> be less than
+    <em class="parameter"><code>pQueueFamilyPropertyCount</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceQueueFamilyProperties</code></strong></span> for the given
+    <em class="parameter"><code>physicalDevice</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>dpy</code></em> <span class="normative">must</span> be a pointer to a <code class="code">Display</code> value
+</li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch29s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch29.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch29s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

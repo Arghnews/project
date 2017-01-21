@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>2.2. Execution Model</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch02.html" title="Chapter 2. Fundamentals" /><link rel="prev" href="ch02s01.html" title="2.1. Architecture Model" /><link rel="next" href="ch02s03.html" title="2.3. Object Model" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch02s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch02s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fundamentals-execmodel"></a>2.2. Execution Model</h2></div></div></div><p>This section outlines the execution model of a Vulkan system.</p><p>Vulkan exposes one or more <span class="emphasis"><em>devices</em></span>, each of which exposes one or more
+<span class="emphasis"><em>queues</em></span> which <span class="normative">may</span> process work asynchronously to one another.
+The set of queues supported by a device is partitioned into <span class="emphasis"><em>families</em></span>.
+Each family supports one or more types of functionality and <span class="normative">may</span> contain
+multiple queues with similar characteristics.
+Queues within a single family are considered <span class="emphasis"><em>compatible</em></span> with one another,
+and work produced for a family of queues <span class="normative">can</span> be executed on any queue
+within that family.
+This specification defines four types of functionality that queues <span class="normative">may</span>
+support: graphics, compute, transfer, and sparse memory management.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>A single device <span class="normative">may</span> report multiple similar queue families rather than, or
+as well as, reporting multiple members of one or more of those families.
+This indicates that while members of those families have similar
+capabilities, they are <span class="emphasis"><em>not</em></span> directly compatible with one another.</p></td></tr></table></div><p>Device memory is explicitly managed by the application.
+Each device <span class="normative">may</span> advertise one or more heaps, representing different areas
+of memory.
+Memory heaps are either device local or host local, but are always visible
+to the device.
+Further detail about memory heaps is exposed via memory types available on
+that heap.
+Examples of memory areas that <span class="normative">may</span> be available on an implementation
+include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="emphasis"><em>device local</em></span> is memory that is physically connected to the device.
+</li><li class="listitem">
+<span class="emphasis"><em>device local, host visible</em></span> is device local memory that is visible to
+    the host.
+</li><li class="listitem">
+<span class="emphasis"><em>host local, host visible</em></span> is memory that is local to the host and
+    visible to the device and host.
+</li></ul></div><p>On other architectures, there <span class="normative">may</span> only be a single heap that <span class="normative">can</span> be used
+for any purpose.</p><p>A Vulkan application controls a set of devices through the submission of
+command buffers which have recorded device commands issued via Vulkan
+library calls.
+The content of command buffers is specific to the underlying hardware and is
+opaque to the application.
+Once constructed, a command buffer <span class="normative">can</span> be submitted once or many times to a
+queue for execution.
+Multiple command buffers <span class="normative">can</span> be built in parallel by employing multiple
+threads within the application.</p><p>Command buffers submitted to different queues <span class="normative">may</span> execute in parallel or
+even out of order with respect to one another.
+Command buffers submitted to a single queue respect the submission order, as
+described further in <a class="link" href="ch02s02.html#fundamentals-queueoperation" title="2.2.1. Queue Operation">Queue Operation</a>.
+Command buffer execution by the device is also asynchronous to host
+execution.
+Once a command buffer is submitted to a queue, control <span class="normative">may</span> return to the
+application immediately.
+Synchronization between the device and host, and between different queues is
+the responsibility of the application.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="fundamentals-queueoperation"></a>2.2.1. Queue Operation</h3></div></div></div><p>Vulkan queues provide an interface to the execution engines of a device.
+Commands for these execution engines are recorded into command buffers ahead
+of execution time.
+These command buffers are then submitted to queues with a <span class="emphasis"><em>queue submission</em></span>
+command for execution in a number of <span class="emphasis"><em>batches</em></span>.
+Once submitted to a queue, these commands will begin and complete execution
+without further application intervention, though the order of this execution
+is dependent on a number of implicit and explicit ordering constraints.</p><p>Work is submitted to queues using queue submission commands that typically
+take the form <span class="strong"><strong><code class="code">vkQueue*</code></strong></span> (e.g. <code class="code"><a class="link" href="ch05s04.html#vkQueueSubmit">vkQueueSubmit</a></code>,
+<code class="code"><a class="link" href="ch28s07.html#vkQueueBindSparse">vkQueueBindSparse</a></code>), and optionally take a list of semaphores upon
+which to wait before work begins and a list of semaphores to signal once
+work has completed.
+The work itself, as well as signaling and waiting on the semaphores are all
+<span class="emphasis"><em>queue operations</em></span>.</p><p>Queue operations on different queues have no implicit ordering constraints,
+and <span class="normative">may</span> execute in any order.
+Explicit ordering constraints between queues <span class="normative">can</span> be expressed with
+<a class="link" href="ch06s02.html" title="6.2. Semaphores">semaphores</a> and
+<a class="link" href="ch06s01.html" title="6.1. Fences">fences</a>.</p><p>Command buffer submissions to a single queue <span class="normative">must</span> always adhere to
+<a class="link" href="ch02s02.html#fundamentals-queueoperation-commandorder">command order</a> and
+<a class="link" href="ch02s02.html#fundamentals-queueoperation-apiorder">API order</a>, but otherwise <span class="normative">may</span>
+overlap or execute out of order.
+Other types of batches and queue submissions against a single queue (e.g.
+<a class="link" href="ch28s07.html#sparsemem-memory-binding" title="Sparse Memory Binding Functions">sparse memory binding</a>) have no implicit
+ordering constraints with any other queue submission or batch.
+Additional explicit ordering constraints between queue submissions and
+individual batches can be expressed with
+<a class="link" href="ch06s02.html" title="6.2. Semaphores">semaphores</a> and
+<a class="link" href="ch06s01.html" title="6.1. Fences">fences</a>.</p><p>Before a fence or semaphore is signaled, it is guaranteed that any
+previously submitted queue operations have completed execution, and that
+memory writes from those queue operations are
+<a class="link" href="ch06s04.html#synchronization-execution-and-memory-dependencies-available-and-visible">available</a>
+to future queue operations.
+Waiting on a signaled semaphore or fence guarantees that previous writes
+that are available are also
+<a class="link" href="ch06s04.html#synchronization-execution-and-memory-dependencies-available-and-visible">visible</a>
+to subsequent commands.</p><p>Command buffer boundaries, both between primary command buffers of the same
+or different batches or submissions as well as between primary and secondary
+command buffers, do not introduce any implicit ordering constraints.
+In other words, submitting the set of command buffers (which <span class="normative">can</span> include
+executing secondary command buffers) between any semaphore or fence
+operations execute the recorded commands as if they had all been recorded
+into a single primary command buffer, except that the current state is
+<a class="link" href="ch05.html#commandbuffers-statereset">reset</a> on each boundary.
+Explicit ordering constraints can be expressed with
+<a class="link" href="ch06s03.html" title="6.3. Events">events</a> and
+<a class="link" href="ch06s05.html" title="6.5. Pipeline Barriers">pipeline barriers</a>.</p><p>There are a few <a class="link" href="ch02s02.html#fundamentals-queueoperation-apiorder">implicit ordering constraints</a> between commands within a command buffer, but only covering a
+subset of execution.
+Additional explicit ordering constraints can be expressed with
+<a class="link" href="ch06s03.html" title="6.3. Events">events</a>,
+<a class="link" href="ch06s05.html" title="6.5. Pipeline Barriers">pipeline barriers</a> and
+<a class="link" href="ch07s01.html#VkSubpassDependency">subpass dependencies</a>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Implementations have significant freedom to overlap execution of work
+submitted to a queue, and this is common due to deep pipelining and
+parallelism in Vulkan devices.</p></td></tr></table></div><p><a id="fundamentals-queueoperation-commandorder"></a>Commands recorded in command buffers either perform actions (draw, dispatch,
+clear, copy, query/timestamp operations, begin/end subpass operations), set
+state (bind pipelines, descriptor sets, and buffers, set dynamic state, push
+constants, set render pass/subpass state), or perform synchronization
+(set/wait events, pipeline barrier, render pass/subpass dependencies).
+Some commands perform more than one of these tasks.
+State setting commands update the <span class="emphasis"><em>current state</em></span> of the command buffer.
+Some commands that perform actions (e.g. draw/dispatch) do so based on the
+current state set cumulatively since the start of the command buffer.
+The work involved in performing action commands is often allowed to overlap
+or to be reordered, but doing so <span class="normative">must</span> not alter the state to be used by
+each action command.
+In general, action commands are those commands that alter framebuffer
+attachments, read/write buffer or image memory, or write to query pools.</p><p>Synchronization commands introduce explicit
+<a class="link" href="ch06s04.html" title="6.4. Execution And Memory Dependencies">execution and memory dependencies</a> between two sets of action commands, where the second set of
+commands depends on the first set of commands.
+These dependencies enforce that both the execution of certain
+<a class="link" href="ch06s05.html#synchronization-pipeline-stage-flags" title="6.5.2. Pipeline Stage Flags">pipeline stages</a> in the later set
+occur after the execution of certain stages in the source set, and that the
+effects of <a class="link" href="ch06s05.html#synchronization-global-memory-barrier" title="6.5.4. Global Memory Barriers">memory accesses</a>
+performed by certain pipeline stages occur in order and are visible to each
+other.
+When not enforced by an explicit dependency or otherwise forbidden by the
+specification, action commands <span class="normative">may</span> overlap execution or execute out of
+order, and <span class="normative">may</span> not see the side effects of each other’s memory accesses.</p><p>The execution order of an action command with respect to any synchronization
+commands that affect that action command <span class="normative">must</span> match the recording and
+submission order, within submissions to a single queue.</p><p><a id="fundamentals-queueoperation-apiorder"></a><span class="emphasis"><em>API order</em></span> sorts primitives:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+First, by the action command that generates them.
+</li><li class="listitem">
+Second, by the order they are processed by
+    <a class="link" href="ch19s02.html#drawing-primitive-assembly-apiorder">primitive assembly</a>.
+</li></ul></div><p>Within this order, implementations also sort primitives:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Third, by an implementation-dependent ordering of new primitives
+    generated by tessellation, if a tessellation shader is active.
+</li><li class="listitem">
+Fourth, by the order new primitives are generated by
+    <a class="link" href="ch22s04.html" title="22.4. Geometry Shader Primitive Ordering">geometry shading</a>, if geometry shading is active.
+</li><li class="listitem">
+Fifth, by an implementation-dependent ordering of primitives generated
+    due to the <a class="link" href="ch24s07.html#primsrast-polygonmode" title="24.7.2. Polygon Mode">polygon mode</a>.
+</li></ul></div><p>The device executes queue operations asynchronously with respect to the
+host.
+Control is returned to an application immediately following command buffer
+submission to a queue.
+The application <span class="normative">must</span> synchronize work between the host and device as
+needed.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch02.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch02s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

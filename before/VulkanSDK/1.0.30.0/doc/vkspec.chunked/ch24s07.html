@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>24.7. Polygons</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch24.html" title="Chapter 24. Rasterization" /><link rel="prev" href="ch24s06.html" title="24.6. Line Segments" /><link rel="next" href="ch25.html" title="Chapter 25. Fragment Operations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch24s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch25.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="primsrast-polygons"></a>24.7. Polygons</h2></div></div></div><p>A polygon results from the decomposition of a triangle strip, triangle fan
+or a series of independent triangles.
+Like points and line segments, polygon rasterization is controlled by
+several variables in the <code class="code"><a class="link" href="ch24.html#VkPipelineRasterizationStateCreateInfo">VkPipelineRasterizationStateCreateInfo</a></code>
+structure.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="primsrast-polygons-basic"></a>24.7.1. Basic Polygon Rasterization</h3></div></div></div><p>The first step of polygon rasterization is to determine whether the triangle
+is <span class="emphasis"><em>back-facing</em></span> or <span class="emphasis"><em>front-facing</em></span>.
+This determination is made based on the sign of the (clipped or unclipped)
+polygon’s area computed in framebuffer coordinates.
+One way to compute this area is:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\[
+  a = -{1 \over 2}\sum_{i=0}^{n-1}
+        x_f^i y_f^{i \oplus 1} -
+        x_f^{i \oplus 1} y_f^i
+\]</span></div></div><p>where <span class="inlinemediaobject"><span class="phrase">
+$x_f^i$
+</span></span> and <span class="inlinemediaobject"><span class="phrase">
+$y_f^i$
+</span></span> are the <span class="eq">x</span> and
+<span class="eq">y</span> framebuffer coordinates of the <span class="eq">i</span>th vertex of the
+<span class="eq">n</span>-vertex polygon (vertices are numbered starting at zero for the
+purposes of this computation) and <span class="eq">i ⊕ 1</span> is <span class="eq">(i + 1) mod n</span>.</p><p>The interpretation of the sign of <span class="eq">a</span> is determined by the
+<code class="code"><a class="link" href="ch24.html#VkPipelineRasterizationStateCreateInfo">VkPipelineRasterizationStateCreateInfo</a></code>::<em class="parameter"><code>frontFace</code></em> property of
+the currently active pipeline, which takes the following values:</p><p><a id="VkFrontFace"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkFrontFace {
+    VK_FRONT_FACE_COUNTER_CLOCKWISE = 0,
+    VK_FRONT_FACE_CLOCKWISE = 1,
+} VkFrontFace;</pre><p>
+</p><p>If <em class="parameter"><code>frontFace</code></em> is set to <code class="code">VK_FRONT_FACE_COUNTER_CLOCKWISE</code>, a
+triangle with positive area is considered front-facing.
+If it is set to <code class="code">VK_FRONT_FACE_CLOCKWISE</code>, a triangle with negative area
+is considered front-facing.
+Any triangle which is not front-facing is back-facing, including zero-area
+triangles.</p><p>Once the orientation of triangles is determined, they are culled according
+to the setting of the
+<code class="code"><a class="link" href="ch24.html#VkPipelineRasterizationStateCreateInfo">VkPipelineRasterizationStateCreateInfo</a></code>::<em class="parameter"><code>cullMode</code></em> property of the
+currently active pipeline, which takes the following values:</p><p><a id="VkCullModeFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkCullModeFlagBits {
+    VK_CULL_MODE_NONE = 0,
+    VK_CULL_MODE_FRONT_BIT = 0x00000001,
+    VK_CULL_MODE_BACK_BIT = 0x00000002,
+    VK_CULL_MODE_FRONT_AND_BACK = 0x00000003,
+} VkCullModeFlagBits;</pre><p>
+</p><p>If the <em class="parameter"><code>cullMode</code></em> is set to <code class="code">VK_CULL_MODE_NONE</code> no triangles are
+discarded, if it is set to <code class="code">VK_CULL_MODE_FRONT_BIT</code> front-facing
+triangles are discarded, if it is set to <code class="code">VK_CULL_MODE_BACK_BIT</code> then
+back-facing triangles are discarded and if it is set to
+<code class="code">VK_CULL_MODE_FRONT_AND_BACK</code> then all triangles are discarded.
+Following culling, fragments are produced for any triangles which have not
+been discarded.</p><p>The rule for determining which fragments are produced by polygon
+rasterization is called <span class="emphasis"><em>point sampling</em></span>.
+The two-dimensional projection obtained by taking the x and y framebuffer
+coordinates of the polygon’s vertices is formed.
+Fragments are produced for any pixels for which any sample points lie inside
+of this polygon.
+Coverage bits that correspond to sample points that satisfy the point
+sampling criteria are 1, other coverage bits are 0.
+Special treatment is given to a sample whose sample location lies on a
+polygon edge.
+In such a case, if two polygons lie on either side of a common edge (with
+identical endpoints) on which a sample point lies, then exactly one of the
+polygons <span class="normative">must</span> result in a covered sample for that fragment during
+rasterization.
+As for the data associated with each fragment produced by rasterizing a
+polygon, we begin by specifying how these values are produced for fragments
+in a triangle.
+Define <span class="emphasis"><em>barycentric coordinates</em></span> for a triangle.
+Barycentric coordinates are a set of three numbers, <span class="eq">a</span>, <span class="eq">b</span>, and
+<span class="eq">c</span>, each in the range <span class="eq">[0,1]</span>, with <span class="eq">a + b + c = 1</span>.
+These coordinates uniquely specify any point <span class="eq">p</span> within the triangle or
+on the triangle’s boundary as</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">p = a p<sub>a</sub> + b p<sub>b</sub> + c p<sub>c</sub></span>
+</dd></dl></div><p>where <span class="eq">p<sub>a</sub></span>, <span class="eq">p<sub>b</sub></span>, and <span class="eq">p<sub>c</sub></span> are the vertices of the
+triangle.
+<span class="eq">a</span>, <span class="eq">b</span>, and <span class="eq">c</span> are determined by:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\[
+    a = {{\rm A}(p p_b p_c) \over {\rm A}(p_a p_b p_c)}, \quad
+    b = {{\rm A}(p p_a p_c) \over {\rm A}(p_a p_b p_c)}, \quad
+    c = {{\rm A}(p p_a p_b) \over {\rm A}(p_a p_b p_c)},
+\]</span></div></div><p>where <span class="eq">A(lmn)</span> denotes the area in framebuffer coordinates of the
+triangle with vertices <span class="eq">l</span>, <span class="eq">m</span>, and <span class="eq">n</span>.</p><p>Denote an associated datum at <span class="eq">p<sub>a</sub></span>, <span class="eq">p<sub>b</sub></span>, or <span class="eq">p<sub>c</sub></span> as
+<span class="eq">f<sub>a</sub></span>, <span class="eq">f<sub>b</sub></span>, or <span class="eq">f<sub>c</sub></span>, respectively.</p><p><a id="triangle_perspective_interpolation"></a>The value of an associated datum <span class="eq">f</span> for a fragment produced by
+rasterizing a triangle, whether it be a shader output or the clip <span class="eq">w</span>
+coordinate, <span class="normative">must</span> be determined using perspective interpolation:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\[
+  f = {{a{f_a / w_a} + b{f_b / w_b} + c{f_c / w_c}} \over
+       {a / w_a} + {b / w_b} + {c / w_c}}
+\]</span></div></div><p>where <span class="eq">w<sub>a</sub></span>, <span class="eq">w<sub>b</sub></span>, and <span class="eq">w<sub>c</sub></span> are the clip <span class="eq">w</span>
+coordinates of <span class="eq">p<sub>a</sub></span>, <span class="eq">p<sub>b</sub></span>, and <span class="eq">p<sub>c</sub></span>, respectively.
+<span class="eq">a</span>, <span class="eq">b</span>, and <span class="eq">c</span> are the barycentric coordinates of the
+location at which the data are produced - this <span class="normative">must</span> be a pixel center or
+the location of a sample.
+When <em class="parameter"><code>rasterizationSamples</code></em> is <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, the pixel
+center <span class="normative">must</span> be used.</p><p><a id="triangle_linear_interpolation"></a>Depth values for triangles <span class="normative">must</span> be determined using linear interpolation:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">z = a z<sub>a</sub> + b z<sub>b</sub> + c z<sub>c</sub></span>
+</dd></dl></div><p>where <span class="eq">z<sub>a</sub></span>, <span class="eq">z<sub>b</sub></span>, and <span class="eq">z<sub>c</sub></span> are the depth values of
+<span class="eq">p<sub>a</sub></span>, <span class="eq">p<sub>b</sub></span>, and <span class="eq">p<sub>c</sub></span>, respectively.</p><p>The <span class="strong"><strong><code class="code">NoPerspective</code></strong></span> and <span class="strong"><strong><code class="code">Flat</code></strong></span>
+<a class="link" href="ch08s11.html" title="8.11. Interpolation Decorations">interpolation decorations</a> <span class="normative">can</span> be used
+with fragment shader inputs to declare how they are interpolated.
+When neither decoration is applied, <a class="link" href="ch24s07.html#triangle_perspective_interpolation">perspective interpolation</a> is performed as described above.
+When the <span class="strong"><strong><code class="code">NoPerspective</code></strong></span> decoration is used,
+<a class="link" href="ch24s07.html#triangle_linear_interpolation">linear interpolation</a> is performed in the
+same fashion as for depth values, as described above.
+When the <span class="strong"><strong><code class="code">Flat</code></strong></span> decoration is used, no interpolation is performed, and
+outputs are taken from the corresponding input value of the
+<a class="link" href="ch23s01.html" title="23.1. Flat Shading">provoking vertex</a> corresponding to that
+primitive.</p><p>For a polygon with more than three edges, such as are produced by clipping a
+triangle, a convex combination of the values of the datum at the polygon’s
+vertices <span class="normative">must</span> be used to obtain the value assigned to each fragment
+produced by the rasterization algorithm.
+That is, it <span class="normative">must</span> be the case that at every fragment</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\[ f = \sum_{i=1}^{n} a_i f_i \]</span></div></div><p>where <span class="eq">n</span> is the number of vertices in the polygon and <span class="eq">f<sub>i</sub></span> is the
+value of <span class="eq">f</span> at vertex <span class="eq">i</span>.
+For each <span class="eq">i</span>, <span class="eq">0 ≤ a<sub>i</sub> ≤ 1</span> and
+<span class="inlinemediaobject"><span class="phrase">
+$\sum_{i=1}^{n}a_i = 1$
+</span></span>.
+The values of <span class="eq">a<sub>i</sub></span> <span class="normative">may</span> differ from fragment to fragment, but at
+vertex <span class="eq">i</span>, <span class="eq">a<sub>i</sub> = 1</span> and <span class="eq">a<sub>j</sub> = 0</span> for <span class="eq">j ≠ i</span>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>One algorithm that achieves the required behavior is to triangulate a
+polygon (without adding any vertices) and then treat each triangle
+individually as already discussed.
+A scan-line rasterizer that linearly interpolates data along each edge and
+then linearly interpolates data across each horizontal span from edge to
+edge also satisfies the restrictions (in this case, the numerator and
+denominator of equation <a class="xref" href="ch24s07.html#triangle_perspective_interpolation">Section 24.7.1, “Basic Polygon Rasterization”</a> are iterated
+independently and a division performed for each fragment).</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="primsrast-polygonmode"></a>24.7.2. Polygon Mode</h3></div></div></div><p>The method of rasterization for polygons is determined by the
+<code class="code"><a class="link" href="ch24.html#VkPipelineRasterizationStateCreateInfo">VkPipelineRasterizationStateCreateInfo</a></code>::<em class="parameter"><code>polygonMode</code></em> property of
+the currently active pipeline, which takes the following values:</p><p><a id="VkPolygonMode"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkPolygonMode {
+    VK_POLYGON_MODE_FILL = 0,
+    VK_POLYGON_MODE_LINE = 1,
+    VK_POLYGON_MODE_POINT = 2,
+} VkPolygonMode;</pre><p>
+</p><p>The <em class="parameter"><code>polygonMode</code></em> selects which method of rasterization is used for
+polygons.
+If <em class="parameter"><code>polygonMode</code></em> is <code class="code">VK_POLYGON_MODE_POINT</code>, then the vertices of
+polygons are treated, for rasterization purposes, as if they had been drawn
+as points.
+<code class="code">VK_POLYGON_MODE_LINE</code> causes polygon edges to be drawn as line
+segments.
+<code class="code">VK_POLYGON_MODE_FILL</code> causes polygons to render using the polygon
+rasterization rules in this section.</p><p>Note that these modes affect only the final rasterization of polygons: in
+particular, a polygon’s vertices are shaded and the polygon is clipped and
+possibly culled before these modes are applied.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="primsrast-depthbias"></a>24.7.3. Depth Bias</h3></div></div></div><p>The depth values of all fragments generated by the rasterization of a
+polygon <span class="normative">can</span> be offset by a single value that is computed for that polygon.
+This behavior is controlled by the <em class="parameter"><code>depthBiasEnable</code></em>,
+<em class="parameter"><code>depthBiasConstantFactor</code></em>, <em class="parameter"><code>depthBiasClamp</code></em>, and
+<em class="parameter"><code>depthBiasSlopeFactor</code></em> members of
+<code class="code"><a class="link" href="ch24.html#VkPipelineRasterizationStateCreateInfo">VkPipelineRasterizationStateCreateInfo</a></code>, or by the corresponding
+parameters to the <span class="strong"><strong><code class="code">vkCmdSetDepthBias</code></strong></span> command if depth bias state is
+dynamic.</p><p><a id="vkCmdSetDepthBias"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdSetDepthBias(
+    VkCommandBuffer                             commandBuffer,
+    float                                       depthBiasConstantFactor,
+    float                                       depthBiasClamp,
+    float                                       depthBiasSlopeFactor);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer into which the command will be
+    recorded.
+</li><li class="listitem">
+<em class="parameter"><code>depthBiasConstantFactor</code></em> is a scalar factor controlling the
+    constant depth value added to each fragment.
+</li><li class="listitem">
+<em class="parameter"><code>depthBiasClamp</code></em> is the maximum (or minimum) depth bias of a
+    fragment.
+</li><li class="listitem">
+<em class="parameter"><code>depthBiasSlopeFactor</code></em> is a scalar factor applied to a fragment’s
+    slope in depth bias calculations.
+</li></ul></div><p>If <em class="parameter"><code>depthBiasEnable</code></em> is <code class="code">VK_FALSE</code>, no depth bias is applied and the
+fragment’s depth values are unchanged.</p><p><em class="parameter"><code>depthBiasSlopeFactor</code></em> scales the maximum depth slope of the polygon,
+and <em class="parameter"><code>depthBiasConstantFactor</code></em> scales an implementation-dependent
+constant that relates to the usable resolution of the depth buffer.
+The resulting values are summed to produce the depth bias value which is
+then clamped to a minimum or maximum value specified by
+<em class="parameter"><code>depthBiasClamp</code></em>.
+<em class="parameter"><code>depthBiasSlopeFactor</code></em>, <em class="parameter"><code>depthBiasConstantFactor</code></em>, and
+<em class="parameter"><code>depthBiasClamp</code></em> <span class="normative">can</span> each be positive, negative, or zero.</p><p>The maximum depth slope <span class="eq">m</span> of a triangle is</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{equation}
+m = \sqrt{ \left({\partial z_f \over \partial x_f}\right)^2
+ +  \left({\partial z_f \over  \partial y_f}\right)^2}
+\end{equation}</span></div></div><p>where <span class="eq">(x<sub>f</sub>, y<sub>f</sub>, z<sub>f</sub>)</span> is a point on the triangle.
+<span class="eq">m</span> <span class="normative">may</span> be approximated as</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{equation}
+m = \max\left( \left| {\partial z_f \over \partial x_f} \right|,
+\left| {\partial z_f \over \partial y_f} \right| \right).
+\end{equation}</span></div></div><p>The minimum resolvable difference <span class="eq">r</span> is an implementation-dependent
+parameter that depends on the depth buffer representation.
+It is the smallest difference in framebuffer coordinate <span class="eq">z</span> values that
+is guaranteed to remain distinct throughout polygon rasterization and in the
+depth buffer.
+All pairs of fragments generated by the rasterization of two polygons with
+otherwise identical vertices, but <span class="eq"><em class="parameter"><code>z</code></em><sub>f</sub></span> values that differ by
+$r$, will have distinct depth values.</p><p>For fixed-point depth buffer representations, <span class="eq">r</span> is constant throughout
+the range of the entire depth buffer.
+For floating-point depth buffers, there is no single minimum resolvable
+difference.
+In this case, the minimum resolvable difference for a given polygon is
+dependent on the maximum exponent, <span class="eq">e</span>, in the range of <span class="eq">z</span> values
+spanned by the primitive.
+If <span class="eq">n</span> is the number of bits in the floating-point mantissa, the minimum
+resolvable difference, <span class="eq">r</span>, for the given primitive is defined as</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">r = 2<sup>e-n</sup></span>
+</dd></dl></div><p>If no depth buffer is present, <span class="eq">r</span> is undefined.</p><p>The bias value <span class="eq">o</span> for a polygon is</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{equation}
+o =
+\begin{cases}
+    m \times depthBiasSlopeFactor +
+         r \times depthBiasConstantFactor  &amp; depthBiasClamp = 0\ or\ NaN \\
+    \min(m \times depthBiasSlopeFactor +
+         r \times depthBiasConstantFactor,
+         depthBiasClamp)                   &amp; depthBiasClamp &gt; 0  \\
+    \max(m \times depthBiasSlopeFactor +
+         r \times depthBiasConstantFactor,
+         depthBiasClamp)                   &amp; depthBiasClamp &lt; 0  \\
+\end{cases}
+\end{equation}</span></div></div><p><span class="eq">m</span> is computed as described above.
+If the depth buffer uses a fixed-point representation, <span class="eq">m</span> is a function
+of depth values in the range <span class="eq">[0,1]</span>, and <span class="eq">o</span> is applied to depth
+values in the same range.</p><p>For fixed-point depth buffers, fragment depth values are always limited to
+the range <span class="eq">[0,1]</span> by clamping after depth bias addition is performed.
+Fragment depth values are clamped even when the depth buffer uses a
+floating-point representation.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The currently bound graphics pipeline <span class="normative">must</span> have been created with the
+    <code class="code">VK_DYNAMIC_STATE_DEPTH_BIAS</code> dynamic state enabled
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-depthBiasClamp">depth bias clamping</a> feature
+    is not enabled, <em class="parameter"><code>depthBiasClamp</code></em> <span class="normative">must</span> be <span class="strong"><strong><code class="code">0</code></strong></span>.0
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support graphics operations
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>GRAPHICS</p></td></tr></tbody></table></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch24s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch24.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch25.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>15.3. Texel Input Operations</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch15.html" title="Chapter 15. Image Operations" /><link rel="prev" href="ch15s02.html" title="15.2. Conversion Formulas" /><link rel="next" href="ch15s04.html" title="15.4. Texel Output Operations" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch15s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch15s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_texel_input_operations"></a>15.3. Texel Input Operations</h2></div></div></div><p><span class="emphasis"><em>Texel input instructions</em></span> are SPIR-V image instructions that read from an
+image.
+<span class="emphasis"><em>Texel input operations</em></span> are a set of steps that are performed on state,
+coordinates, and texel values while processing a texel input instruction,
+and which are common to some or all texel input instructions.
+They include the following steps, which are performed in the listed order:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+<a class="link" href="ch15s03.html#textures-input-validation" title="15.3.1. Texel Input Validation Operations">Validation operations</a>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<a class="link" href="ch15s03.html#textures-operation-validation" title="Instruction/Sampler/Image Validation">Instruction/Sampler/Image validation</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-integer-coordinate-validation" title="Integer Texel Coordinate Validation">Coordinate validation</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-sparse-validation" title="Sparse Validation">Sparse validation</a>
+</li></ul></div></li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-format-conversion" title="15.3.2. Format Conversion">Format conversion</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-texel-replacement" title="15.3.3. Texel Replacement">Texel replacement</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-depth-compare-operation" title="15.3.4. Depth Compare Operation">Depth comparison</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-conversion-to-rgba" title="15.3.5. Conversion to RGBA">Conversion to RGBA</a>
+</li><li class="listitem">
+<a class="link" href="ch15s03.html#textures-component-swizzle" title="15.3.6. Component Swizzle">Component swizzle</a>
+</li></ul></div><p>For texel input instructions involving multiple texels (for sampling or
+gathering), these steps are applied for each texel that is used in the
+instruction.
+Depending on the type of image instruction, other steps are conditionally
+performed between these steps or involving multiple coordinate or texel
+values.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-input-validation"></a>15.3.1. Texel Input Validation Operations</h3></div></div></div><p><span class="emphasis"><em>Texel input validation operations</em></span> inspect instruction/image/sampler state
+or coordinates, and in certain circumstances cause the texel value to be
+replaced or become undefined.
+There are a series of validations that the texel undergoes.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-operation-validation"></a>Instruction/Sampler/Image Validation</h4></div></div></div><p>There are a number of cases where a SPIR-V instruction <span class="normative">can</span> mismatch with
+the sampler, the image, or both.
+There are a number of cases where the sampler <span class="normative">can</span> mismatch with the image.
+In such cases the value of the texel returned is undefined.</p><p>These cases include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The sampler <em class="parameter"><code>borderColor</code></em> is an integer type and the image
+    <em class="parameter"><code>format</code></em> is not one of the <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> integer types or a stencil
+    component of a depth/stencil format.
+</li><li class="listitem">
+The sampler <em class="parameter"><code>borderColor</code></em> is a float type and the image <em class="parameter"><code>format</code></em>
+    is not one of the <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> float types or a depth component of a
+    depth/stencil format.
+</li><li class="listitem">
+The sampler <em class="parameter"><code>borderColor</code></em> is one of the opaque black colors
+    (<code class="code">VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK</code> or
+    <code class="code">VK_BORDER_COLOR_INT_OPAQUE_BLACK</code>) and the image
+    <code class="code"><a class="link" href="ch11s05.html#VkComponentSwizzle">VkComponentSwizzle</a></code> for any of the <code class="code"><a class="link" href="ch11s05.html#VkComponentMapping">VkComponentMapping</a></code>
+    components is not <code class="code">VK_COMPONENT_SWIZZLE_IDENTITY</code>.
+</li><li class="listitem">
+If the instruction is <span class="strong"><strong><code class="code">OpImageRead</code></strong></span> or <span class="strong"><strong><code class="code">OpImageSparseRead</code></strong></span> and the
+    <em class="parameter"><code>shaderStorageImageReadWithoutFormat</code></em> feature is not enabled, or the
+    instruction is <span class="strong"><strong><code class="code">OpImageWrite</code></strong></span> and the
+    <em class="parameter"><code>shaderStorageImageWriteWithoutFormat</code></em> feature is not enabled, then
+    the SPIR-V Image Format <span class="normative">must</span> be <a class="link" href="apas04.html#spirvenv-image-formats" title="Compatibility Between SPIR-V Image Formats And Vulkan Formats">compatible</a>
+    with the image view’s <em class="parameter"><code>format</code></em>.
+</li><li class="listitem">
+The sampler <em class="parameter"><code>unnormalizedCoordinates</code></em> is <code class="code">VK_TRUE</code> and any of
+    the <a class="link" href="ch12.html#samplers-unnormalizedCoordinates">limitations of unnormalized     coordinates</a> are violated.
+</li><li class="listitem">
+The SPIR-V instruction is one of the <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Dref</code></strong></span>*
+    instructions and the sampler <em class="parameter"><code>compareEnable</code></em> is <code class="code">VK_FALSE</code>
+</li><li class="listitem">
+The SPIR-V instruction is not one of the <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Dref</code></strong></span>*
+    instructions and the sampler <em class="parameter"><code>compareEnable</code></em> is <code class="code">VK_TRUE</code>
+</li><li class="listitem">
+The SPIR-V instruction is one of the <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Dref</code></strong></span>*
+    instructions and the image <em class="parameter"><code>format</code></em> is not one of the depth/stencil
+    formats with a depth component, or the image aspect is not
+    <code class="code">VK_IMAGE_ASPECT_DEPTH_BIT</code>.
+</li><li class="listitem"><p class="simpara">
+The SPIR-V instruction’s image variable’s properties are not compatible
+    with the image view:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem"><p class="simpara">
+Rules for <em class="parameter"><code>viewType</code></em>:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: square; "><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_1D</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = 1D, <span class="strong"><strong><code class="code">Arrayed</code></strong></span> =
+      0, <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_2D</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = 2D, <span class="strong"><strong><code class="code">Arrayed</code></strong></span> =
+      0.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_3D</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = 3D, <span class="strong"><strong><code class="code">Arrayed</code></strong></span> =
+      0, <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_CUBE</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = Cube, <span class="strong"><strong><code class="code">Arrayed</code></strong></span>
+      = 0, <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_1D_ARRAY</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = 1D,
+      <span class="strong"><strong><code class="code">Arrayed</code></strong></span> = 1, <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_2D_ARRAY</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = 2D,
+      <span class="strong"><strong><code class="code">Arrayed</code></strong></span> = 1.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code> <span class="normative">must</span> have <span class="strong"><strong><code class="code">Dim</code></strong></span> = Cube,
+      <span class="strong"><strong><code class="code">Arrayed</code></strong></span> = 1, <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li></ul></div></li><li class="listitem">
+If the image was created with <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>samples</code></em>
+     equal to <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, the instruction <span class="normative">must</span> have
+     <span class="strong"><strong><code class="code">MS</code></strong></span> = 0.
+</li><li class="listitem">
+If the image was created with <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>samples</code></em>
+     not equal to <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, the instruction <span class="normative">must</span> have
+     <span class="strong"><strong><code class="code">MS</code></strong></span> = 1.
+</li></ul></div></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-integer-coordinate-validation"></a>Integer Texel Coordinate Validation</h4></div></div></div><p>Integer texel coordinates are validated against the size of the image level,
+and the number of layers and number of samples in the image.
+For SPIR-V instructions that use integer texel coordinates, this is
+performed directly on the integer coordinates.
+For instructions that use normalized or unnormalized texel coordinates, this
+is performed on the coordinates that result after
+<a class="link" href="ch15s07.html#textures-unnormalized-to-integer" title="15.7.1. (u,v,w,a) to (i,j,k,l,n) Transformation And Array Layer Selection">conversion</a> to integer texel
+coordinates.</p><p>If the integer texel coordinates do not satisfy all of the conditions</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">0 ≤ i &lt; w<sub>s</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">0 ≤ j &lt; h<sub>s</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">0 ≤ k &lt; d<sub>s</sub></span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">0 ≤ l &lt; layers</span>
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">0 ≤ n &lt; samples</span>
+</dd></dl></div><p>where:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">w<sub>s</sub> =</span> width of the image level
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">h<sub>s</sub> =</span> height of the image level
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">d<sub>s</sub> =</span> depth of the image level
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">layers =</span> number of layers in the image
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">samples =</span> number of samples per texel in the image
+</dd></dl></div><p>then the texel fails integer texel coordinate validation.</p><p>There are four cases to consider:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p class="simpara">
+Valid Texel Coordinates
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the texel coordinates pass validation (that is, the coordinates lie
+     within the image),
+</li></ul></div><p class="simpara">then the texel value comes from the value in image memory.</p></li><li class="listitem"><p class="simpara">
+Border Texel
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the texel coordinates fail validation, and
+</li><li class="listitem">
+If the read is the result of an image sample instruction or image gather
+     instruction, and
+</li><li class="listitem">
+If the image is not a cube image,
+</li></ul></div><p class="simpara">then the texel is a border texel and <a class="link" href="ch15s03.html#textures-texel-replacement" title="15.3.3. Texel Replacement">texel replacement</a> is performed.</p></li><li class="listitem"><p class="simpara">
+Invalid Texel
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the texel coordinates fail validation, and
+</li><li class="listitem">
+If the read is the result of an image fetch instruction, image read
+    instruction, or atomic instruction,
+</li></ul></div><p class="simpara">then the texel is an invalid texel and <a class="link" href="ch15s03.html#textures-texel-replacement" title="15.3.3. Texel Replacement">texel replacement</a> is performed.</p></li><li class="listitem"><p class="simpara">
+Cube Map Edge or Corner
+</p><p class="simpara">Otherwise the texel coordinates lie on the borders along the edges and
+corners of a cube map image, and <a class="link" href="ch15s03.html#textures-cubemapedge" title="Cube Map Edge Handling">Cube map edge handling</a> is performed.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-cubemapedge"></a>Cube Map Edge Handling</h4></div></div></div><p>If the texel coordinates lie on the borders along the edges and corners of a
+cube map image, the following steps are performed.
+Note that this only occurs when using <code class="code">VK_FILTER_LINEAR</code> filtering
+within a mip level, since <code class="code">VK_FILTER_NEAREST</code> is treated as using
+<code class="code">VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p class="simpara">
+Cube Map Edge Texel
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+If the texel lies along the border in either only <span class="eq">i</span> or only
+    <span class="eq">j</span>
+</li></ul></div><p class="simpara">then the texel lies along an edge, so the coordinates <span class="eq">(i,j)</span> and the
+array layer <span class="eq">l</span> are transformed to select the adjacent texel from the
+appropriate neighboring face.</p></li><li class="listitem"><p class="simpara">
+Cube Map Corner Texel
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+If the texel lies along the border in both <span class="eq">i</span> and <span class="eq">j</span>
+</li></ul></div><p class="simpara">then the texel lies at a corner and there is no unique neighboring face from
+which to read that texel.
+The texel <span class="normative">should</span> be replaced by the average of the three values of the
+adjacent texels in each incident face.
+However, implementations <span class="normative">may</span> replace the cube map corner texel by other
+methods, subject to the constraint that if the three available samples have
+the same value, the replacement texel also has that value.</p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="textures-sparse-validation"></a>Sparse Validation</h4></div></div></div><p>If the texel reads from an unbound region of a sparse image, the texel is a
+<span class="emphasis"><em>sparse unbound texel</em></span>, and processing continues with
+<a class="link" href="ch15s03.html#textures-texel-replacement" title="15.3.3. Texel Replacement">texel replacement</a>.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-format-conversion"></a>15.3.2. Format Conversion</h3></div></div></div><p>Texels undergo a format conversion from the <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> of the image view
+to a vector of either floating point or signed or unsigned integer
+components, with the number of components based on the number of components
+present in the format.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Color formats have one, two, three, or four components, according to the
+    format.
+</li><li class="listitem">
+Depth/stencil formats are one component.
+    The depth or stencil component is selected by the <em class="parameter"><code>aspectMask</code></em> of
+    the image view.
+</li></ul></div><p>Each component is converted based on its type and size (as defined in the
+<a class="link" href="ch31s03.html#features-formats-definition" title="31.3.1. Format Definition">Format Definition</a> section for each
+<code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code>), using the appropriate equations in
+<a class="link" href="ch02s07.html#fundamentals-fp16" title="2.7.2. 16-Bit Floating-Point Numbers">16-Bit Floating-Point Numbers</a>,
+<a class="link" href="ch02s07.html#fundamentals-fp11" title="2.7.3. Unsigned 11-Bit Floating-Point Numbers">Unsigned 11-Bit Floating-Point Numbers</a>,
+<a class="link" href="ch02s07.html#fundamentals-fp10" title="2.7.4. Unsigned 10-Bit Floating-Point Numbers">Unsigned 10-Bit Floating-Point Numbers</a>,
+<a class="link" href="ch02s08.html" title="2.8. Fixed-Point Data Conversions">Fixed-Point Data Conversion</a>, and
+<a class="link" href="ch15s02.html#textures-sexp-RGB" title="15.2.2. Shared Exponent to RGB">Shared Exponent to RGB</a>.
+Signed integer components smaller than 32 bits are sign-extended.</p><p>If the image format is sRGB, the color components are first converted as if
+they are UNORM, and then sRGB to linear conversion is applied to the R, G,
+and B components as described in the “KHR_DF_TRANSFER_SRGB” section of the
+<a class="link" href="ch01s04.html#data-format">Khronos Data Format Specification</a>.
+The A component, if present, is unchanged.</p><p>If the image view format is block-compressed, then the texel value is first
+decoded, then converted based on the type and number of components defined
+by the compressed format.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-texel-replacement"></a>15.3.3. Texel Replacement</h3></div></div></div><p>A texel is replaced if it is one (and only one) of:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+a border texel,
+</li><li class="listitem">
+an invalid texel, or
+</li><li class="listitem">
+a sparse unbound texel.
+</li></ul></div><p>Border texels are replaced with a value based on the image format and the
+<em class="parameter"><code>borderColor</code></em> of the sampler.
+The border color is:</p><div class="table"><a id="textures-border-replacement-color"></a><p class="title"><strong>Table 15.1. Border Color <span class="eq">B</span></strong></p><div class="table-contents"><table class="table" summary="Border Color B" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Sampler <em class="parameter"><code>borderColor</code></em>                     </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Corresponding Border Color</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">B = (0.0, 0.0, 0.0, 0.0)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">B = (0.0, 0.0, 0.0, 1.0)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">B = (1.0, 1.0, 1.0, 1.0)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_INT_TRANSPARENT_BLACK</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">B = (0, 0, 0, 0)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_INT_OPAQUE_BLACK</code></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">B = (0, 0, 0, 1)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_BORDER_COLOR_INT_OPAQUE_WHITE</code></p></td><td style="" align="left" valign="top"><p><span class="eq">B = (1, 1, 1, 1)</span></p></td></tr></tbody></table></div></div><br class="table-break" /><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The names <code class="code">VK_BORDER_COLOR_*_TRANSPARENT_BLACK</code>,
+<code class="code">VK_BORDER_COLOR_*_OPAQUE_BLACK</code>, and
+<code class="code">VK_BORDER_COLOR_*_OPAQUE_WHITE</code> are meant to describe which components
+are zeros and ones in the vocabulary of compositing, and are not meant to
+imply that the numerical value of <code class="code">VK_BORDER_COLOR_INT_OPAQUE_WHITE</code> is
+a saturating value for integers.</p></td></tr></table></div><p>This is substituted for the texel value by replacing the number of
+components in the image format</p><div class="table"><a id="textures-border-replacement-table"></a><p class="title"><strong>Table 15.2. Border Texel Components After Replacement</strong></p><div class="table-contents"><table class="table" summary="Border Texel Components After Replacement" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="80%"><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Texel Aspect or Format      </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Component Assignment</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Depth aspect</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">D       = B<sub>r</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Stencil aspect</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">S       = B<sub>r</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>One component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>r</sub>    = B<sub>r</sub></span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Two component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rg</sub>   = (B<sub>r</sub>,B<sub>g</sub>)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Three component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgb</sub>  = (B<sub>r</sub>,B<sub>g</sub>,B<sub>b</sub>)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Four component color format</p></td><td style="" align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (B<sub>r</sub>,B<sub>g</sub>,B<sub>b</sub>,B<sub>a</sub>)</span></p></td></tr></tbody></table></div></div><br class="table-break" /><p>If the read operation is from a buffer resource, and the
+<em class="parameter"><code>robustBufferAccess</code></em> feature is enabled, an invalid texel is replaced as
+described <a class="link" href="ch31s01.html#features-features-robustBufferAccess">here</a>.</p><p>If the <em class="parameter"><code>robustBufferAccess</code></em> feature is not enabled, the value of an
+invalid texel is undefined.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>(Bill) This is not currently catching this significant case.</p><p>For opImageFetch, which fetches from an <span class="strong"><strong>image</strong></span> not a buffer, the result is
+defined if <em class="parameter"><code>robustBufferAccess</code></em> is enabled.</p></td></tr></table></div><p>If the <code class="code">VkPhysicalDeviceSparseProperties</code> property
+<em class="parameter"><code>residencyNonResidentStrict</code></em> is true, a sparse unbound texel is replaced
+with 0 or 0.0 values for integer and floating-point components of the image
+format, respectively.</p><p>If <em class="parameter"><code>residencyNonResidentStrict</code></em> is false, the read <span class="normative">must</span> be safe, but
+the value of the sparse unbound texel is undefined.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-depth-compare-operation"></a>15.3.4. Depth Compare Operation</h3></div></div></div><p>If the image view has a depth/stencil format, the depth component is
+selected by the <em class="parameter"><code>aspectMask</code></em>, and the operation is a <span class="strong"><strong><code class="code">Dref</code></strong></span>
+instruction, a depth comparison is performed.
+The value of the result <span class="eq">D</span> is <span class="eq">1.0</span> if the result of the compare
+operation is <span class="eq">true</span>, and <span class="eq">0.0</span> otherwise.
+The compare operation is selected by the <em class="parameter"><code>compareOp</code></em> member of the
+sampler.</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+D &amp; = 1.0 &amp;
+  \begin{cases}
+    D_{ref} \leq D &amp; \textrm{for LEQUAL}   \\
+    D_{ref} \geq D &amp; \textrm{for GEQUAL}   \\
+    D_{ref} &lt; D    &amp; \textrm{for LESS}     \\
+    D_{ref} &gt; D    &amp; \textrm{for GREATER}  \\
+    D_{ref} = D    &amp; \textrm{for EQUAL}    \\
+    D_{ref} \neq D &amp; \textrm{for NOTEQUAL} \\
+    true           &amp; \textrm{for ALWAYS}   \\
+    false          &amp; \textrm{for NEVER}
+  \end{cases} \\
+D &amp; = 0.0 &amp; \textrm{otherwise}
+\end{align*}</span></div></div><p>where, in the depth comparison:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">D<sub>ref</sub> = shaderOp.D<sub>ref</sub></span> (from optional SPIR-V operand)
+</dd><dt><span class="term">
+ 
+</span></dt><dd>
+<span class="eq">D</span> (texel depth value)
+</dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-conversion-to-rgba"></a>15.3.5. Conversion to RGBA</h3></div></div></div><p>The texel is expanded from one, two, or three to four components based on
+the image base color:</p><div class="table"><a id="textures-texel-color-rgba-conversion-table"></a><p class="title"><strong>Table 15.3. Texel Color After Conversion To RGBA</strong></p><div class="table-contents"><table class="table" summary="Texel Color After Conversion To RGBA" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> Texel Aspect or Format      </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> RGBA Color</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Depth aspect</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (D,0,0,one)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Stencil aspect</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (S,0,0,one)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>One component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (C<sub>r</sub>,0,0,one)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Two component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (C<sub>rg</sub>,0,one)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>Three component color format</p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = (C<sub>rgb</sub>,one)</span></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Four component color format</p></td><td style="" align="left" valign="top"><p><span class="eq">C<sub>rgba</sub> = C<sub>rgba</sub></span></p></td></tr></tbody></table></div></div><br class="table-break" /><p>where <span class="eq">one = 1.0f</span> for floating-point formats and depth aspects, and
+<span class="eq">one = 1</span> for integer formats and stencil aspects.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-component-swizzle"></a>15.3.6. Component Swizzle</h3></div></div></div><p>All texel input instructions apply a <span class="emphasis"><em>swizzle</em></span> based on the
+<code class="code"><a class="link" href="ch11s05.html#VkComponentSwizzle">VkComponentSwizzle</a></code> enums in the <em class="parameter"><code>components</code></em> member of the
+<code class="code"><a class="link" href="ch11s05.html#VkImageViewCreateInfo">VkImageViewCreateInfo</a></code> structure for the image being read.
+The swizzle <span class="normative">can</span> rearrange the components of the texel, or substitute zero
+and one for any components.
+It is defined as follows for the R component, and operates similarly for the
+other components.</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+C'_{rgba}[R] &amp; =
+  \begin{cases}
+    C_{rgba}[R] &amp; \textrm{for RED swizzle}   \\
+    C_{rgba}[G] &amp; \textrm{for GREEN swizzle} \\
+    C_{rgba}[B] &amp; \textrm{for BLUE swizzle}  \\
+    C_{rgba}[A] &amp; \textrm{for ALPHA swizzle} \\
+    0           &amp; \textrm{for ZERO swizzle}  \\
+    one         &amp; \textrm{for ONE swizzle} \\
+    C_{rgba}[R] &amp; \textrm{for IDENTITY swizzle}
+  \end{cases}
+\end{align*}</span></div></div><p>where:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\begin{align*}
+C_{rgba}[R] &amp; \textrm{is the RED component} \\
+C_{rgba}[G] &amp; \textrm{is the GREEN component} \\
+C_{rgba}[B] &amp; \textrm{is the BLUE component} \\
+C_{rgba}[A] &amp; \textrm{is the ALPHA component} \\
+one         &amp; = 1.0\textrm{f}  &amp; \textrm{for floating point components} \\
+one         &amp; = 1              &amp; \textrm{for integer components}
+\end{align*}</span></div></div><p>For each component this is applied to, the
+<code class="code">VK_COMPONENT_SWIZZLE_IDENTITY</code> swizzle selects the corresponding
+component from <span class="eq">C<sub>rgba</sub></span>.</p><p>If the border color is one of the <code class="code">VK_BORDER_COLOR_*_OPAQUE_BLACK</code> enums
+and the <code class="code"><a class="link" href="ch11s05.html#VkComponentSwizzle">VkComponentSwizzle</a></code> is not <code class="code">VK_COMPONENT_SWIZZLE_IDENTITY</code>
+for all components (or the
+<a class="link" href="ch11s05.html#resources-image-views-identity-mappings" title="Table 11.2. Component Mappings Equivalent To VK_COMPONENT_SWIZZLE_IDENTITY">equivalent identity mapping</a>),
+the value of the texel after swizzle is undefined.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="textures-sparse-residency"></a>15.3.7. Sparse Residency</h3></div></div></div><p><span class="strong"><strong><code class="code">OpImageSparse</code></strong></span>* instructions return a structure which includes a
+<span class="emphasis"><em>residency code</em></span> indicating whether any texels accessed by the instruction
+are sparse unbound texels.
+This code <span class="normative">can</span> be interpreted by the <span class="strong"><strong><code class="code">OpImageSparseTexelsResident</code></strong></span>
+instruction which converts the residency code to a boolean value.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch15s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

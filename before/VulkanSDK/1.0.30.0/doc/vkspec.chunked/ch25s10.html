@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>25.10. Depth Test</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch25.html" title="Chapter 25. Fragment Operations" /><link rel="prev" href="ch25s09.html" title="25.9. Stencil Test" /><link rel="next" href="ch25s11.html" title="25.11. Sample Counting" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch25s09.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch25s11.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fragops-depth"></a>25.10. Depth Test</h2></div></div></div><p>The depth test conditionally disables coverage of a sample based on the
+outcome of a comparison between the fragment’s depth value at the sample
+location and the sample’s depth value in the depth/stencil attachment at
+location <span class="eq">(x<sub>f</sub>,y<sub>f</sub>)</span>.
+The comparison is enabled or disabled with the <em class="parameter"><code>depthTestEnable</code></em> member
+of the <code class="code"><a class="link" href="ch25s07.html#VkPipelineDepthStencilStateCreateInfo">VkPipelineDepthStencilStateCreateInfo</a></code> structure.
+When disabled, the depth comparison and subsequent possible updates to the
+value of the depth component of the depth/stencil attachment are bypassed
+and the fragment is passed to the next operation.
+The stencil value, however, <span class="normative">can</span> be modified as indicated above as if the
+depth test passed.
+If enabled, the comparison takes place and the depth/stencil attachment
+value <span class="normative">can</span> subsequently be modified.</p><p>The comparison is specified with the <em class="parameter"><code>depthCompareOp</code></em> member of
+<code class="code"><a class="link" href="ch25s07.html#VkPipelineDepthStencilStateCreateInfo">VkPipelineDepthStencilStateCreateInfo</a></code>.
+Let <span class="eq"><em class="parameter"><code>z</code></em><sub>f</sub></span> be the incoming fragment’s depth value for a sample,
+and let <span class="eq">z<sub>a</sub></span> be the depth/stencil attachment value in memory for that
+sample.
+The depth test passes under the following conditions:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_COMPARE_OP_NEVER</code>: the test never passes.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_LESS</code>: the test passes when <span class="eq">z<sub>f</sub> &lt; z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_EQUAL</code>: the test passes when <span class="eq">z<sub>f</sub> = z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_LESS_OR_EQUAL</code>: the test passes when <span class="eq">z<sub>f</sub> ≤
+    z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_GREATER</code>: the test passes when <span class="eq">z<sub>f</sub> &gt; z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_NOT_EQUAL</code>: the test passes when <span class="eq">z<sub>f</sub> ≠
+    z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_GREATER_OR_EQUAL</code>: the test passes when <span class="eq">z<sub>f</sub>
+    ≥ z<sub>a</sub></span>.
+</li><li class="listitem">
+<code class="code">VK_COMPARE_OP_ALWAYS</code>: the test always passes.
+</li></ul></div><p>If depth clamping (see <a class="link" href="ch23s02.html" title="23.2. Primitive Clipping">Primitive Clipping</a>) is
+enabled, before the incoming fragment’s <span class="eq"><em class="parameter"><code>z</code></em><sub>f</sub></span> is compared to
+<span class="eq"><em class="parameter"><code>z</code></em><sub>a</sub></span>, <span class="eq"><em class="parameter"><code>z</code></em><sub>f</sub></span> is clamped to <span class="eq">[min(n,f),max(n,f)]</span>,
+where <span class="eq">n</span> and <span class="eq">f</span> are the <em class="parameter"><code>minDepth</code></em> and <em class="parameter"><code>maxDepth</code></em> depth
+range values of the viewport used by this fragment, respectively.</p><p>If the depth test fails, the sample’s coverage bit is cleared in the
+fragment.
+The stencil value at the sample’s location is updated according to the
+function currently in effect for depth test failure.</p><p><a id="fragops-depth-write"></a>If the depth test passes, the sample’s (possibly clamped) <span class="eq"><em class="parameter"><code>z</code></em><sub>f</sub></span>
+value is conditionally written to the depth framebuffer attachment based on
+the <em class="parameter"><code>depthWriteEnable</code></em> member of
+<code class="code"><a class="link" href="ch25s07.html#VkPipelineDepthStencilStateCreateInfo">VkPipelineDepthStencilStateCreateInfo</a></code>.
+If <em class="parameter"><code>depthWriteEnable</code></em> is <code class="code">VK_TRUE</code> the value is written, and if it
+is <code class="code">VK_FALSE</code> the value is not written.
+The stencil value at the sample’s location is updated according to the
+function currently in effect for depth test success.</p><p>If there is no depth framebuffer attachment, it is as if the depth test
+always passes.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch25s09.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch25.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch25s11.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

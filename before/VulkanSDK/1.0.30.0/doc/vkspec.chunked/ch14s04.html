@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>14.4. Fragment Input Attachment Interface</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch14.html" title="Chapter 14. Shader Interfaces" /><link rel="prev" href="ch14s03.html" title="14.3. Fragment Output Interface" /><link rel="next" href="ch14s05.html" title="14.5. Shader Resource Interface" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch14s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="interfaces-inputattachment"></a>14.4. Fragment Input Attachment Interface</h2></div></div></div><p>When a fragment stage is present in a pipeline, the fragment shader subpass
+inputs form an interface with the input attachments of the current subpass.
+The fragment shader subpass input variables are matched by
+<span class="strong"><strong><code class="code">InputAttachmentIndex</code></strong></span> decorations to the input attachments specified in
+the <em class="parameter"><code>pInputAttachments</code></em> array of the <code class="code"><a class="link" href="ch07s01.html#VkSubpassDescription">VkSubpassDescription</a></code>
+structure that describes the subpass that the fragment shader is executed
+in.</p><p>The fragment shader subpass input variables with the <span class="strong"><strong><code class="code">UniformConstant</code></strong></span>
+storage class and a decoration of <span class="strong"><strong><code class="code">InputAttachmentIndex</code></strong></span> that are
+statically used by <span class="strong"><strong><code class="code">OpEntryPoint</code></strong></span> form the <span class="emphasis"><em>fragment input attachment
+interface</em></span>.
+These variables <span class="normative">must</span> be declared with a type of <span class="strong"><strong><code class="code">OpTypeImage</code></strong></span>, a
+<span class="strong"><strong><code class="code">Dim</code></strong></span> operand of <span class="strong"><strong><code class="code">SubpassData</code></strong></span>, and a <span class="strong"><strong><code class="code">Sampled</code></strong></span> operand of 2.</p><p>A subpass input variable identified with an <span class="strong"><strong><code class="code">InputAttachmentIndex</code></strong></span>
+decoration of <span class="emphasis"><em>i</em></span> reads from the input attachment indicated by
+<em class="parameter"><code>pInputAttachments</code></em>[<span class="emphasis"><em>i</em></span>] member of <code class="code">VkSubpassDescription</code>.
+If the subpass input variable is declared as an array of size N, it consumes
+N consecutive input attachments, starting with the index specified.
+There <span class="normative">must</span> not be more than one input variable with the same
+<span class="strong"><strong><code class="code">InputAttachmentIndex</code></strong></span> whether explicitly declared or implied by an array
+declaration.
+The number of available input attachment indices is given by the
+<em class="parameter"><code>maxPerStageDescriptorInputAttachments</code></em> member of the
+<code class="code">VkPhysicalDeviceLimits</code> structure.</p><p>Variables identified with the <span class="strong"><strong><code class="code">InputAttachmentIndex</code></strong></span> <span class="normative">must</span> only be used
+by a fragment stage.
+The basic data type (floating-point, integer, unsigned integer) of the
+subpass input <span class="normative">must</span> match the basic format of the corresponding input
+attachment, or the values of subpass loads from these variables are
+undefined.</p><p>See <a class="xref" href="ch13s01.html#descriptorsets-inputattachment" title="13.1.11. Input Attachment">Section 13.1.11, “Input Attachment”</a> for more details.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s05.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

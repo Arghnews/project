@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.2. WSI Surface</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><link rel="prev" href="ch29s01.html" title="29.1. WSI Platform" /><link rel="next" href="ch29s03.html" title="29.3. Presenting Directly to Display Devices" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch29s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch29s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_wsi_surface"></a>29.2. WSI Surface</h2></div></div></div><p>A <code class="code">VkSurfaceKHR</code> object abstracts a native platform surface or window
+object for use with Vulkan.
+The <code class="literal">VK_KHR_surface extension</code> declares the <code class="code">VkSurfaceKHR</code> object, and
+provides a function for destroying <code class="code">VkSurfaceKHR</code> objects.
+Separate platform-specific extensions each provide a function for creating a
+<code class="code">VkSurfaceKHR</code> object for the respective platform.
+From the application’s perspective this is an opaque handle, just like the
+handles of other Vulkan objects.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>On certain platforms, the Vulkan loader and ICDs <span class="normative">may</span> have conventions that
+treat the handle as a pointer to a struct that contains the
+platform-specific information about the surface.
+This will be described in the documentation for the loader-ICD interface,
+and in the "vk_icd.h" header file of the LoaderAndTools source-code
+repository.
+This does not affect the loader-layer interface; layers <span class="normative">may</span> wrap
+<code class="code">VkSurfaceKHR</code> objects.</p></td></tr></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>TODO: Consider replacing the above note editing note with a pointer to the
+loader spec when it exists.
+However, the information is not relevant to users of the API nor does it
+affect conformance of a Vulkan implementation to this spec.</p></td></tr></table></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_android"></a>29.2.1. Android Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for an Android native window, call:</p><p><a id="vkCreateAndroidSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateAndroidSurfaceKHR(
+    VkInstance                                  instance,
+    const VkAndroidSurfaceCreateInfoKHR*        pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkAndroidSurfaceCreateInfoKHR</code> structure containing parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><p>During the lifetime of a surface created using a particular
+<span class="strong"><strong><code class="code">ANativeWindow</code></strong></span> handle any attempts to create another surface for the
+same <span class="strong"><strong><code class="code">ANativeWindow</code></strong></span> and any attempts to connect to the same
+<span class="strong"><strong><code class="code">ANativeWindow</code></strong></span> through other platform mechanisms will fail.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: NOTE"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">NOTE</th></tr><tr><td align="left" valign="top"><p>In particular, only one <code class="code">VkSurfaceKHR</code> <span class="normative">can</span> exist at a time for a given
+window.
+Similarly, a native window <span class="normative">cannot</span> be used by both a <code class="code">VkSurfaceKHR</code> and
+EGLSurface simultaneously.</p></td></tr></table></div><p>If successful, <span class="strong"><strong><code class="code">vkCreateAndroidSurfaceKHR</code></strong></span> increments the
+<span class="strong"><strong><code class="code">ANativeWindow</code></strong></span>’s reference count, and <span class="strong"><strong><code class="code">vkDestroySurfaceKHR</code></strong></span> will
+decrement it.</p><p>On Android, when a swapchain’s <em class="parameter"><code>imageExtent</code></em> does not match the
+surface’s <em class="parameter"><code>currentExtent</code></em>, the swapchain images will be scaled to the
+surface’s dimensions during presentation.
+<em class="parameter"><code>minImageExtent</code></em> is <span class="eq">(1,1)</span>, and <em class="parameter"><code>maxImageExtent</code></em> is the maximum
+image size supported by the consumer.
+For the system compositor, <em class="parameter"><code>currentExtent</code></em> is the window size (i.e. the
+consumer’s preferred size).</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAndroidSurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_NATIVE_WINDOW_IN_USE_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkAndroidSurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkAndroidSurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkAndroidSurfaceCreateInfoKHR {
+    VkStructureType                   sType;
+    const void*                       pNext;
+    VkAndroidSurfaceCreateFlagsKHR    flags;
+    ANativeWindow*                    window;
+} VkAndroidSurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>window</code></em> is a pointer to the <span class="strong"><strong><code class="code">ANativeWindow</code></strong></span> to associate the
+    surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>window</code></em> <span class="normative">must</span> not be in a connected state
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>window</code></em> <span class="normative">must</span> be a pointer to a <code class="code">ANativeWindow</code> value
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_mir"></a>29.2.2. Mir Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for a Mir window, call:</p><p><a id="vkCreateMirSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateMirSurfaceKHR(
+    VkInstance                                  instance,
+    const VkMirSurfaceCreateInfoKHR*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s02.html#VkMirSurfaceCreateInfoKHR">VkMirSurfaceCreateInfoKHR</a></code> structure containing parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkMirSurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkMirSurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkMirSurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkMirSurfaceCreateInfoKHR {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkMirSurfaceCreateFlagsKHR    flags;
+    MirConnection*                connection;
+    MirSurface*                   mirSurface;
+} VkMirSurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> and <em class="parameter"><code>surface</code></em> are pointers to the
+    <span class="strong"><strong><code class="code">MirConnection</code></strong></span> and <span class="strong"><strong><code class="code">MirSurface</code></strong></span> for the window to associate the
+    surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_MIR_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> <span class="normative">must</span> be a pointer to a <code class="code">MirConnection</code> value
+</li><li class="listitem">
+<em class="parameter"><code>mirSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">MirSurface</code> value
+</li></ul></div></div><p>On Mir, when a swapchain’s <em class="parameter"><code>imageExtent</code></em> does not match the surface’s
+<em class="parameter"><code>currentExtent</code></em>, the swapchain images will be scaled to the surface’s
+dimensions during presentation.
+<em class="parameter"><code>minImageExtent</code></em> is <span class="eq">(1,1)</span>, and <em class="parameter"><code>maxImageExtent</code></em> is the maximum
+supported surface size.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_wayland"></a>29.2.3. Wayland Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for a Wayland surface, call:</p><p><a id="vkCreateWaylandSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateWaylandSurfaceKHR(
+    VkInstance                                  instance,
+    const VkWaylandSurfaceCreateInfoKHR*        pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s02.html#VkWaylandSurfaceCreateInfoKHR">VkWaylandSurfaceCreateInfoKHR</a></code> structure containing parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkWaylandSurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkWaylandSurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkWaylandSurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkWaylandSurfaceCreateInfoKHR {
+    VkStructureType                   sType;
+    const void*                       pNext;
+    VkWaylandSurfaceCreateFlagsKHR    flags;
+    struct wl_display*                display;
+    struct wl_surface*                surface;
+} VkWaylandSurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> and <em class="parameter"><code>surface</code></em> are pointers to the Wayland
+    <span class="strong"><strong><code class="code">wl_display</code></strong></span> and <span class="strong"><strong><code class="code">wl_surface</code></strong></span> to associate the surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> <span class="normative">must</span> be a pointer to a <code class="code">wl_display</code> value
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">wl_surface</code> value
+</li></ul></div></div><p>On Wayland, <em class="parameter"><code>currentExtent</code></em> is undefined <span class="eq">(0,0)</span>.
+Whatever the application sets a swapchain’s <em class="parameter"><code>imageExtent</code></em> to will be the
+size of the window, after the first image is presented.
+<em class="parameter"><code>minImageExtent</code></em> is <span class="eq">(1,1)</span>, and <em class="parameter"><code>maxImageExtent</code></em> is the maximum
+supported surface size.</p><p>Some Vulkan functions <span class="normative">may</span> send protocol over the specified <span class="strong"><strong><code class="code">wl_display</code></strong></span>
+connection when using a swapchain or presentable images created from a
+<code class="code">VkSurfaceKHR</code> referring to a <span class="strong"><strong><code class="code">wl_surface</code></strong></span>.
+Applications <span class="normative">must</span> therefore ensure that both the <span class="strong"><strong><code class="code">wl_display</code></strong></span> and the
+<span class="strong"><strong><code class="code">wl_surface</code></strong></span> remain valid for the lifetime of any <code class="code">VkSwapchainKHR</code>
+objects created from a particular <span class="strong"><strong><code class="code">wl_display</code></strong></span> and <span class="strong"><strong><code class="code">wl_surface</code></strong></span>.
+Also, calling <code class="code"><a class="link" href="ch29s06.html#vkQueuePresentKHR">vkQueuePresentKHR</a></code> will result in Vulkan sending
+<span class="strong"><strong><code class="code">wl_surface</code></strong></span>.commit requests to the underlying <span class="strong"><strong><code class="code">wl_surface</code></strong></span> of each
+<code class="code">VkSwapchainKHR</code> objects referenced by <em class="parameter"><code>pPresentInfo</code></em>.
+Therefore, if the application wishes to synchronize any window changes with
+a particular frame, such requests <span class="normative">must</span> be sent to the Wayland display
+server prior to calling <code class="code"><a class="link" href="ch29s06.html#vkQueuePresentKHR">vkQueuePresentKHR</a></code>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_win32"></a>29.2.4. Win32 Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for a Win32 window, call:</p><p><a id="vkCreateWin32SurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateWin32SurfaceKHR(
+    VkInstance                                  instance,
+    const VkWin32SurfaceCreateInfoKHR*          pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkWin32SurfaceCreateInfoKHR</code> structure containing parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkWin32SurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkWin32SurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkWin32SurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkWin32SurfaceCreateInfoKHR {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkWin32SurfaceCreateFlagsKHR    flags;
+    HINSTANCE                       hinstance;
+    HWND                            hwnd;
+} VkWin32SurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>hinstance</code></em> and <em class="parameter"><code>hwnd</code></em> are the Win32 <span class="strong"><strong><code class="code">HINSTANCE</code></strong></span> and
+    <span class="strong"><strong><code class="code">HWND</code></strong></span> for the window to associate the surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li></ul></div></div><p>With Win32, <em class="parameter"><code>minImageExtent</code></em>, <em class="parameter"><code>maxImageExtent</code></em>, and
+<em class="parameter"><code>currentExtent</code></em> are the window size.
+Therefore, a swapchain’s <em class="parameter"><code>imageExtent</code></em> <span class="normative">must</span> match the window’s size.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_xcb"></a>29.2.5. XCB Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for an X11 window, using the XCB
+client-side library, call:</p><p><a id="vkCreateXcbSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateXcbSurfaceKHR(
+    VkInstance                                  instance,
+    const VkXcbSurfaceCreateInfoKHR*            pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkXcbSurfaceCreateInfoKHR</code> structure containing parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkXcbSurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkXcbSurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkXcbSurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkXcbSurfaceCreateInfoKHR {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkXcbSurfaceCreateFlagsKHR    flags;
+    xcb_connection_t*             connection;
+    xcb_window_t                  window;
+} VkXcbSurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> is a pointer to an <span class="strong"><strong><code class="code">xcb_connection_t</code></strong></span> to the X
+    server.
+</li><li class="listitem">
+<em class="parameter"><code>window</code></em> is the <span class="strong"><strong><code class="code">xcb_window_t</code></strong></span> for the X11 window to associate
+    the surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>connection</code></em> <span class="normative">must</span> be a pointer to a <code class="code">xcb_connection_t</code> value
+</li></ul></div></div><p>With Xcb, <em class="parameter"><code>minImageExtent</code></em>, <em class="parameter"><code>maxImageExtent</code></em>, and
+<em class="parameter"><code>currentExtent</code></em> are the window size.
+Therefore, a swapchain’s <em class="parameter"><code>imageExtent</code></em> <span class="normative">must</span> match the window’s size.</p><p>Some Vulkan functions <span class="normative">may</span> send protocol over the specified xcb connection
+when using a swapchain or presentable images created from a VkSurface
+referring to an xcb window.
+Applications <span class="normative">must</span> therefore ensure the xcb connection is available to
+Vulkan for the duration of any functions that manipulate such swapchains or
+their presentable images, and any functions that build or queue command
+buffers that operate on such presentable images.
+Specifically, applications using Vulkan with xcb-based swapchains <span class="normative">must</span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Avoid holding a server grab on an xcb connection while waiting for
+    Vulkan operations to complete using a swapchain derived from a different
+    xcb connection referring to the same X server instance.
+    Failing to do so <span class="normative">may</span> result in deadlock.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="platformCreateSurface_xlib"></a>29.2.6. Xlib Platform</h3></div></div></div><p>To create a <code class="code">VkSurfaceKHR</code> object for an X11 window, using the Xlib
+client-side library, call:</p><p><a id="vkCreateXlibSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateXlibSurfaceKHR(
+    VkInstance                                  instance,
+    const VkXlibSurfaceCreateInfoKHR*           pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance to associate the surface with.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkXlibSurfaceCreateInfoKHR</code> structure containing the parameters
+    affecting the creation of the surface object.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkXlibSurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkXlibSurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkXlibSurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkXlibSurfaceCreateInfoKHR {
+    VkStructureType                sType;
+    const void*                    pNext;
+    VkXlibSurfaceCreateFlagsKHR    flags;
+    Display*                       dpy;
+    Window                         window;
+} VkXlibSurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>dpy</code></em> is a pointer to an Xlib <span class="strong"><strong><code class="code">Display</code></strong></span> connection to the X
+    server.
+</li><li class="listitem">
+<em class="parameter"><code>window</code></em> is an Xlib <span class="strong"><strong><code class="code">Window</code></strong></span> to associate the surface with.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>dpy</code></em> <span class="normative">must</span> be a pointer to a <code class="code">Display</code> value
+</li></ul></div></div><p>With Xlib, <em class="parameter"><code>minImageExtent</code></em>, <em class="parameter"><code>maxImageExtent</code></em>, and
+<em class="parameter"><code>currentExtent</code></em> are the window size.
+Therefore, a swapchain’s <em class="parameter"><code>imageExtent</code></em> <span class="normative">must</span> match the window’s size.</p><p>Some Vulkan functions <span class="normative">may</span> send protocol over the specified Xlib
+<span class="strong"><strong><code class="code">Display</code></strong></span> connection when using a swapchain or presentable images created
+from a VkSurface referring to an Xlib window.
+Applications <span class="normative">must</span> therefore ensure the display connection is available to
+Vulkan for the duration of any functions that manipulate such swapchains or
+their presentable images, and any functions that build or queue command
+buffers that operate on such presentable images.
+Specifically, applications using Vulkan with Xlib-based swapchains <span class="normative">must</span></p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Call <span class="strong"><strong><code class="code">XInitThreads</code></strong></span>() before calling any other Xlib functions if they
+    intend to use Vulkan in multiple threads, or use Vulkan and Xlib in
+    separate threads.
+</li><li class="listitem">
+Avoid holding a server grab on a display connection while waiting for
+    Vulkan operations to complete using a swapchain derived from a different
+    display connection referring to the same X server instance.
+    Failing to do so <span class="normative">may</span> result in deadlock.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_platform_independent_information"></a>29.2.7. Platform-Independent Information</h3></div></div></div><p>Once created, <code class="code">VkSurfaceKHR</code> objects <span class="normative">can</span> be used in this and other
+extensions, in particular the <code class="literal">VK_KHR_swapchain</code> extension.</p><p>Several WSI functions return <code class="code">VK_ERROR_SURFACE_LOST_KHR</code> if the surface
+becomes no longer available.
+After such an error, the surface (and any child swapchain, if one exists)
+<span class="normative">should</span> be destroyed, as there is no way to restore them to a not-lost
+state.
+Applications <span class="normative">may</span> attempt to create a new <code class="code">VkSurfaceKHR</code> using the same
+native platform window object, but whether such re-creation will succeed is
+platform-dependent and <span class="normative">may</span> depend on the reason the surface became
+unavailable.
+A lost surface does not otherwise cause devices to be
+<a class="link" href="ch04s02.html#devsandqueues-lost-device" title="4.2.3. Lost Device">lost</a>.</p><p>To destroy a <code class="code">VkSurfaceKHR</code> object, call:</p><p><a id="vkDestroySurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroySurfaceKHR(
+    VkInstance                                  instance,
+    VkSurfaceKHR                                surface,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance used to create the surface.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li></ul></div><p>Destroying a <code class="code">VkSurfaceKHR</code> merely severs the connection between Vulkan
+and the native surface, and does not imply destroying the native surface,
+closing a window, or similar behavior.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All <code class="code">VkSwapchainKHR</code> objects created for <em class="parameter"><code>surface</code></em> <span class="normative">must</span> have
+    been destroyed prior to destroying <em class="parameter"><code>surface</code></em>
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>surface</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>surface</code></em> was
+    created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>surface</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>surface</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>instance</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>surface</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch29s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch29.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch29s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

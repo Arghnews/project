@@ -1,0 +1,931 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.6. WSI Swapchain</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><link rel="prev" href="ch29s05.html" title="29.5. Surface Queries" /><link rel="next" href="ch30.html" title="Chapter 30. Extended Functionality" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch29s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch30.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_wsi_swapchain"></a>29.6. WSI Swapchain</h2></div></div></div><p>A <code class="code">VkSwapchainKHR</code> object (a.k.a.
+swapchain) provides the ability to present rendering results to a surface.
+A swapchain is an abstraction for an array of presentable images that are
+associated with a surface.
+The swapchain images are represented by <code class="code">VkImage</code> objects created by the
+platform.
+One image (which <span class="normative">can</span> be an array image for multiview/stereoscopic-3D
+surfaces) is displayed at a time, but multiple images <span class="normative">can</span> be queued for
+presentation.
+An application renders to the image, and then queues the image for
+presentation to the surface.
+A native window <span class="normative">cannot</span> be associated with more than one swapchain at a
+time.
+Further, swapchains <span class="normative">cannot</span> be created for native windows that have a
+non-Vulkan graphics API surface associated with them.</p><p>The presentation engine is an abstraction for the platform’s compositor or
+hardware/software display engine.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The presentation engine <span class="normative">may</span> be synchronous or asynchronous with respect to
+the application and/or logical device.</p><p>Some implementations <span class="normative">may</span> use the device’s graphics queue or dedicated
+presentation hardware to perform presentation.</p></td></tr></table></div><p>The presentable images of a swapchain are owned by the presentation engine.
+An application <span class="normative">can</span> acquire use of a presentable image from the presentation
+engine.
+Use of a presentable image <span class="normative">must</span> occur only after the image is returned by
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>, and before it is presented by
+<span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span>.
+This includes transitioning the image layout and rendering commands.</p><p>An application <span class="normative">can</span> acquire use of a presentable image with
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>.
+After acquiring a presentable image and before modifying it, the application
+<span class="normative">must</span> use a synchronization primitive to ensure that the presentation engine
+has finished reading from the image.
+The application <span class="normative">can</span> then transition the image’s layout, queue rendering
+commands to it, etc.
+Finally, the application presents the image with <span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span>,
+which releases the acquisition of the image.</p><p>The presentation engine controls the order in which presentable images are
+acquired for use by the application.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>This allows the platform to handle situations which require out-of-order
+return of images after presentation.
+At the same time, it allows the application to generate command buffers
+referencing all of the images in the swapchain at initialization time,
+rather than in its main loop.</p></td></tr></table></div><p>How this all works is described below.</p><p>To create a swapchain, call:</p><p><a id="vkCreateSwapchainKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateSwapchainKHR(
+    VkDevice                                    device,
+    const VkSwapchainCreateInfoKHR*             pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSwapchainKHR*                             pSwapchain);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the device to create the swapchain for.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s06.html#VkSwapchainCreateInfoKHR">VkSwapchainCreateInfoKHR</a></code> structure specifying the parameters of
+    the created swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    swapchain object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchain</code></em> is a pointer to a <code class="code">VkSwapchainKHR</code> handle in which
+    the created swapchain object will be returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkSwapchainCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchain</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSwapchainKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pCreateInfo.surface</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>pCreateInfo.oldSwapchain</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_NATIVE_WINDOW_IN_USE_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkSwapchainCreateInfoKHR</code> structure is defined as:</p><p><a id="VkSwapchainCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSwapchainCreateInfoKHR {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkSwapchainCreateFlagsKHR        flags;
+    VkSurfaceKHR                     surface;
+    uint32_t                         minImageCount;
+    VkFormat                         imageFormat;
+    VkColorSpaceKHR                  imageColorSpace;
+    VkExtent2D                       imageExtent;
+    uint32_t                         imageArrayLayers;
+    VkImageUsageFlags                imageUsage;
+    VkSharingMode                    imageSharingMode;
+    uint32_t                         queueFamilyIndexCount;
+    const uint32_t*                  pQueueFamilyIndices;
+    VkSurfaceTransformFlagBitsKHR    preTransform;
+    VkCompositeAlphaFlagBitsKHR      compositeAlpha;
+    VkPresentModeKHR                 presentMode;
+    VkBool32                         clipped;
+    VkSwapchainKHR                   oldSwapchain;
+} VkSwapchainCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use, and <span class="normative">must</span> be zero.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface that the swapchain will present images to.
+</li><li class="listitem">
+<em class="parameter"><code>minImageCount</code></em> is the minimum number of presentable images that the
+    application needs.
+    The platform will either create the swapchain with at least that many
+    images, or will fail to create the swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>imageFormat</code></em> is a <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> that is valid for swapchains on
+    the specified surface.
+</li><li class="listitem">
+<em class="parameter"><code>imageColorSpace</code></em> is a <code class="code"><a class="link" href="ch29s05.html#VkColorSpaceKHR">VkColorSpaceKHR</a></code> that is valid for
+    swapchains on the specified surface.
+</li><li class="listitem">
+<em class="parameter"><code>imageExtent</code></em> is the size (in pixels) of the swapchain.
+    Behavior is platform-dependent when the image extent does not match the
+    surface’s <em class="parameter"><code>currentExtent</code></em> as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>.
+</li><li class="listitem">
+<em class="parameter"><code>imageArrayLayers</code></em> is the number of views in a multiview/stereo
+    surface.
+    For non-stereoscopic-3D applications, this value is 1.
+</li><li class="listitem">
+<em class="parameter"><code>imageUsage</code></em> is a bitmask of <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code>, indicating
+    how the application will use the swapchain’s presentable images.
+</li><li class="listitem">
+<em class="parameter"><code>imageSharingMode</code></em> is the sharing mode used for the images of the
+    swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndexCount</code></em> is the number of queue families having
+    access to the images of the swapchain in case <em class="parameter"><code>imageSharingMode</code></em> is
+    <code class="code">VK_SHARING_MODE_CONCURRENT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pQueueFamilyIndices</code></em> is an array of queue family indices having
+    access to the images of the swapchain in case <em class="parameter"><code>imageSharingMode</code></em> is
+    <code class="code">VK_SHARING_MODE_CONCURRENT</code>.
+</li><li class="listitem">
+<em class="parameter"><code>preTransform</code></em> is a bitmask of <code class="code"><a class="link" href="ch29s05.html#VkSurfaceTransformFlagBitsKHR">VkSurfaceTransformFlagBitsKHR</a></code>,
+    describing the transform, relative to the presentation engine’s natural
+    orientation, applied to the image content prior to presentation.
+    If it does not match the <em class="parameter"><code>currentTransform</code></em> value returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>, the presentation engine
+    will transform the image content as part of the presentation operation.
+</li><li class="listitem">
+<em class="parameter"><code>compositeAlpha</code></em> is a bitmask of <code class="code"><a class="link" href="ch29s05.html#VkCompositeAlphaFlagBitsKHR">VkCompositeAlphaFlagBitsKHR</a></code>,
+    indicating the alpha compositing mode to use when this surface is
+    composited together with other surfaces on certain window systems.
+</li><li class="listitem">
+<em class="parameter"><code>presentMode</code></em> is the presentation mode the swapchain will use.
+    A swapchain’s present mode determines how incoming present requests will
+    be processed and queued internally.
+</li><li class="listitem"><p class="simpara">
+<em class="parameter"><code>clipped</code></em> indicates whether the Vulkan implementation is allowed to
+    discard rendering operations that affect regions of the surface which
+    are not visible.
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+If set to <code class="code">VK_TRUE</code>, the presentable images associated with the
+     swapchain <span class="normative">may</span> not own all of their pixels.
+     Pixels in the presentable images that correspond to regions of the
+     target surface obscured by another window on the desktop or subject to
+     some other clipping mechanism will have undefined content when read
+     back.
+     Pixel shaders <span class="normative">may</span> not execute for these pixels, and thus any side
+     affects they would have had will not occur.
+</li><li class="listitem">
+If set to <code class="code">VK_FALSE</code>, presentable images associated with the
+     swapchain will own all the pixels they contain.
+     Setting this value to <code class="code">VK_TRUE</code> does not guarantee any clipping
+     will occur, but allows more optimal presentation methods to be used on
+     some platforms.
+</li></ul></div></li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Applications <span class="normative">should</span> set this value to <code class="code">VK_TRUE</code> if they do not expect
+to read back the content of presentable images before presenting them or
+after reacquiring them and if their pixel shaders do not have any side
+effects that require them to run for all pixels in the presentable image.</p></td></tr></table></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>oldSwapchain</code></em>, if not <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>, specifies the swapchain
+    that will be replaced by the new swapchain being created.
+    The new swapchain will be a descendant of <em class="parameter"><code>oldSwapchain</code></em>.
+    Further, any descendants of the new swapchain will also be descendants
+    of <em class="parameter"><code>oldSwapchain</code></em>.
+    Upon calling <span class="strong"><strong><code class="code">vkCreateSwapchainKHR</code></strong></span> with a <em class="parameter"><code>oldSwapchain</code></em> that
+    is not <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>, any images not acquired by the application
+    <span class="normative">may</span> be freed by the implementation, which <span class="normative">may</span> occur even if creation
+    of the new swapchain fails.
+    The application <span class="normative">must</span> destroy the old swapchain to free all memory
+    associated with the old swapchain.
+    The application <span class="normative">must</span> wait for the completion of any outstanding
+    rendering to images it currently has acquired at the time the swapchain
+    is destroyed.
+    The application <span class="normative">can</span> continue to present any images it acquired and has
+    not yet presented using the old swapchain, as long as it has not entered
+    a state that causes it to return <code class="code">VK_ERROR_OUT_OF_DATE_KHR</code>.
+    However, the application <span class="normative">cannot</span> acquire any more images from the old
+    swapchain regardless of whether or not creation of the new swapchain
+    succeeds.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a surface that is supported by the device as
+    determined using <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceSupportKHR</code></strong></span>
+</li><li class="listitem">
+The native window referred to by <em class="parameter"><code>surface</code></em> <span class="normative">must</span> not already be
+    associated with a swapchain other than <em class="parameter"><code>oldSwapchain</code></em>, or with a
+    non-Vulkan graphics API surface
+</li><li class="listitem">
+<em class="parameter"><code>minImageCount</code></em> <span class="normative">must</span> be greater than or equal to the value returned
+    in the <em class="parameter"><code>minImageCount</code></em> member of the <code class="code">VkSurfaceCapabilitiesKHR</code>
+    structure returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>
+    for the surface
+</li><li class="listitem">
+<em class="parameter"><code>minImageCount</code></em> <span class="normative">must</span> be less than or equal to the value returned in
+    the <em class="parameter"><code>maxImageCount</code></em> member of the <code class="code">VkSurfaceCapabilitiesKHR</code>
+    structure returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>
+    for the surface if the returned <em class="parameter"><code>maxImageCount</code></em> is not zero
+</li><li class="listitem">
+<em class="parameter"><code>imageFormat</code></em> and <em class="parameter"><code>imageColorSpace</code></em> <span class="normative">must</span> match the <em class="parameter"><code>format</code></em>
+    and <em class="parameter"><code>colorSpace</code></em> members, respectively, of one of the
+    <code class="code">VkSurfaceFormatKHR</code> structures returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceFormatsKHR</code></strong></span> for the surface
+</li><li class="listitem">
+<em class="parameter"><code>imageExtent</code></em> <span class="normative">must</span> be between <em class="parameter"><code>minImageExtent</code></em> and
+    <em class="parameter"><code>maxImageExtent</code></em>, inclusive, where <em class="parameter"><code>minImageExtent</code></em> and
+    <em class="parameter"><code>maxImageExtent</code></em> are members of the <code class="code">VkSurfaceCapabilitiesKHR</code>
+    structure returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>
+    for the surface
+</li><li class="listitem">
+<em class="parameter"><code>imageArrayLayers</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code> and less than or equal
+    to the <em class="parameter"><code>maxImageArrayLayers</code></em> member of the
+    <code class="code">VkSurfaceCapabilitiesKHR</code> structure returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span> for the surface
+</li><li class="listitem">
+<em class="parameter"><code>imageUsage</code></em> <span class="normative">must</span> be a subset of the supported usage flags present
+    in the <em class="parameter"><code>supportedUsageFlags</code></em> member of the
+    <code class="code">VkSurfaceCapabilitiesKHR</code> structure returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span> for the surface
+</li><li class="listitem">
+If <em class="parameter"><code>imageSharingMode</code></em> is <code class="code">VK_SHARING_MODE_CONCURRENT</code>,
+    <em class="parameter"><code>pQueueFamilyIndices</code></em> <span class="normative">must</span> be a pointer to an array of
+    <em class="parameter"><code>queueFamilyIndexCount</code></em> <code class="code">uint32_t</code> values
+</li><li class="listitem">
+If <em class="parameter"><code>imageSharingMode</code></em> is <code class="code">VK_SHARING_MODE_CONCURRENT</code>,
+    <em class="parameter"><code>queueFamilyIndexCount</code></em> <span class="normative">must</span> be greater than <code class="literal">1</code>
+</li><li class="listitem">
+<em class="parameter"><code>preTransform</code></em> <span class="normative">must</span> be one of the bits present in the
+    <em class="parameter"><code>supportedTransforms</code></em> member of the <code class="code">VkSurfaceCapabilitiesKHR</code>
+    structure returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span>
+    for the surface
+</li><li class="listitem">
+<em class="parameter"><code>compositeAlpha</code></em> <span class="normative">must</span> be one of the bits present in the
+    <em class="parameter"><code>supportedCompositeAlpha</code></em> member of the
+    <code class="code">VkSurfaceCapabilitiesKHR</code> structure returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code></strong></span> for the surface
+</li><li class="listitem">
+<em class="parameter"><code>presentMode</code></em> <span class="normative">must</span> be one of the <code class="code">VkPresentModeKHR</code> values
+    returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfacePresentModesKHR</code></strong></span> for the
+    surface
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>imageFormat</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>imageColorSpace</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s05.html#VkColorSpaceKHR">VkColorSpaceKHR</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>imageUsage</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>imageUsage</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>imageSharingMode</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s07.html#VkSharingMode">VkSharingMode</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>preTransform</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s05.html#VkSurfaceTransformFlagBitsKHR">VkSurfaceTransformFlagBitsKHR</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>compositeAlpha</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s05.html#VkCompositeAlphaFlagBitsKHR">VkCompositeAlphaFlagBitsKHR</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>presentMode</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s05.html#VkPresentModeKHR">VkPresentModeKHR</a></code> value
+</li><li class="listitem">
+If <em class="parameter"><code>oldSwapchain</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>oldSwapchain</code></em> <span class="normative">must</span> be a valid <code class="code">VkSwapchainKHR</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>oldSwapchain</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>surface</code></em>
+</li></ul></div></div><p>As mentioned above, if <span class="strong"><strong><code class="code">vkCreateSwapchainKHR</code></strong></span> succeeds, it will return a
+handle to a swapchain that contains an array of at least <em class="parameter"><code>minImageCount</code></em>
+presentable images.</p><p>While acquired by the application, swapchain images <span class="normative">can</span> be used in any way
+that equivalent non-swapchain images <span class="normative">can</span> be used.
+A swapchain image is equivalent to a non-swapchain image created with the
+following <code class="code">VkImageCreateInfo</code> parameters:</p><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; "><colgroup><col class="col_1" /><col class="col_2" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"> <code class="code">VkImageCreateInfo</code> Field </th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top"> Value</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>flags</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>0</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>imageType</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_IMAGE_TYPE_2D</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>format</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;imageFormat</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>extent</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">{pCreateInfo-&gt;imageExtent.width, pCreateInfo-&gt;imageExtent.height, 1}</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>mipLevels</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p>1</p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>arrayLayers</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;imageArrayLayers</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>samples</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_SAMPLE_COUNT_1_BIT</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>tiling</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="code">VK_IMAGE_TILING_OPTIMAL</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>usage</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;imageUsage</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>sharingMode</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;imageSharingMode</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>queueFamilyIndexCount</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;queueFamilyIndexCount</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>pQueueFamilyIndices</code></em></p></td><td style="border-bottom: 1px solid #527bbd; " align="left" valign="top"><p><code class="literal">pCreateInfo-&gt;pQueueFamilyIndices</code></p></td></tr><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p><em class="parameter"><code>initialLayout</code></em></p></td><td style="" align="left" valign="top"><p><code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code></p></td></tr></tbody></table></div><p>The <code class="code">VkSurfaceKHR</code> associated with a swapchain <span class="normative">must</span> not be destroyed
+until after the swapchain is destroyed.</p><p>Like core functions, several WSI functions, including
+<span class="strong"><strong><code class="code">vkCreateSwapchainKHR</code></strong></span> return <code class="code">VK_ERROR_DEVICE_LOST</code> if the logical
+device was lost.
+See <a class="link" href="ch04s02.html#devsandqueues-lost-device" title="4.2.3. Lost Device">Lost Device</a>.
+As with most core objects, <code class="code">VkSwapchainKHR</code> is a child of the device and
+is affected by the lost state; it <span class="normative">must</span> be destroyed before destroying the
+<code class="code">VkDevice</code>.
+However, <code class="code">VkSurfaceKHR</code> is not a child of any <code class="code">VkDevice</code> and is not
+otherwise affected by the lost device.
+After successfully recreating a <code class="code">VkDevice</code>, the same <code class="code">VkSurfaceKHR</code>
+<span class="normative">can</span> be used to create a new <code class="code">VkSwapchainKHR</code>, provided the previous one
+was destroyed.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>As mentioned in <a class="link" href="ch04s02.html#devsandqueues-lost-device" title="4.2.3. Lost Device">Lost Device</a>, after a lost
+device event, the <code class="code">VkPhysicalDevice</code> <span class="normative">may</span> also be lost.
+If other <code class="code">VkPhysicalDevice</code> are available, they <span class="normative">can</span> be used together
+with the same <code class="code">VkSurfaceKHR</code> to create the new <code class="code">VkSwapchainKHR</code>,
+however the application <span class="normative">must</span> query the surface capabilities again, because
+they <span class="normative">may</span> differ on a per-physical device basis.</p></td></tr></table></div><p>To destroy a swapchain object call:</p><p><a id="vkDestroySwapchainKHR"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroySwapchainKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the <code class="code">VkDevice</code> associated with <em class="parameter"><code>swapchain</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>swapchain</code></em> is the swapchain to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    swapchain object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li></ul></div><p><em class="parameter"><code>swapchain</code></em> and all associated <code class="code">VkImage</code> handles are destroyed, and
+<span class="normative">must</span> not be acquired or used any more by the application.
+The memory of each <code class="code">VkImage</code> will only be freed after that image is no
+longer used by the platform.
+For example, if one image of the swapchain is being displayed in a window,
+the memory for that image <span class="normative">may</span> not be freed until the window is destroyed,
+or another swapchain is created for the window.
+Destroying the swapchain does not invalidate the parent <code class="code">VkSurfaceKHR</code>,
+and a new swapchain <span class="normative">can</span> be created with it.</p><p>If a swapchain associated with a display surface is destroyed and there are
+no valid descendants of that swapchain, the implementation <span class="normative">must</span> either
+revert any display resources modified by presenting images with the
+swapchain to their state prior to the first present performed with the
+swapchain and its ancestors, or leave such resources in their current state.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All uses of presentable images acquired from <em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> have
+    completed execution
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>swapchain</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>swapchain</code></em> was
+    created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>swapchain</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> be a valid <code class="code">VkSwapchainKHR</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><p><a id="create_shared_swapchains"></a>When the <code class="literal">VK_KHR_display_swapchain</code> extension is enabled, multiple
+swapchains that share presentable images are created by calling:</p><p><a id="vkCreateSharedSwapchainsKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateSharedSwapchainsKHR(
+    VkDevice                                    device,
+    uint32_t                                    swapchainCount,
+    const VkSwapchainCreateInfoKHR*             pCreateInfos,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSwapchainKHR*                             pSwapchains);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the device to create the swapchains for.
+</li><li class="listitem">
+<em class="parameter"><code>swapchainCount</code></em> is the number of swapchains to create.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfos</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch29s06.html#VkSwapchainCreateInfoKHR">VkSwapchainCreateInfoKHR</a></code> structures specifying the parameters of
+    the created swapchains.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    swapchain objects when there is no more specific allocator available
+    (see <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchains</code></em> is a pointer to an array of <code class="code">VkSwapchainKHR</code>
+    handles in which the created swapchain objects will be returned.
+</li></ul></div><p><span class="strong"><strong><code class="code">vkCreateSharedSwapchains</code></strong></span> is similar to <code class="code"><a class="link" href="ch29s06.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a></code>,
+except that it takes an array of <code class="code">VkSwapchainCreateInfoKHR</code> structures,
+and returns an array of swapchain objects.</p><p>The swapchain creation parameters that affect the properties and number of
+presentable images <span class="normative">must</span> match between all the swapchains.
+If the displays used by any of the swapchains do not use the same
+presentable image layout or are incompatible in a way that prevents sharing
+images, swapchain creation will fail with the result code
+<code class="code">VK_ERROR_INCOMPATIBLE_DISPLAY_KHR</code>.
+If any error occurs, no swapchains will be created.
+Images presented to multiple swapchains <span class="normative">must</span> be re-acquired from all of
+them before transitioning away from <code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code>.
+After destroying one or more of the swapchains, the remaining swapchains and
+the presentable images <span class="normative">can</span> continue to be used.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfos</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>swapchainCount</code></em> valid <code class="code">VkSwapchainCreateInfoKHR</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchains</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>swapchainCount</code></em> <code class="code">VkSwapchainKHR</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>swapchainCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>pCreateInfos</code></em>[].surface <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>pCreateInfos</code></em>[].oldSwapchain <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_INCOMPATIBLE_DISPLAY_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>To obtain the array of presentable images associated with a swapchain, call:</p><p><a id="vkGetSwapchainImagesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetSwapchainImagesKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint32_t*                                   pSwapchainImageCount,
+    VkImage*                                    pSwapchainImages);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the device associated with <em class="parameter"><code>swapchain</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>swapchain</code></em> is the swapchain to query.
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchainImageCount</code></em> is a pointer to an integer related to the
+    number of swapchain images available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchainImages</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkImage</code> handles.
+</li></ul></div><p>If <em class="parameter"><code>pSwapchainImages</code></em> is <code class="literal">NULL</code>, then the number of presentable images
+for <em class="parameter"><code>swapchain</code></em> is returned in <em class="parameter"><code>pSwapchainImageCount</code></em>.
+Otherwise, <em class="parameter"><code>pSwapchainImageCount</code></em> <span class="normative">must</span> point to a variable set by the
+user to the number of elements in the <em class="parameter"><code>pSwapchainImages</code></em> array, and on
+return the variable is overwritten with the number of structures actually
+written to <em class="parameter"><code>pSwapchainImages</code></em>.
+If the value of <em class="parameter"><code>pSwapchainImageCount</code></em> is less than the number of
+presentable images for <em class="parameter"><code>swapchain</code></em>, at most <em class="parameter"><code>pSwapchainImageCount</code></em>
+structures will be written.
+If <em class="parameter"><code>pSwapchainImageCount</code></em> is smaller than the number of presentable
+images for <em class="parameter"><code>swapchain</code></em>, <code class="code">VK_INCOMPLETE</code> will be returned instead of
+<code class="code">VK_SUCCESS</code> to indicate that not all the available values were
+returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> be a valid <code class="code">VkSwapchainKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchainImageCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pSwapchainImageCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pSwapchainImages</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pSwapchainImages</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pSwapchainImageCount</code></em> <code class="code">VkImage</code> handles
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>By knowing all presentable images used in the swapchain, the application
+<span class="normative">can</span> create command buffers that reference these images prior to entering
+its main rendering loop.</p></td></tr></table></div><p>The implementation will have already allocated and bound the memory backing
+the <code class="code">VkImages</code> returned by <span class="strong"><strong><code class="code">vkGetSwapchainImagesKHR</code></strong></span>.
+The memory for each image will not alias with the memory for other images or
+with any <code class="code">VkDeviceMemory</code> object.
+As such, performing any operation affecting the binding of memory to a
+presentable image results in undefined behavior.
+All presentable images are initially in the <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code>
+layout, thus before using presentable images, the application <span class="normative">must</span>
+transition them to a valid layout for the intended use.</p><p>Further, the lifetime of presentable images is controlled by the
+implementation so destroying a presentable image with <code class="code"><a class="link" href="ch11s03.html#vkDestroyImage">vkDestroyImage</a></code>
+results in undefined behavior.
+See <code class="code"><a class="link" href="ch29s06.html#vkDestroySwapchainKHR">vkDestroySwapchainKHR</a></code> for further details on the lifetime of
+presentable images.</p><p>To acquire an available presentable image to use, and retrieve the index of
+that image, call:</p><p><a id="vkAcquireNextImageKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkAcquireNextImageKHR(
+    VkDevice                                    device,
+    VkSwapchainKHR                              swapchain,
+    uint64_t                                    timeout,
+    VkSemaphore                                 semaphore,
+    VkFence                                     fence,
+    uint32_t*                                   pImageIndex);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the device associated with <em class="parameter"><code>swapchain</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>swapchain</code></em> is the swapchain from which an image is being acquired.
+</li><li class="listitem">
+<em class="parameter"><code>timeout</code></em> indicates how long the function waits, in nanoseconds, if
+    no image is available.
+</li><li class="listitem">
+<em class="parameter"><code>semaphore</code></em> is <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span> or a semaphore to signal.
+</li><li class="listitem">
+<em class="parameter"><code>fence</code></em> is <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span> or a fence to signal.
+</li><li class="listitem">
+<em class="parameter"><code>pImageIndex</code></em> is a pointer to a <span class="strong"><strong><code class="code">uint32_t</code></strong></span> that is set to the
+    index of the next image to use (i.e. an index into the array of images
+    returned by <span class="strong"><strong><code class="code">vkGetSwapchainImagesKHR</code></strong></span>).
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>semaphore</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code> it <span class="normative">must</span> be unsignaled
+</li><li class="listitem">
+If <em class="parameter"><code>fence</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code> it <span class="normative">must</span> be unsignaled and
+    <span class="normative">must</span> not be associated with any other queue command that has not yet
+    completed execution on that queue
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> be a valid <code class="code">VkSwapchainKHR</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>semaphore</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>semaphore</code></em> <span class="normative">must</span> be a valid <code class="code">VkSemaphore</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>fence</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>fence</code></em> <span class="normative">must</span> be a valid <code class="code">VkFence</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pImageIndex</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If <em class="parameter"><code>semaphore</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>fence</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>swapchain</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>semaphore</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>fence</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_TIMEOUT</code>
+</li><li class="listitem">
+<code class="code">VK_NOT_READY</code>
+</li><li class="listitem">
+<code class="code">VK_SUBOPTIMAL_KHR</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DATE_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>When successful, <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> acquires a presentable image
+that the application <span class="normative">can</span> use, and sets <em class="parameter"><code>pImageIndex</code></em> to the index of
+that image.
+The presentation engine <span class="normative">may</span> not have finished reading from the image at the
+time it is acquired, so the application <span class="normative">must</span> use <em class="parameter"><code>semaphore</code></em> and/or
+<em class="parameter"><code>fence</code></em> to ensure that the image layout and contents are not modified
+until the presentation engine reads have completed.</p><p>As mentioned above, the presentation engine controls the order in which
+presentable images are made available to the application.
+This allows the platform to handle special situations.
+The order in which images are acquired is implementation-dependent.
+Images <span class="normative">may</span> be acquired in a seemingly random order that is not a simple
+round-robin.</p><p>If a swapchain has enough presentable images, applications <span class="normative">can</span> acquire
+multiple images without an intervening <span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span>.
+Applications <span class="normative">can</span> present images in a different order than the order in
+which they were acquired.</p><p>If <em class="parameter"><code>timeout</code></em> is 0, <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> will not block, but will
+either succeed or return <code class="code">VK_NOT_READY</code>.
+If <em class="parameter"><code>timeout</code></em> is <code class="literal">UINT64_MAX</code>, the function will not return until an
+image is acquired from the presentation engine.
+Other values for <em class="parameter"><code>timeout</code></em> will cause the function to return when an
+image becomes available, or when the specified number of nanoseconds have
+passed (in which case it will return <code class="code">VK_TIMEOUT</code>).
+An error <span class="normative">can</span> also cause <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> to return early.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>As mentioned above, the presentation engine <span class="normative">may</span> be asynchronous with
+respect to the application and/or logical device.
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> <span class="normative">may</span> return as soon as it <span class="normative">can</span> identify which
+image will be acquired, and <span class="normative">can</span> guarantee that <em class="parameter"><code>semaphore</code></em> and
+<em class="parameter"><code>fence</code></em> will be signaled by the presentation engine; and <span class="normative">may</span> not
+successfully return sooner.
+The application uses <em class="parameter"><code>timeout</code></em> to specify how long
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> waits for an image to become acquired.</p></td></tr></table></div><p>Applications <span class="normative">cannot</span> rely on <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> blocking in order
+to meter their rendering speed.
+Various factors <span class="normative">can</span> interrupt <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> from blocking.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>For example, if an error occurs, <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> <span class="normative">may</span> return
+even though no image is available.
+As another example, some presentation engines are able to enqueue an
+unbounded number of presentation and acquire next image operations such that
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> never needs to wait for completion of
+outstanding present operations before returning.</p></td></tr></table></div><p>The availability of presentable images is influenced by factors such as the
+implementation of the presentation engine, the <code class="code">VkPresentModeKHR</code> being
+used, the number of images in the swapchain, the number of images that the
+application has acquired at any given time, and the performance of the
+application.
+The value of <code class="code">VkSurfaceCapabilitiesKHR</code>::<em class="parameter"><code>minImageCount</code></em> indicates
+how many images <span class="normative">must</span> be in the swapchain in order for
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> to acquire an image if the application currently
+has no acquired images.</p><p>Let <span class="emphasis"><em>n</em></span> be the total number of images in the swapchain, <span class="emphasis"><em>m</em></span> be the value of
+<code class="code">VkSurfaceCapabilitiesKHR</code>::<em class="parameter"><code>minImageCount</code></em>, and <span class="emphasis"><em>a</em></span> be the number
+of presentable images that the application has currently acquired (i.e.
+images acquired with <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>, but not yet presented with
+<span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span>).
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> <span class="normative">can</span> always succeed if <span class="eq">a ≤ n - m</span> at
+the time <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> is called.
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> <span class="normative">should</span> not be called if <span class="eq">a &gt; n - m</span> with a
+<em class="parameter"><code>timeout</code></em> of <span class="strong"><strong><code class="code">UINT64_MAX</code></strong></span>; in such a case,
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> <span class="normative">may</span> block indefinitely.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>For example, if the <em class="parameter"><code>minImageCount</code></em> member of
+<code class="code">VkSurfaceCapabilitiesKHR</code> is 2, and the application creates a swapchain
+with 2 presentable images, the application <span class="normative">can</span> acquire one image, and <span class="normative">must</span>
+present it before trying to acquire another image.</p><p>If we modify this example so that the application wishes to acquire up to 3
+presentable images simultaneously, it <span class="normative">must</span> request a minimum image count of
+4 when creating the swapchain.</p></td></tr></table></div><p>If <em class="parameter"><code>semaphore</code></em> is not <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>, the semaphore <span class="normative">must</span> be
+unsignaled and not have any uncompleted signal or wait operations pending.
+It will become signaled when the application <span class="normative">can</span> use the image.
+Queue operations that access the image contents <span class="normative">must</span> wait until the
+semaphore signals; typically applications <span class="normative">should</span> include the semaphore in
+the <em class="parameter"><code>pWaitSemaphores</code></em> list for the queue submission that transitions the
+image away from the <code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> layout.
+Use of the semaphore allows rendering operations to be recorded and
+submitted before the presentation engine has completed its use of the image.</p><p>If <em class="parameter"><code>fence</code></em> is not equal to <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>, the fence <span class="normative">must</span> be
+unsignaled and not have any uncompleted signal operations pending.
+It will become signaled when the application <span class="normative">can</span> use the image.
+Applications <span class="normative">can</span> use this to meter their frame generation work to match the
+presentation rate.</p><p><em class="parameter"><code>semaphore</code></em> and <em class="parameter"><code>fence</code></em> <span class="normative">must</span> not both be equal to
+<span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>.
+An application <span class="normative">must</span> wait until either the <em class="parameter"><code>semaphore</code></em> or <em class="parameter"><code>fence</code></em> is
+signaled before using the presentable image.</p><p><em class="parameter"><code>semaphore</code></em> and <em class="parameter"><code>fence</code></em> <span class="normative">may</span> already be signaled when
+<span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> returns, if the image is being acquired for the
+first time, or if the presentable image is immediately ready for use.</p><p>A successful call to <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> counts as a signal
+operation on <em class="parameter"><code>semaphore</code></em> for the purposes of queue forward-progress
+requirements.
+The semaphore is guaranteed to signal, so a wait operation <span class="normative">can</span> be queued
+for the semaphore without risk of deadlock.</p><p>The <span class="strong"><strong><code class="code">vkCmdWaitEvents</code></strong></span> or <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> used to transition
+the image away from <code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> layout <span class="normative">must</span> have
+<em class="parameter"><code>dstStageMask</code></em> and <em class="parameter"><code>dstAccessMask</code></em> parameters set based on the next
+use of the image.
+The <em class="parameter"><code>srcAccessMask</code></em> <span class="normative">must</span> include <code class="code">VK_ACCESS_MEMORY_READ_BIT</code> to
+ensure that all prior reads by the presentation engine are complete before
+the image layout transition occurs.
+The application <span class="normative">must</span> use
+<a class="link" href="ch06s06.html" title="6.6. Host Write Ordering Guarantees">implicit ordering guarantees</a> and
+<a class="link" href="ch06s04.html" title="6.4. Execution And Memory Dependencies">execution dependencies</a>
+to prevent the image transition from occurring before the semaphore passed
+to <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span> has signaled.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>When the swapchain image will be written by some stage <span class="eq">S</span>, the
+recommended idiom for ensuring the semaphore signals before the transition
+occurs is:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The batch that contains the transition includes the image-acquire
+    semaphore in the list of semaphores to wait for, with a wait stage mask
+    that includes <span class="eq">S</span>.
+</li><li class="listitem">
+The pipeline barrier that performs the transition includes <span class="eq">S</span> in
+    both the <em class="parameter"><code>srcStageMask</code></em> and <em class="parameter"><code>dstStageMask</code></em>.
+</li></ul></div><p>This causes the pipeline barrier to wait at <span class="eq">S</span> until the semaphore
+signals before performing the transition and memory barrier, while allowing
+earlier pipeline stages of subsequent commands to proceed.</p></td></tr></table></div><p>After a successful return, the image indicated by <em class="parameter"><code>pImageIndex</code></em> will
+still be in the <code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> layout if it was
+previously presented, or in the <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> layout if
+this is the first time it has been acquired.</p><p>The possible return values for <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>() depend on the
+<em class="parameter"><code>timeout</code></em> provided:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code> is returned if an image became available.
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code> if the surface becomes no longer
+    available.
+</li><li class="listitem">
+<code class="code">VK_NOT_READY</code> is returned if <em class="parameter"><code>timeout</code></em> is zero and no image was
+    available.
+</li><li class="listitem">
+<code class="code">VK_TIMEOUT</code> is returned if <em class="parameter"><code>timeout</code></em> is greater than zero and
+    less than <code class="literal">UINT64_MAX</code>, and no image became available within the time
+    allowed.
+</li><li class="listitem">
+<code class="code">VK_SUBOPTIMAL_KHR</code> is returned if an image became available, and
+    the swapchain no longer matches the surface properties exactly, but <span class="normative">can</span>
+    still be used to present to the surface successfully.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>This <span class="normative">may</span> happen, for example, if the platform surface has been resized but
+the platform is able to scale the presented images to the new size to
+produce valid surface updates.
+It is up to applications to decide whether they prefer to continue using the
+current swapchain indefinitely or temporarily in this state, or to re-create
+the swapchain to better match the platform surface properties.</p></td></tr></table></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DATE_KHR</code> is returned if the surface has changed in
+    such a way that it is no longer compatible with the swapchain, and
+    further presentation requests using the swapchain will fail.
+    Applications <span class="normative">must</span> query the new surface properties and recreate their
+    swapchain if they wish to continue presenting to the surface.
+</li></ul></div><p>If the native surface and presented image sizes no longer match,
+presentation <span class="normative">may</span> fail.
+If presentation does succeed, parts of the native surface <span class="normative">may</span> be undefined,
+parts of the presented image <span class="normative">may</span> have been clipped before presentation,
+and/or the image <span class="normative">may</span> have been scaled (uniformly or not uniformly) before
+presentation.
+It is the application’s responsibility to detect surface size changes and
+react appropriately.
+If presentation fails because of a mismatch in the surface and presented
+image sizes, a <code class="code">VK_ERROR_OUT_OF_DATE_KHR</code> error will be returned.</p><p>Before an application <span class="normative">can</span> present an image, the image’s layout <span class="normative">must</span> be
+transitioned to the <code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> layout.
+The <span class="strong"><strong><code class="code">vkCmdWaitEvents</code></strong></span> or <span class="strong"><strong><code class="code">vkCmdPipelineBarrier</code></strong></span> that perform the
+transition <span class="normative">must</span> have <em class="parameter"><code>srcStageMask</code></em> and <em class="parameter"><code>srcAccessMask</code></em> parameters
+set based on the preceding use of the image.
+The <em class="parameter"><code>dstAccessMask</code></em> <span class="normative">must</span> include <code class="code">VK_ACCESS_MEMORY_READ_BIT</code>
+indicating all prior accesses indicated in <em class="parameter"><code>srcAccessMask</code></em> from stages
+in <em class="parameter"><code>srcStageMask</code></em> are to be made available to reads by the presentation
+engine.
+Any value of <em class="parameter"><code>dstStageMask</code></em> is valid, but <span class="normative">should</span> be set to
+<code class="code">VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT</code> to avoid delaying subsequent
+commands that do not access the image.</p><p>After queueing all rendering commands and transitioning the image to the
+correct layout, to queue an image for presentation, call:</p><p><a id="vkQueuePresentKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkQueuePresentKHR(
+    VkQueue                                     queue,
+    const VkPresentInfoKHR*                     pPresentInfo);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queue</code></em> is a queue that is capable of presentation to the target
+    surface’s platform on the same device as the image’s swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>pPresentInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s06.html#VkPresentInfoKHR">VkPresentInfoKHR</a></code> structure specifying the parameters of the
+    presentation.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Any given element of <em class="parameter"><code>pSwapchains</code></em> member of <em class="parameter"><code>pPresentInfo</code></em>
+    <span class="normative">must</span> be a swapchain that is created for a surface for which
+    presentation is supported from <em class="parameter"><code>queue</code></em> as determined using a call to
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceSurfaceSupportKHR</code></strong></span>
+</li><li class="listitem">
+If more than one member of <em class="parameter"><code>pSwapchains</code></em> was created from a display
+    surface, all display surfaces referenced that refer to the same display
+    <span class="normative">must</span> use the same display mode
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>queue</code></em> <span class="normative">must</span> be a valid <code class="code">VkQueue</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pPresentInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkPresentInfoKHR</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>queue</code></em> <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>pPresentInfo.pWaitSemaphores</code></em>[] <span class="normative">must</span> be externally synchronized
+</li><li class="listitem">
+Host access to <em class="parameter"><code>pPresentInfo.pSwapchains</code></em>[] <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>-</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>-</p></td><td style="" align="left" valign="top"><p>Any</p></td></tr></tbody></table></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_SUBOPTIMAL_KHR</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DATE_KHR</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkPresentInfoKHR</code> structure is defined as:</p><p><a id="VkPresentInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkPresentInfoKHR {
+    VkStructureType          sType;
+    const void*              pNext;
+    uint32_t                 waitSemaphoreCount;
+    const VkSemaphore*       pWaitSemaphores;
+    uint32_t                 swapchainCount;
+    const VkSwapchainKHR*    pSwapchains;
+    const uint32_t*          pImageIndices;
+    VkResult*                pResults;
+} VkPresentInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_PRESENT_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>waitSemaphoreCount</code></em> is the number of semaphores to wait for before
+    issuing the present request.
+    The number <span class="normative">may</span> be zero.
+</li><li class="listitem">
+<em class="parameter"><code>pWaitSemaphores</code></em>, if not <span class="strong"><strong><code class="code">VK_NULL_HANDLE</code></strong></span>, is an array of
+    <code class="code">VkSemaphore</code> objects with <em class="parameter"><code>waitSemaphoreCount</code></em> entries, and
+    specifies the semaphores to wait for before issuing the present request.
+</li><li class="listitem">
+<em class="parameter"><code>swapchainCount</code></em> is the number of swapchains being presented to by
+    this command.
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchains</code></em> is an array of <code class="code">VkSwapchainKHR</code> objects with
+    <em class="parameter"><code>swapchainCount</code></em> entries.
+    A given swapchain <span class="normative">must</span> not appear in this list more than once.
+</li><li class="listitem">
+<em class="parameter"><code>pImageIndices</code></em> is an array of indices into the array of each
+    swapchain’s presentable images, with <em class="parameter"><code>swapchainCount</code></em> entries.
+    Each entry in this array identifies the image to present on the
+    corresponding entry in the <em class="parameter"><code>pSwapchains</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pResults</code></em> is an array of <code class="code">VkResult</code> typed elements with
+    <em class="parameter"><code>swapchainCount</code></em> entries.
+    Applications that do not need per-swapchain results <span class="normative">can</span> use <code class="literal">NULL</code> for
+    <em class="parameter"><code>pResults</code></em>.
+    If non-<code class="literal">NULL</code>, each entry in <em class="parameter"><code>pResults</code></em> will be set to the
+    <code class="code">VkResult</code> for presenting the swapchain corresponding to the same
+    index in <em class="parameter"><code>pSwapchains</code></em>.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Any given element of <em class="parameter"><code>pImageIndices</code></em> <span class="normative">must</span> be the index of a
+    presentable image acquired from the swapchain specified by the
+    corresponding element of the <em class="parameter"><code>pSwapchains</code></em> array
+</li><li class="listitem">
+Any given element of <code class="code">VkSemaphore</code> in <em class="parameter"><code>pWaitSemaphores</code></em> <span class="normative">must</span>
+    refer to a prior signal of that <code class="code">VkSemaphore</code> that will not be
+    consumed by any other wait on that semaphore
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_PRESENT_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+If <em class="parameter"><code>waitSemaphoreCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pWaitSemaphores</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pWaitSemaphores</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>waitSemaphoreCount</code></em> valid <code class="code">VkSemaphore</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>pSwapchains</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>swapchainCount</code></em> valid <code class="code">VkSwapchainKHR</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>pImageIndices</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>swapchainCount</code></em> <code class="code">uint32_t</code> values
+</li><li class="listitem">
+If <em class="parameter"><code>pResults</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pResults</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>swapchainCount</code></em> <code class="code"><a class="link" href="ch02s06.html#VkResult">VkResult</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>swapchainCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div><p><a id="display_swapchain_present"></a>When the <code class="literal">VK_KHR_display_swapchain</code> extension is enabled additional fields
+<span class="normative">can</span> be specified when presenting an image to a swapchain by setting
+<code class="code"><a class="link" href="ch29s06.html#VkPresentInfoKHR">VkPresentInfoKHR</a></code>::<em class="parameter"><code>pNext</code></em> to point to an instance of the
+<code class="code"><a class="link" href="ch29s06.html#VkDisplayPresentInfoKHR">VkDisplayPresentInfoKHR</a></code> structure.</p><p>The <code class="code">VkDisplayPresentInfoKHR</code> structure is defined as:</p><p><a id="VkDisplayPresentInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayPresentInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkRect2D           srcRect;
+    VkRect2D           dstRect;
+    VkBool32           persistent;
+} VkDisplayPresentInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>srcRect</code></em> is a rectangular region of pixels to present.
+    It <span class="normative">must</span> be a subset of the image being presented.
+    If <code class="code">VkDisplayPresentInfoKHR</code> is not specified, this region will be
+    assumed to be the entire presentable image.
+</li><li class="listitem">
+<em class="parameter"><code>dstRect</code></em> is a rectangular region within the visible region of the
+    swapchain’s display mode.
+    If <code class="code">VkDisplayPresentInfoKHR</code> is not specified, this region will be
+    assumed to be the entire visible region of the visible region of the
+    swapchain’s mode.
+    If the specified rectangle is a subset of the display mode’s visible
+    region, content from display planes below the swapchain’s plane will be
+    visible outside the rectangle.
+    If there are no planes below the swapchain’s, the area outside the
+    specified rectangle will be black.
+    If portions of the specified rectangle are outside of the display’s
+    visible region, pixels mapping only to those portions of the rectangle
+    will be discarded.
+</li><li class="listitem">
+<em class="parameter"><code>persistent</code></em>: If this is <code class="code">VK_TRUE</code>, the display engine will
+    enable buffered mode on displays that support it.
+    This allows the display engine to stop sending content to the display
+    until a new image is presented.
+    The display will instead maintain a copy of the last presented image.
+    This allows less power to be used, but <span class="normative">may</span> increase presentation
+    latency.
+    If <code class="code">VkDisplayPresentInfoKHR</code> is not specified, persistent mode will
+    not be used.
+</li></ul></div><p>If the extent of the <em class="parameter"><code>srcRect</code></em> and <em class="parameter"><code>dstRect</code></em> are not equal, the
+presented pixels will be scaled accordingly.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>srcRect</code></em> <span class="normative">must</span> specify a rectangular region that is a subset of the
+    image being presented
+</li><li class="listitem">
+<em class="parameter"><code>dstRect</code></em> <span class="normative">must</span> specify a rectangular region that is a subset of the
+    <em class="parameter"><code>visibleRegion</code></em> parameter of the display mode the swapchain being
+    presented uses
+</li><li class="listitem">
+If the <em class="parameter"><code>persistentContent</code></em> member of the
+    <code class="code">VkDisplayPropertiesKHR</code> structure returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPropertiesKHR</code></strong></span> for the display the
+    present operation targets then <em class="parameter"><code>persistent</code></em> <span class="normative">must</span> be <code class="code">VK_FALSE</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DISPLAY_PRESENT_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><p><span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span>, releases the acquisition of the images referenced
+by <em class="parameter"><code>imageIndices</code></em>.
+A presented images <span class="normative">must</span> not be used again before it has been reacquired
+using <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>.</p><p>The processing of the presentation happens in issue order with other queue
+operations, but semaphores have to be used to ensure that prior rendering
+and other commands in the specified queue complete before the presentation
+begins.
+The presentation command itself does not delay processing of subsequent
+commands on the queue, however, presentation requests sent to a particular
+queue are always performed in order.
+Exact presentation timing is controlled by the semantics of the presentation
+engine and native platform in use.</p><p>If an image is presented to a swapchain created from a display surface, the
+mode of the associated display will be updated, if necessary, to match the
+mode specified when creating the display surface.
+The mode switch and presentation of the specified image will be performed as
+one atomic operation.</p><p>The result codes <code class="code">VK_ERROR_OUT_OF_DATE_KHR</code> and <code class="code">VK_SUBOPTIMAL_KHR</code>
+have the same meaning when returned by <span class="strong"><strong><code class="code">vkQueuePresentKHR</code></strong></span> as they do
+when returned by <span class="strong"><strong><code class="code">vkAcquireNextImageKHR</code></strong></span>().
+If multiple swapchains are presented, the result code is determined applying
+the following rules in order:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the device is lost, <code class="code">VK_ERROR_DEVICE_LOST</code> is returned.
+</li><li class="listitem">
+If any of the target surfaces are no longer available the error
+    <code class="code">VK_ERROR_SURFACE_LOST_KHR</code> is returned.
+</li><li class="listitem">
+If any of the presents would have a result of
+    <code class="code">VK_ERROR_OUT_OF_DATE_KHR</code> if issued separately then
+    <code class="code">VK_ERROR_OUT_OF_DATE_KHR</code> is returned.
+</li><li class="listitem">
+If any of the presents would have a result of <code class="code">VK_SUBOPTIMAL_KHR</code> if
+    issued separately then <code class="code">VK_SUBOPTIMAL_KHR</code> is returned.
+</li><li class="listitem">
+Otherwise <code class="code">VK_SUCCESS</code> is returned.
+</li></ul></div><p>Presentation is a read-only operation that will not affect the content of
+the presentable images.
+Upon reacquiring the image and transitioning it away from the
+<code class="code">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code> layout, the contents will be the same
+as they were prior to transitioning the image to the present source layout
+and presenting it.
+However, if a mechanism other than Vulkan is used to modify the platform
+window associated with the swapchain, the content of all presentable images
+in the swapchain becomes undefined.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch29s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch29.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch30.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

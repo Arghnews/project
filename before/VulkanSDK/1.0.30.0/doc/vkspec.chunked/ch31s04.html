@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>31.4. Additional Image Capabilities</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch31.html" title="Chapter 31. Features, Limits, and Formats" /><link rel="prev" href="ch31s03.html" title="31.3. Formats" /><link rel="next" href="ch32.html" title="Chapter 32. Debugging" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch31s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch32.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_additional_image_capabilities"></a>31.4. Additional Image Capabilities</h2></div></div></div><p>In addition to the minimum capabilities described in the previous sections
+(<a class="link" href="ch31s02.html" title="31.2. Limits">Limits</a> and <a class="link" href="ch31s03.html" title="31.3. Formats">Formats</a>),
+implementations <span class="normative">may</span> support additional capabilities for certain types of
+images.
+For example, larger dimensions or additional sample counts for certain image
+types, or additional capabilities for <span class="emphasis"><em>linear</em></span> tiling format images.</p><p>To query additional capabilities specific to image types, call:</p><p><a id="vkGetPhysicalDeviceImageFormatProperties"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceImageFormatProperties(
+    VkPhysicalDevice                            physicalDevice,
+    VkFormat                                    format,
+    VkImageType                                 type,
+    VkImageTiling                               tiling,
+    VkImageUsageFlags                           usage,
+    VkImageCreateFlags                          flags,
+    VkImageFormatProperties*                    pImageFormatProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device from which to query the
+    image capabilities.
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> is the image format, corresponding to
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>format</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>type</code></em> is the image type, corresponding to
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>imageType</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>tiling</code></em> is the image tiling, corresponding to
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>tiling</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> is the intended usage of the image, corresponding to
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>usage</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is a bitmask describing additional parameters of the image,
+    corresponding to <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>flags</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>pImageFormatProperties</code></em> points to an instance of the
+    <code class="code"><a class="link" href="ch31s04.html#VkImageFormatProperties">VkImageFormatProperties</a></code> structure in which capabilities are
+    returned.
+</li></ul></div><p>The <em class="parameter"><code>format</code></em>, <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em>
+parameters correspond to parameters that would be consumed by
+<code class="code"><a class="link" href="ch11s03.html#vkCreateImage">vkCreateImage</a></code>.</p><p>If <em class="parameter"><code>format</code></em> is not a supported image format, or if the combination of
+<em class="parameter"><code>format</code></em>, <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> is not
+supported for images, then <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span>
+returns <code class="code">VK_ERROR_FORMAT_NOT_SUPPORTED</code>.</p><p>The limitations on an image format that are reported by
+<span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> have the following property:
+if <span class="strong"><strong><code class="code">usage1</code></strong></span> and <span class="strong"><strong><code class="code">usage2</code></strong></span> of type <code class="code"><a class="link" href="apds02.html#VkImageUsageFlags">VkImageUsageFlags</a></code> are such that
+the bits set in <span class="strong"><strong><code class="code">usage1</code></strong></span> are a subset of the bits set in <span class="strong"><strong><code class="code">usage2</code></strong></span>, and
+<span class="strong"><strong><code class="code">flags1</code></strong></span> and <span class="strong"><strong><code class="code">flags2</code></strong></span> of type <code class="code"><a class="link" href="apds02.html#VkImageCreateFlags">VkImageCreateFlags</a></code> are such that
+the bits set in <span class="strong"><strong><code class="code">flags1</code></strong></span> are a subset of the bits set in <span class="strong"><strong><code class="code">flags2</code></strong></span>,
+then the limitations for <span class="strong"><strong><code class="code">usage1</code></strong></span> and <span class="strong"><strong><code class="code">flags1</code></strong></span> <span class="normative">must</span> be no more strict
+than the limitations for <span class="strong"><strong><code class="code">usage2</code></strong></span> and <span class="strong"><strong><code class="code">flags2</code></strong></span>, for all values of
+<em class="parameter"><code>format</code></em>, <em class="parameter"><code>type</code></em>, and <em class="parameter"><code>tiling</code></em>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>type</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s03.html#VkImageType">VkImageType</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>tiling</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s03.html#VkImageTiling">VkImageTiling</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s03.html#VkImageCreateFlagBits">VkImageCreateFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>pImageFormatProperties</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkImageFormatProperties</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_FORMAT_NOT_SUPPORTED</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkImageFormatProperties</code> structure is defined as:</p><p><a id="VkImageFormatProperties"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkImageFormatProperties {
+    VkExtent3D            maxExtent;
+    uint32_t              maxMipLevels;
+    uint32_t              maxArrayLayers;
+    VkSampleCountFlags    sampleCounts;
+    VkDeviceSize          maxResourceSize;
+} VkImageFormatProperties;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>maxExtent</code></em> are the maximum image dimensions.
+    See the <a class="link" href="ch31s04.html#features-extentperimagetype" title="31.4.2. Allowed Extent Values Based On Image Type">Allowed Extent Values</a> section
+    below for how these values are constrained by <em class="parameter"><code>type</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>maxMipLevels</code></em> is the maximum number of mipmap levels.
+    <em class="parameter"><code>maxMipLevels</code></em> <span class="normative">must</span> either be equal to 1 (valid only if
+    <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>) or be equal to
+    <span class="eq">⌈log<sub>2</sub>(max(<em class="parameter"><code>width</code></em>, <em class="parameter"><code>height</code></em>, <em class="parameter"><code>depth</code></em>))⌉
+    + 1</span>.
+    <span class="eq"><em class="parameter"><code>width</code></em></span>, <span class="eq"><em class="parameter"><code>height</code></em></span>, and <span class="eq"><em class="parameter"><code>depth</code></em></span> are taken
+    from the corresponding members of <em class="parameter"><code>maxExtent</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>maxArrayLayers</code></em> is the maximum number of array layers.
+    <em class="parameter"><code>maxArrayLayers</code></em> <span class="normative">must</span> either be equal to 1 or be greater than or
+    equal to the <em class="parameter"><code>maxImageArrayLayers</code></em> member of
+    <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.
+    A value of 1 is valid only if <em class="parameter"><code>tiling</code></em> is
+    <code class="code">VK_IMAGE_TILING_LINEAR</code> or if <em class="parameter"><code>type</code></em> is <code class="code">VK_IMAGE_TYPE_3D</code>.
+</li><li class="listitem">
+<em class="parameter"><code>sampleCounts</code></em> is a bitmask of <code class="code"><a class="link" href="ch31s02.html#VkSampleCountFlagBits">VkSampleCountFlagBits</a></code>
+    specifying all the supported sample counts for this image as described
+    <a class="link" href="ch31s04.html#features-supported-sample-counts" title="31.4.1. Supported Sample Counts">below</a>.
+</li><li class="listitem">
+<em class="parameter"><code>maxResourceSize</code></em> is an upper bound on the total image size in
+    bytes, inclusive of all image subresources.
+    Implementations <span class="normative">may</span> have an address space limit on total size of a
+    resource, which is advertised by this property.
+    <em class="parameter"><code>maxResourceSize</code></em> <span class="normative">must</span> be at least 2<sup>31</sup>.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>There is no mechanism to query the size of an image before creating it, to
+compare that size against <em class="parameter"><code>maxResourceSize</code></em>.
+If an application attempts to create an image that exceeds this limit, the
+creation will fail or the image will be invalid.
+While the advertised limit <span class="normative">must</span> be at least 2<sup>31</sup>, it <span class="normative">may</span> not be possible
+to create an image that approaches that size, particularly for
+<code class="code">VK_IMAGE_TYPE_1D</code>.</p></td></tr></table></div><p>If the combination of parameters to
+<span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> is not supported by the
+implementation for use in <code class="code"><a class="link" href="ch11s03.html#vkCreateImage">vkCreateImage</a></code>, then all members of
+<code class="code">VkImageFormatProperties</code> will be filled with zero.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="features-supported-sample-counts"></a>31.4.1. Supported Sample Counts</h3></div></div></div><p><span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> returns a bitmask of
+<code class="code"><a class="link" href="ch31s02.html#VkSampleCountFlagBits">VkSampleCountFlagBits</a></code> in <em class="parameter"><code>sampleCounts</code></em> specifying the supported
+sample counts for the image parameters.</p><p><em class="parameter"><code>sampleCounts</code></em> will be set to <code class="code">VK_SAMPLE_COUNT_1_BIT</code> if at least
+one of the following conditions is true:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>
+</li><li class="listitem">
+<em class="parameter"><code>type</code></em> is not <code class="code">VK_IMAGE_TYPE_2D</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> contains <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>
+</li><li class="listitem">
+Neither the <code class="code">VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> flag nor the
+   <code class="code">VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code> flag in
+   <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> returned by
+   <code class="code"><a class="link" href="ch31s03.html#vkGetPhysicalDeviceFormatProperties">vkGetPhysicalDeviceFormatProperties</a></code> is set
+</li></ul></div><p>Otherwise, the bits set in <em class="parameter"><code>sampleCounts</code></em> will be the sample counts
+supported for the specified values of <em class="parameter"><code>usage</code></em> and <em class="parameter"><code>format</code></em>.
+For each bit set in <em class="parameter"><code>usage</code></em>, the supported sample counts relate to the
+limits in <code class="code">VkPhysicalDeviceLimits</code> as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>, a
+   superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>framebufferColorSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes
+   <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, and <em class="parameter"><code>format</code></em>
+   includes a depth aspect, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>framebufferDepthSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes
+   <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, and <em class="parameter"><code>format</code></em>
+   includes a stencil aspect, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>framebufferStencilSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code>, and
+   <em class="parameter"><code>format</code></em> includes a color aspect, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>sampledImageColorSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code>, and
+   <em class="parameter"><code>format</code></em> includes a depth aspect, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>sampledImageDepthSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code>, and
+   <em class="parameter"><code>format</code></em> is an integer format, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>sampledImageIntegerSampleCounts</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code>, a superset of
+   <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>storageImageSampleCounts</code></em>
+</li></ul></div><p>If multiple bits are set in <em class="parameter"><code>usage</code></em>, <em class="parameter"><code>sampleCounts</code></em> will be the
+intersection of the per-usage values described above.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="features-extentperimagetype"></a>31.4.2. Allowed Extent Values Based On Image Type</h3></div></div></div><p>For <code class="code">VK_IMAGE_TYPE_1D</code>:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.width</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension1D</code></em></span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.height</code></em> = 1</span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.depth</code></em> = 1</span>
+</li></ul></div><p>For <code class="code">VK_IMAGE_TYPE_2D</code>:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.width</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension2D</code></em></span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.height</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension2D</code></em></span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.depth</code></em> = 1</span>
+</li></ul></div><p>For <code class="code">VK_IMAGE_TYPE_3D</code>:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.width</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension3D</code></em></span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.height</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension3D</code></em></span>
+</li><li class="listitem">
+<span class="eq"><em class="parameter"><code>maxExtent.depth</code></em> ≤
+         <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.<em class="parameter"><code>maxImageDimension3D</code></em></span>
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch31s03.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch31.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch32.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

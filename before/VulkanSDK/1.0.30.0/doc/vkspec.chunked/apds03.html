@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>D.3. Macro Definitions in vulkan.h</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="apd.html" title="Appendix D. API Boilerplate" /><link rel="prev" href="apds02.html" title="D.2. Flag Types" /><link rel="next" href="apds04.html" title="D.4. Platform-Specific Macro Definitions in vk_platform.h" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="apds02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apds04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="boilerplate-macros"></a>D.3. Macro Definitions in <code class="literal">vulkan.h</code></h2></div></div></div><p>Vulkan is defined as a C API.
+The supplied <code class="literal">vulkan.h</code> header defines a small number of C preprocessor
+macros that are described below.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="boilerplate-versions"></a>D.3.1. Vulkan Version Number Macros</h3></div></div></div><p><a class="link" href="ch02s09.html" title="2.9. API Version Numbers and Semantics">API Version Numbers</a> are packed into integers.
+These macros manipulate version numbers in useful ways.</p><p><code class="code">VK_VERSION_MAJOR</code> extracts the API major version number from a packed
+version number:</p><p><a id="VK_VERSION_MAJOR"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_VERSION_MAJOR(version) ((uint32_t)(version) &gt;&gt; 22)</pre><p>
+</p><p><code class="code">VK_VERSION_MINOR</code> extracts the API minor version number from a packed
+version number:</p><p><a id="VK_VERSION_MINOR"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_VERSION_MINOR(version) (((uint32_t)(version) &gt;&gt; 12) &amp; 0x3ff)</pre><p>
+</p><p><code class="code">VK_VERSION_PATCH</code> extracts the API patch version number from a packed
+version number:</p><p><a id="VK_VERSION_PATCH"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_VERSION_PATCH(version) ((uint32_t)(version) &amp; 0xfff)</pre><p>
+</p><p><code class="code">VK_API_VERSION_1_0</code> returns the API version number for Vulkan 1.0.
+The patch version number in this macro will always be zero.
+The supported patch version for a physical device <span class="normative">can</span> be queried with
+<code class="code"><a class="link" href="ch04s01.html#vkGetPhysicalDeviceProperties">vkGetPhysicalDeviceProperties</a></code>.</p><p><a id="VK_API_VERSION_1_0"></a><strong> </strong>
+</p><pre class="programlisting">// Vulkan 1.0 version number
+#define VK_API_VERSION_1_0 VK_MAKE_VERSION(1, 0, 0)</pre><p>
+</p><p><code class="code">VK_API_VERSION</code> is now commented out of <code class="literal">vulkan.h</code> and <span class="normative">cannot</span> be used.</p><p><a id="VK_API_VERSION"></a><strong> </strong>
+</p><pre class="programlisting">// DEPRECATED: This define has been removed. Specific version defines (e.g. VK_API_VERSION_1_0), or the VK_MAKE_VERSION macro, should be used instead.
+//#define VK_API_VERSION VK_MAKE_VERSION(1, 0, 0)</pre><p>
+</p><p><code class="code">VK_MAKE_VERSION</code> constructs an API version number.</p><p><a id="VK_MAKE_VERSION"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_MAKE_VERSION(major, minor, patch) \
+    (((major) &lt;&lt; 22) | ((minor) &lt;&lt; 12) | (patch))</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>major</code></em> is the major version number.
+</li><li class="listitem">
+<em class="parameter"><code>minor</code></em> is the minor version number.
+</li><li class="listitem">
+<em class="parameter"><code>patch</code></em> is the patch version number.
+</li></ul></div><p>This macro <span class="normative">can</span> be used when constructing the
+<code class="code"><a class="link" href="ch03s02.html#VkApplicationInfo">VkApplicationInfo</a></code>::<em class="parameter"><code>apiVersion</code></em> parameter passed to
+<code class="code"><a class="link" href="ch03s02.html#vkCreateInstance">vkCreateInstance</a></code>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_vulkan_header_file_version_number"></a>D.3.2. Vulkan Header File Version Number</h3></div></div></div><p><code class="code">VK_HEADER_VERSION</code> is the version number of the <code class="literal">vulkan.h</code> header.
+This value is currently kept synchronized with the release number of the
+Specification.
+However, it is not guaranteed to remain synchronized, since most
+Specification updates have no effect on <code class="literal">vulkan.h</code>.</p><p><a id="VK_HEADER_VERSION"></a><strong> </strong>
+</p><pre class="programlisting">// Version of this file
+#define VK_HEADER_VERSION 30</pre><p>
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_vulkan_handle_macros"></a>D.3.3. Vulkan Handle Macros</h3></div></div></div><p><code class="code">VK_DEFINE_HANDLE</code> defines a <a class="link" href="ch02s03.html" title="2.3. Object Model">dispatchable handle</a> type.</p><p><a id="VK_DEFINE_HANDLE"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_DEFINE_HANDLE(object) typedef struct object##_T* object;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>object</code></em> is the name of the resulting C type.
+</li></ul></div><p>The only dispatchable handle types are those related to device and instance
+management, such as <code class="code"><a class="link" href="ch04s02.html#VkDevice">VkDevice</a></code>.</p><p><code class="code">VK_DEFINE_NON_DISPATCHABLE_HANDLE</code> defines a
+<a class="link" href="ch02s03.html" title="2.3. Object Model">non-dispatchable handle</a> type.</p><p><a id="VK_DEFINE_NON_DISPATCHABLE_HANDLE"></a><strong> </strong>
+</p><pre class="programlisting">#if !defined(VK_DEFINE_NON_DISPATCHABLE_HANDLE)
+#if defined(__LP64__) || defined(_WIN64) || (defined(__x86_64__) &amp;&amp; !defined(__ILP32__) ) || defined(_M_X64) || defined(__ia64) || defined (_M_IA64) || defined(__aarch64__) || defined(__powerpc64__)
+        #define VK_DEFINE_NON_DISPATCHABLE_HANDLE(object) typedef struct object##_T *object;
+#else
+        #define VK_DEFINE_NON_DISPATCHABLE_HANDLE(object) typedef uint64_t object;
+#endif
+#endif</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>object</code></em> is the name of the resulting C type.
+</li></ul></div><p>Most Vulkan handle types, such as <code class="code"><a class="link" href="ch11s01.html#VkBuffer">VkBuffer</a></code>, are non-dispatchable.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The <code class="literal">vulkan.h</code> header allows the <code class="code">VK_DEFINE_NON_DISPATCHABLE_HANDLE</code>
+definition to be overridden by the application.
+If <code class="code">VK_DEFINE_NON_DISPATCHABLE_HANDLE</code> is already defined when the
+<code class="literal">vulkan.h</code> header is compiled the default definition is skipped.
+This allows the application to define a binary-compatible custom handle
+which <span class="normative">may</span> provide more type-safety or other features needed by the
+application.
+Behavior is undefined if the application defines a non-binary-compatible
+handle and <span class="normative">may</span> result in memory corruption or application termination.
+Binary compatibility is platform dependent so the application <span class="normative">must</span> be
+careful if it overrides the default <code class="code">VK_DEFINE_NON_DISPATCHABLE_HANDLE</code>
+definition.</p></td></tr></table></div><p><code class="code">VK_NULL_HANDLE</code> is a reserved value representing a non-valid object
+handle.
+It may be passed to and returned from Vulkan commands only when
+<a class="link" href="ch02s06.html#fundamentals-validusage-handles" title="Valid Usage for Object Handles">specifically allowed</a>.</p><p><a id="VK_NULL_HANDLE"></a><strong> </strong>
+</p><pre class="programlisting">#define VK_NULL_HANDLE 0</pre><p>
+</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apds02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="apd.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="apds04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

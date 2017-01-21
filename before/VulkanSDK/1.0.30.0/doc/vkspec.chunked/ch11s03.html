@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.3. Images</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch11.html" title="Chapter 11. Resource Creation" /><link rel="prev" href="ch11s02.html" title="11.2. Buffer Views" /><link rel="next" href="ch11s04.html" title="11.4. Image Layouts" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch11s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch11s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="resources-images"></a>11.3. Images</h2></div></div></div><p>Images represent multidimensional - up to 3 - arrays of data which <span class="normative">can</span> be
+used for various purposes (e.g. attachments, textures), by binding them to a
+graphics or compute pipeline via descriptor sets, or by directly specifying
+them as parameters to certain commands.</p><p>Images are represented by <code class="code">VkImage</code> handles:</p><p><a id="VkImage"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkImage)</pre><p>
+</p><p>To create images, call:</p><p><a id="vkCreateImage"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateImage(
+    VkDevice                                    device,
+    const VkImageCreateInfo*                    pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkImage*                                    pImage);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that creates the image.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code">VkImageCreateInfo</code> structure containing parameters to be used to
+    create the image.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pImage</code></em> points to a <code class="code">VkImage</code> handle in which the resulting
+    image object is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the <em class="parameter"><code>flags</code></em> member of <em class="parameter"><code>pCreateInfo</code></em> includes
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>, creating this <code class="code">VkImage</code>
+    <span class="normative">must</span> not cause the total required sparse memory for all currently valid
+    sparse resources on the device to exceed
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>sparseAddressSpaceSize</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkImageCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pImage</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkImage</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkImageCreateInfo</code> structure is defined as:</p><p><a id="VkImageCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkImageCreateInfo {
+    VkStructureType          sType;
+    const void*              pNext;
+    VkImageCreateFlags       flags;
+    VkImageType              imageType;
+    VkFormat                 format;
+    VkExtent3D               extent;
+    uint32_t                 mipLevels;
+    uint32_t                 arrayLayers;
+    VkSampleCountFlagBits    samples;
+    VkImageTiling            tiling;
+    VkImageUsageFlags        usage;
+    VkSharingMode            sharingMode;
+    uint32_t                 queueFamilyIndexCount;
+    const uint32_t*          pQueueFamilyIndices;
+    VkImageLayout            initialLayout;
+} VkImageCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is a bitmask describing additional parameters of the image.
+    See <code class="code"><a class="link" href="ch11s03.html#VkImageCreateFlagBits">VkImageCreateFlagBits</a></code> below for a description of the supported
+    bits.
+</li><li class="listitem">
+<em class="parameter"><code>imageType</code></em> is a <code class="code"><a class="link" href="ch11s03.html#VkImageType">VkImageType</a></code> specifying the basic
+    dimensionality of the image, as described below.
+    Layers in array textures do not count as a dimension for the purposes of
+    the image type.
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> is a <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> describing the format and type of the
+    data elements that will be contained in the image.
+</li><li class="listitem">
+<em class="parameter"><code>extent</code></em> is a <code class="code"><a class="link" href="ch02s10.html#VkExtent3D">VkExtent3D</a></code> describing the number of data
+    elements in each dimension of the base level.
+</li><li class="listitem">
+<em class="parameter"><code>mipLevels</code></em> describes the number of levels of detail available for
+    minified sampling of the image.
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayers</code></em> is the number of layers in the image.
+</li><li class="listitem">
+<em class="parameter"><code>samples</code></em> is the number of sub-data element samples in the image as
+    defined in <code class="code"><a class="link" href="ch31s02.html#VkSampleCountFlagBits">VkSampleCountFlagBits</a></code>.
+    See <a class="link" href="ch24s03.html" title="24.3. Multisampling">Multisampling</a>.
+</li><li class="listitem">
+<em class="parameter"><code>tiling</code></em> is a <code class="code"><a class="link" href="ch11s03.html#VkImageTiling">VkImageTiling</a></code> specifying the tiling arrangement
+    of the data elements in memory, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> is a bitmask describing the intended usage of the image.
+    See <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code> below for a description of the supported
+    bits.
+</li><li class="listitem">
+<em class="parameter"><code>sharingMode</code></em> is the sharing mode of the image when it will be
+    accessed by multiple queue families, and <span class="normative">must</span> be one of the values
+    described for <code class="code"><a class="link" href="ch11s07.html#VkSharingMode">VkSharingMode</a></code> in the <a class="link" href="ch11s07.html" title="11.7. Resource Sharing Mode">Resource     Sharing</a> section below.
+</li><li class="listitem">
+<em class="parameter"><code>queueFamilyIndexCount</code></em> is the number of entries in the
+    <em class="parameter"><code>pQueueFamilyIndices</code></em> array.
+</li><li class="listitem">
+<em class="parameter"><code>pQueueFamilyIndices</code></em> is a list of queue families that will access
+    this image (ignored if <em class="parameter"><code>sharingMode</code></em> is not
+    <code class="code">VK_SHARING_MODE_CONCURRENT</code>).
+</li><li class="listitem">
+<em class="parameter"><code>initialLayout</code></em> selects the initial <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code> state of all
+    image subresources of the image.
+    See <a class="link" href="ch11s04.html" title="11.4. Image Layouts">Image Layouts</a>.
+    <em class="parameter"><code>initialLayout</code></em> <span class="normative">must</span> be <code class="code">VK_IMAGE_LAYOUT_UNDEFINED</code> or
+    <code class="code">VK_IMAGE_LAYOUT_PREINITIALIZED</code>.
+</li></ul></div><p>Valid limits for the image <em class="parameter"><code>extent</code></em>, <em class="parameter"><code>mipLevels</code></em>, <em class="parameter"><code>arrayLayers</code></em>
+and <em class="parameter"><code>samples</code></em> members are queried with the
+<code class="code"><a class="link" href="ch31s04.html#vkGetPhysicalDeviceImageFormatProperties">vkGetPhysicalDeviceImageFormatProperties</a></code> command.</p><p>Images created with <em class="parameter"><code>tiling</code></em> equal to <code class="code">VK_IMAGE_TILING_LINEAR</code> have
+further restrictions on their limits and capabilities compared to images
+created with <em class="parameter"><code>tiling</code></em> equal to <code class="code">VK_IMAGE_TILING_OPTIMAL</code>.
+Creation of images with tiling <code class="code">VK_IMAGE_TILING_LINEAR</code> <span class="normative">may</span> not be
+supported unless other parameters meet all of the constraints:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_2D</code>
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> is not a depth/stencil format
+</li><li class="listitem">
+<em class="parameter"><code>mipLevels</code></em> is 1
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayers</code></em> is 1
+</li><li class="listitem">
+<em class="parameter"><code>samples</code></em> is <code class="code">VK_SAMPLE_COUNT_1_BIT</code>
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> only includes <code class="code">VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code> and/or
+    <code class="code">VK_IMAGE_USAGE_TRANSFER_DST_BIT</code>
+</li></ul></div><p>Implementations <span class="normative">may</span> support additional limits and capabilities beyond those
+listed above.
+To determine the specific capabilities of an implementation, query the valid
+<em class="parameter"><code>usage</code></em> bits by calling <code class="code"><a class="link" href="ch31s03.html#vkGetPhysicalDeviceFormatProperties">vkGetPhysicalDeviceFormatProperties</a></code> and
+the valid limits for <em class="parameter"><code>mipLevels</code></em> and <em class="parameter"><code>arrayLayers</code></em> by calling
+<code class="code"><a class="link" href="ch31s04.html#vkGetPhysicalDeviceImageFormatProperties">vkGetPhysicalDeviceImageFormatProperties</a></code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>sharingMode</code></em> is <code class="code">VK_SHARING_MODE_CONCURRENT</code>,
+    <em class="parameter"><code>pQueueFamilyIndices</code></em> <span class="normative">must</span> be a pointer to an array of
+    <em class="parameter"><code>queueFamilyIndexCount</code></em> <code class="code">uint32_t</code> values
+</li><li class="listitem">
+If <em class="parameter"><code>sharingMode</code></em> is <code class="code">VK_SHARING_MODE_CONCURRENT</code>,
+    <em class="parameter"><code>queueFamilyIndexCount</code></em> <span class="normative">must</span> be greater than <code class="literal">1</code>
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> <span class="normative">must</span> not be <code class="code">VK_FORMAT_UNDEFINED</code>
+</li><li class="listitem">
+The <em class="parameter"><code>width</code></em>, <em class="parameter"><code>height</code></em>, and <em class="parameter"><code>depth</code></em> members of <em class="parameter"><code>extent</code></em>
+    <span class="normative">must</span> all be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>mipLevels</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayers</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+If <em class="parameter"><code>flags</code></em> contains <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>,
+    <em class="parameter"><code>imageType</code></em> must be <code class="code">VK_IMAGE_TYPE_2D</code>
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_1D</code>, <em class="parameter"><code>extent.width</code></em> <span class="normative">must</span>
+    be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageDimension1D</code></em>, or
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxExtent.width</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure) - whichever is higher
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>flags</code></em> does not
+    contain <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>, <em class="parameter"><code>extent.width</code></em>
+    and <em class="parameter"><code>extent.height</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageDimension2D</code></em>, or
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxExtent.width</code></em>/height (as returned
+    by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure) - whichever is higher
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>flags</code></em> contains
+    <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>, <em class="parameter"><code>extent.width</code></em> and
+    <em class="parameter"><code>extent.height</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageDimensionCube</code></em>, or
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxExtent.width</code></em>/height (as returned
+    by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure) - whichever is higher
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_2D</code> and <em class="parameter"><code>flags</code></em> contains
+    <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>, <em class="parameter"><code>extent.width</code></em> and
+    <em class="parameter"><code>extent.height</code></em> <span class="normative">must</span> be equal and <em class="parameter"><code>arrayLayers</code></em> <span class="normative">must</span> be
+    greater than or equal to 6
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_3D</code>, <em class="parameter"><code>extent.width</code></em>,
+    <em class="parameter"><code>extent.height</code></em> and <em class="parameter"><code>extent.depth</code></em> <span class="normative">must</span> be less than or equal
+    to <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageDimension3D</code></em>, or
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxExtent.width</code></em>/height/depth (as
+    returned by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with
+    <em class="parameter"><code>format</code></em>, <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em>
+    equal to those in this structure) - whichever is higher
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_1D</code>, both <em class="parameter"><code>extent.height</code></em>
+    and <em class="parameter"><code>extent.depth</code></em> <span class="normative">must</span> be <code class="literal">1</code>
+</li><li class="listitem">
+If <em class="parameter"><code>imageType</code></em> is <code class="code">VK_IMAGE_TYPE_2D</code>, <em class="parameter"><code>extent.depth</code></em> <span class="normative">must</span>
+    be <code class="literal">1</code>
+</li><li class="listitem">
+<em class="parameter"><code>mipLevels</code></em> <span class="normative">must</span> be less than or equal to
+    <span class="eq">⌊log<sub>2</sub>(max(<em class="parameter"><code>extent.width</code></em>, <em class="parameter"><code>extent.height</code></em>,
+    <em class="parameter"><code>extent.depth</code></em>))⌋ + 1</span>.
+</li><li class="listitem">
+If any of <em class="parameter"><code>extent.width</code></em>, <em class="parameter"><code>extent.height</code></em>, or <em class="parameter"><code>extent.depth</code></em>
+    are greater than the equivalently named members of
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageDimension3D</code></em>, <em class="parameter"><code>mipLevels</code></em>
+    <span class="normative">must</span> be less than or equal to
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxMipLevels</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure)
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayers</code></em> <span class="normative">must</span> be less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxImageArrayLayers</code></em>, or
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>maxArrayLayers</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure) - whichever is higher
+</li><li class="listitem">
+If <em class="parameter"><code>samples</code></em> is not <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, <em class="parameter"><code>imageType</code></em>
+    <span class="normative">must</span> be <code class="code">VK_IMAGE_TYPE_2D</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code>, <em class="parameter"><code>tiling</code></em> <span class="normative">must</span> be
+    <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, and <em class="parameter"><code>mipLevels</code></em> <span class="normative">must</span> be equal to <code class="literal">1</code>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code>,
+    then bits other than <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>,
+    <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, and
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> <span class="normative">must</span> not be set
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>,
+    <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>,
+    <code class="code">VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code>, or
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, <em class="parameter"><code>extent.width</code></em> <span class="normative">must</span> be
+    less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxFramebufferWidth</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>usage</code></em> includes <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>,
+    <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>,
+    <code class="code">VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code>, or
+    <code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, <em class="parameter"><code>extent.height</code></em> <span class="normative">must</span> be
+    less than or equal to
+    <code class="code">VkPhysicalDeviceLimits</code>::<em class="parameter"><code>maxFramebufferHeight</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>samples</code></em> <span class="normative">must</span> be a bit value that is set in
+    <code class="code">VkImageFormatProperties</code>::<em class="parameter"><code>sampleCounts</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceImageFormatProperties</code></strong></span> with <em class="parameter"><code>format</code></em>,
+    <em class="parameter"><code>type</code></em>, <em class="parameter"><code>tiling</code></em>, <em class="parameter"><code>usage</code></em>, and <em class="parameter"><code>flags</code></em> equal to those in
+    this structure
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-textureCompressionETC2">ETC2 texture     compression</a> feature is not enabled, <em class="parameter"><code>format</code></em> <span class="normative">must</span> not be
+    <code class="code">VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_EAC_R11_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_EAC_R11_SNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_EAC_R11G11_UNORM_BLOCK</code>, or
+    <code class="code">VK_FORMAT_EAC_R11G11_SNORM_BLOCK</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-textureCompressionASTC_LDR">ASTC LDR texture     compression</a> feature is not enabled, <em class="parameter"><code>format</code></em> <span class="normative">must</span> not be
+    <code class="code">VK_FORMAT_ASTC_4x4_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_4x4_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_5x4_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_5x4_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_5x5_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_5x5_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_6x5_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_6x5_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_6x6_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_6x6_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x5_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x5_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x6_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x6_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x8_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_8x8_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x5_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x5_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x6_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x6_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x8_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x8_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x10_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_10x10_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_12x10_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_12x10_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_ASTC_12x12_UNORM_BLOCK</code>, or
+    <code class="code">VK_FORMAT_ASTC_12x12_SRGB_BLOCK</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-textureCompressionBC">BC texture compression</a>
+    feature is not enabled, <em class="parameter"><code>format</code></em> <span class="normative">must</span> not be
+    <code class="code">VK_FORMAT_BC1_RGB_UNORM_BLOCK</code>, <code class="code">VK_FORMAT_BC1_RGB_SRGB_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC1_RGBA_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC1_RGBA_SRGB_BLOCK</code>, <code class="code">VK_FORMAT_BC2_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC2_SRGB_BLOCK</code>, <code class="code">VK_FORMAT_BC3_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC3_SRGB_BLOCK</code>, <code class="code">VK_FORMAT_BC4_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC4_SNORM_BLOCK</code>, <code class="code">VK_FORMAT_BC5_UNORM_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC5_SNORM_BLOCK</code>, <code class="code">VK_FORMAT_BC6H_UFLOAT_BLOCK</code>,
+    <code class="code">VK_FORMAT_BC6H_SFLOAT_BLOCK</code>, <code class="code">VK_FORMAT_BC7_UNORM_BLOCK</code>, or
+    <code class="code">VK_FORMAT_BC7_SRGB_BLOCK</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-shaderStorageImageMultisample">multisampled     storage images</a> feature is not enabled, and <em class="parameter"><code>usage</code></em> contains
+    <code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code>, <em class="parameter"><code>samples</code></em> <span class="normative">must</span> be
+    <code class="code">VK_SAMPLE_COUNT_1_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseBinding">sparse bindings</a> feature is
+    not enabled, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidencyImage2D">sparse residency for     2D images</a> feature is not enabled, and <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_2D</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidencyImage3D">sparse residency for     3D images</a> feature is not enabled, and <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_3D</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidency2Samples">sparse residency for     images with 2 samples</a> feature is not enabled, <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_2D</code>, and <em class="parameter"><code>samples</code></em> is
+    <code class="code">VK_SAMPLE_COUNT_2_BIT</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidency4Samples">sparse residency for     images with 4 samples</a> feature is not enabled, <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_2D</code>, and <em class="parameter"><code>samples</code></em> is
+    <code class="code">VK_SAMPLE_COUNT_4_BIT</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidency8Samples">sparse residency for     images with 8 samples</a> feature is not enabled, <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_2D</code>, and <em class="parameter"><code>samples</code></em> is
+    <code class="code">VK_SAMPLE_COUNT_8_BIT</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-sparseResidency16Samples">sparse residency for     images with 16 samples</a> feature is not enabled, <em class="parameter"><code>imageType</code></em> is
+    <code class="code">VK_IMAGE_TYPE_2D</code>, and <em class="parameter"><code>samples</code></em> is
+    <code class="code">VK_SAMPLE_COUNT_16_BIT</code>, <em class="parameter"><code>flags</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>, <em class="parameter"><code>format</code></em> <span class="normative">must</span> be a
+    format that has at least one supported feature bit present in the value
+    of <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not
+    contain <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_LINEAR</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>linearTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span>
+    not contain <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, <em class="parameter"><code>format</code></em> <span class="normative">must</span> be
+    a format that has at least one supported feature bit present in the
+    value of <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> returned
+    by <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not contain
+    <code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span> not
+    contain <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>tiling</code></em> is <code class="code">VK_IMAGE_TILING_OPTIMAL</code>, and
+    <code class="code">VkFormatProperties</code>::<em class="parameter"><code>optimalTilingFeatures</code></em> (as returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceFormatProperties</code></strong></span> with the same value of
+    <em class="parameter"><code>format</code></em>) does not include
+    <code class="code">VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, <em class="parameter"><code>usage</code></em> <span class="normative">must</span>
+    not contain <code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>
+</li><li class="listitem">
+If <em class="parameter"><code>flags</code></em> contains <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> or
+    <code class="code">VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code>, it <span class="normative">must</span> also contain
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s03.html#VkImageCreateFlagBits">VkImageCreateFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>imageType</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s03.html#VkImageType">VkImageType</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>format</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch31s03.html#VkFormat">VkFormat</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>samples</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch31s02.html#VkSampleCountFlagBits">VkSampleCountFlagBits</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>tiling</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s03.html#VkImageTiling">VkImageTiling</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>usage</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>sharingMode</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s07.html#VkSharingMode">VkSharingMode</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>initialLayout</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch11s04.html#VkImageLayout">VkImageLayout</a></code> value
+</li></ul></div></div><p>The intended usage of an image is specified by the bitmask
+<code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>usage</code></em>.
+Bits which <span class="normative">can</span> be set include:</p><p><a id="VkImageUsageFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkImageUsageFlagBits {
+    VK_IMAGE_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+    VK_IMAGE_USAGE_TRANSFER_DST_BIT = 0x00000002,
+    VK_IMAGE_USAGE_SAMPLED_BIT = 0x00000004,
+    VK_IMAGE_USAGE_STORAGE_BIT = 0x00000008,
+    VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,
+    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x00000020,
+    VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT = 0x00000040,
+    VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,
+} VkImageUsageFlagBits;</pre><p>
+</p><p>These bits have the following meanings:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code> indicates that the image <span class="normative">can</span> be
+    used as the source of a transfer command.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_TRANSFER_DST_BIT</code> indicates that the image <span class="normative">can</span> be
+    used as the destination of a transfer command.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_SAMPLED_BIT</code> indicates that the image <span class="normative">can</span> be used
+    to create a <code class="code">VkImageView</code> suitable for occupying a
+    <code class="code">VkDescriptorSet</code> slot either of type
+    <code class="code">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code> or
+    <code class="code">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and be sampled by a
+    shader.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_STORAGE_BIT</code> indicates that the image <span class="normative">can</span> be used
+    to create a <code class="code">VkImageView</code> suitable for occupying a
+    <code class="code">VkDescriptorSet</code> slot of type
+    <code class="code">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> indicates that the image <span class="normative">can</span>
+    be used to create a <code class="code">VkImageView</code> suitable for use as a color or
+    resolve attachment in a <code class="code">VkFramebuffer</code>.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> indicates that the
+    image <span class="normative">can</span> be used to create a <code class="code">VkImageView</code> suitable for use as a
+    depth/stencil attachment in a <code class="code">VkFramebuffer</code>.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code> indicates that the memory
+    bound to this image will have been allocated with the
+    <code class="code">VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT</code> (see <a class="xref" href="ch10.html" title="Chapter 10. Memory Allocation">Chapter 10, <em>Memory Allocation</em></a> for more
+    detail).
+    This bit <span class="normative">can</span> be set for any image that <span class="normative">can</span> be used to create a
+    <code class="code">VkImageView</code> suitable for use as a color, resolve, depth/stencil,
+    or input attachment.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> indicates that the image <span class="normative">can</span>
+    be used to create a <code class="code">VkImageView</code> suitable for occupying
+    <code class="code">VkDescriptorSet</code> slot of type
+    <code class="code">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>; be read from a shader as an
+    input attachment; and be used as an input attachment in a framebuffer.
+</li></ul></div><p>Additional parameters of an image are specified by
+<code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>flags</code></em>.
+Bits which <span class="normative">can</span> be set include:</p><p><a id="VkImageCreateFlagBits"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkImageCreateFlagBits {
+    VK_IMAGE_CREATE_SPARSE_BINDING_BIT = 0x00000001,
+    VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT = 0x00000002,
+    VK_IMAGE_CREATE_SPARSE_ALIASED_BIT = 0x00000004,
+    VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT = 0x00000008,
+    VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT = 0x00000010,
+} VkImageCreateFlagBits;</pre><p>
+</p><p>These bits have the following meanings:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code> indicates that the image will
+    be backed using sparse memory binding.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> indicates that the image <span class="normative">can</span>
+    be partially backed using sparse memory binding.
+    Images created with this flag <span class="normative">must</span> also be created with the
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code> flag.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code> indicates that the image will
+    be backed using sparse memory binding with memory ranges that might also
+    simultaneously be backing another image (or another portion of the same
+    image).
+    Images created with this flag <span class="normative">must</span> also be created with the
+    <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code> flag
+</li><li class="listitem">
+<code class="code">VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT</code> indicates that the image <span class="normative">can</span>
+    be used to create a <code class="code">VkImageView</code> with a different format from the
+    image.
+</li><li class="listitem">
+<code class="code">VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT</code> indicates that the image <span class="normative">can</span>
+    be used to create a <code class="code">VkImageView</code> of type
+    <code class="code">VK_IMAGE_VIEW_TYPE_CUBE</code> or <code class="code">VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code>.
+</li></ul></div><p>If any of the bits <code class="code">VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>,
+<code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>, or
+<code class="code">VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code> are set,
+<code class="code">VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code> <span class="normative">must</span> not also be set.</p><p>See <a class="link" href="ch28s01.html" title="28.1. Sparse Resource Features">Sparse Resource Features</a> and
+<a class="link" href="ch28s07.html#sparsememory-physicalfeatures" title="28.7.1. Physical Device Features">Sparse Physical Device Features</a> for more
+details.</p><p>The basic dimensionality of an image is specified by
+<code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>imageType</code></em>, which <span class="normative">must</span> be one of the values</p><p><a id="VkImageType"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkImageType {
+    VK_IMAGE_TYPE_1D = 0,
+    VK_IMAGE_TYPE_2D = 1,
+    VK_IMAGE_TYPE_3D = 2,
+} VkImageType;</pre><p>
+</p><p>These values specify one-, two-, or three-dimensional images, respectively.</p><p>The tiling arrangement of data elements in an image is specified by
+<code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code>::<em class="parameter"><code>tiling</code></em>, which <span class="normative">must</span> be one of the values</p><p><a id="VkImageTiling"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkImageTiling {
+    VK_IMAGE_TILING_OPTIMAL = 0,
+    VK_IMAGE_TILING_LINEAR = 1,
+} VkImageTiling;</pre><p>
+</p><p><code class="code">VK_IMAGE_TILING_OPTIMAL</code> specifies optimal tiling (texels are laid out
+in an implementation-dependent arrangement, for more optimal memory access),
+and <code class="code">VK_IMAGE_TILING_LINEAR</code> specifies linear tiling (texels are laid
+out in memory in row-major order, possibly with some padding on each row).</p><p>To query the host access layout of an image subresource, for an image
+created with linear tiling, call:</p><p><a id="vkGetImageSubresourceLayout"></a><strong> </strong>
+</p><pre class="programlisting">void vkGetImageSubresourceLayout(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkImageSubresource*                   pSubresource,
+    VkSubresourceLayout*                        pLayout);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that owns the image.
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> is the image whose layout is being queried.
+</li><li class="listitem">
+<em class="parameter"><code>pSubresource</code></em> is a pointer to a <code class="code"><a class="link" href="ch11s03.html#VkImageSubresource">VkImageSubresource</a></code> structure
+    selecting a specific image for the image subresource.
+</li><li class="listitem">
+<em class="parameter"><code>pLayout</code></em> points to a <code class="code"><a class="link" href="ch11s03.html#VkSubresourceLayout">VkSubresourceLayout</a></code> structure in which
+    the layout is returned.
+</li></ul></div><p><code class="code"><a class="link" href="ch11s03.html#vkGetImageSubresourceLayout">vkGetImageSubresourceLayout</a></code> is invariant for the lifetime of a single
+image.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>image</code></em> <span class="normative">must</span> have been created with <em class="parameter"><code>tiling</code></em> equal to
+    <code class="code">VK_IMAGE_TILING_LINEAR</code>
+</li><li class="listitem">
+The <em class="parameter"><code>aspectMask</code></em> member of <em class="parameter"><code>pSubresource</code></em> <span class="normative">must</span> only have a
+    single bit set
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> <span class="normative">must</span> be a valid <code class="code">VkImage</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSubresource</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkImageSubresource</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pLayout</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSubresourceLayout</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><p>The <code class="code">VkImageSubresource</code> structure is defined as:</p><p><a id="VkImageSubresource"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkImageSubresource {
+    VkImageAspectFlags    aspectMask;
+    uint32_t              mipLevel;
+    uint32_t              arrayLayer;
+} VkImageSubresource;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>aspectMask</code></em> is a <code class="code"><a class="link" href="apds02.html#VkImageAspectFlags">VkImageAspectFlags</a></code> selecting the image
+    <span class="emphasis"><em>aspect</em></span>.
+</li><li class="listitem">
+<em class="parameter"><code>mipLevel</code></em> selects the mipmap level.
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayer</code></em> selects the array layer.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>mipLevel</code></em> <span class="normative">must</span> be less than the <em class="parameter"><code>mipLevels</code></em> specified in
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code> when the image was created
+</li><li class="listitem">
+<em class="parameter"><code>arrayLayer</code></em> <span class="normative">must</span> be less than the <em class="parameter"><code>arrayLayers</code></em> specified in
+    <code class="code"><a class="link" href="ch11s03.html#VkImageCreateInfo">VkImageCreateInfo</a></code> when the image was created
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>aspectMask</code></em> <span class="normative">must</span> be a valid combination of <code class="code"><a class="link" href="ch11s05.html#VkImageAspectFlagBits">VkImageAspectFlagBits</a></code> values
+</li><li class="listitem">
+<em class="parameter"><code>aspectMask</code></em> <span class="normative">must</span> not be <code class="literal">0</code>
+</li></ul></div></div><p>Information about the layout of the image subresource is returned in a
+<code class="code">VkSubresourceLayout</code> structure:</p><p><a id="VkSubresourceLayout"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSubresourceLayout {
+    VkDeviceSize    offset;
+    VkDeviceSize    size;
+    VkDeviceSize    rowPitch;
+    VkDeviceSize    arrayPitch;
+    VkDeviceSize    depthPitch;
+} VkSubresourceLayout;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>offset</code></em> is the byte offset from the start of the image where the
+    image subresource begins.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the size in bytes of the image subresource.
+    <em class="parameter"><code>size</code></em> includes any extra memory that is required based on
+    <em class="parameter"><code>rowPitch</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>rowPitch</code></em> describes the number of bytes between each row of texels
+    in an image.
+</li><li class="listitem">
+<em class="parameter"><code>arrayPitch</code></em> describes the number of bytes between each array layer
+    of an image.
+</li><li class="listitem">
+<em class="parameter"><code>depthPitch</code></em> describes the number of bytes between each slice of 3D
+    image.
+</li></ul></div><p>For images created with linear tiling, <em class="parameter"><code>rowPitch</code></em>, <em class="parameter"><code>arrayPitch</code></em> and
+<em class="parameter"><code>depthPitch</code></em> describe the layout of the image subresource in linear
+memory.
+For uncompressed formats, <em class="parameter"><code>rowPitch</code></em> is the number of bytes between
+texels with the same x coordinate in adjacent rows (y coordinates differ by
+one).
+<em class="parameter"><code>arrayPitch</code></em> is the number of bytes between texels with the same x and y
+coordinate in adjacent array layers of the image (array layer values differ
+by one).
+<em class="parameter"><code>depthPitch</code></em> is the number of bytes between texels with the same x and y
+coordinate in adjacent slices of a 3D image (z coordinates differ by one).
+Expressed as an addressing formula, the starting byte of a texel in the
+image subresource has address:</p><pre class="programlisting">// (x,y,z,layer) are in texel coordinates
+address(x,y,z,layer) = layer*arrayPitch + z*depthPitch + y*rowPitch + x*texelSize + offset</pre><p>For compressed formats, the <em class="parameter"><code>rowPitch</code></em> is the number of bytes between
+compressed texel blocks in adjacent rows.
+<em class="parameter"><code>arrayPitch</code></em> is the number of bytes between compressed texel blocks in
+adjacent array layers.
+<em class="parameter"><code>depthPitch</code></em> is the number of bytes between compressed texel blocks in
+adjacent slices of a 3D image.</p><pre class="programlisting">// (x,y,z,layer) are in compressed texel block coordinates
+address(x,y,z,layer) = layer*arrayPitch + z*depthPitch + y*rowPitch + x*compressedTexelBlockByteSize + offset;</pre><p><em class="parameter"><code>arrayPitch</code></em> is undefined for images that were not created as arrays.
+<em class="parameter"><code>depthPitch</code></em> is defined only for 3D images.</p><p>For color formats, the <em class="parameter"><code>aspectMask</code></em> member of <code class="code">VkImageSubresource</code>
+<span class="normative">must</span> be <code class="code">VK_IMAGE_ASPECT_COLOR_BIT</code>.
+For depth/stencil formats, <em class="parameter"><code>aspectMask</code></em> <span class="normative">must</span> be either
+<code class="code">VK_IMAGE_ASPECT_DEPTH_BIT</code> or <code class="code">VK_IMAGE_ASPECT_STENCIL_BIT</code>.
+On implementations that store depth and stencil aspects separately, querying
+each of these image subresource layouts will return a different <em class="parameter"><code>offset</code></em>
+and <em class="parameter"><code>size</code></em> representing the region of memory used for that aspect.
+On implementations that store depth and stencil aspects interleaved, the
+same <em class="parameter"><code>offset</code></em> and <em class="parameter"><code>size</code></em> are returned and represent the interleaved
+memory allocation.</p><p>To destroy an image, call:</p><p><a id="vkDestroyImage"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyImage(
+    VkDevice                                    device,
+    VkImage                                     image,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device that destroys the image.
+</li><li class="listitem">
+<em class="parameter"><code>image</code></em> is the image to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All submitted commands that refer to <em class="parameter"><code>image</code></em>, either directly or via
+    a <code class="code">VkImageView</code>, <span class="normative">must</span> have completed execution
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>image</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>image</code></em> was
+    created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> is not <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, <em class="parameter"><code>image</code></em> <span class="normative">must</span> be a valid <code class="code">VkImage</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>image</code></em> is a valid handle, it <span class="normative">must</span> have been created, allocated, or retrieved from <em class="parameter"><code>device</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>image</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch11s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch11.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch11s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

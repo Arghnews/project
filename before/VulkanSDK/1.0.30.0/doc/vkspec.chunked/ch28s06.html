@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>28.6. Sparse Resource Implementation Guidelines</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch28.html" title="Chapter 28. Sparse Resources" /><link rel="prev" href="ch28s05.html" title="28.5. Sparse Memory Aliasing" /><link rel="next" href="ch28s07.html" title="28.7. Sparse Resource API" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch28s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch28s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_sparse_resource_implementation_guidelines"></a>28.6. Sparse Resource Implementation Guidelines</h2></div></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong></strong></p></div></div></div><p>This section is Informative.
+It is included to aid in implementors' understanding of sparse resources.</p><p><strong>Device Virtual Address. </strong>The basic <em class="parameter"><code>sparseBinding</code></em> feature allows the resource to reserve its own
+device virtual address range at resource creation time rather than relying
+on a bind operation to set this.
+Without any other creation flags, no other constraints are relaxed compared
+to normal resources.
+All pages <span class="normative">must</span> be bound to physical memory before the device accesses the
+resource.</p><p>The <a class="link" href="ch28s01.html#features-features-sparseResidency">sparse residency</a> features allow
+sparse resources to be used even when not all pages are bound to memory.
+Hardware that supports access to unbound pages without causing a fault <span class="normative">may</span>
+support <em class="parameter"><code>residencyNonResidentStrict</code></em>.</p><p>Not faulting on access to unbound pages is not enough to support
+<em class="parameter"><code>sparseResidencyNonResidentStrict</code></em>.
+An implementation <span class="normative">must</span> also guarantee that reads after writes to unbound
+regions of the resource always return data for the read as if the memory
+contains zeros.
+Depending on the cache implementation of the hardware this <span class="normative">may</span> not always
+be possible.</p><p>Hardware that does not fault, but does not guarantee correct read values
+will not require dummy pages, but also <span class="normative">must</span> not support
+<em class="parameter"><code>sparseResidencyNonResidentStrict</code></em>.</p><p>Hardware that <span class="normative">cannot</span> access unbound pages without causing a fault will
+require the implementation to bind the entire device virtual address range
+to physical memory.
+Any pages that the application does not bind to memory <span class="normative">may</span> be bound to one
+(or more) “dummy” physical page(s) allocated by the implementation.
+Given the following properties:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+A process <span class="normative">must</span> not access memory from another process
+</li><li class="listitem">
+Reads return undefined values
+</li></ul></div><p>It is sufficient for each host process to allocate these dummy pages and use
+them for all resources in that process.
+Implementations <span class="normative">may</span> allocate more often (per instance, per device, or per
+resource).</p><p><strong>Binding Memory. </strong>The byte size reported in <code class="code">VkMemoryRequirements</code>::<em class="parameter"><code>size</code></em> <span class="normative">must</span> be
+greater than or equal to the amount of physical memory <span class="normative">required</span> to fully
+populate the resource.
+Some hardware requires “holes” in the device virtual address range that
+are never accessed.
+These holes <span class="normative">may</span> be included in the <em class="parameter"><code>size</code></em> reported for the resource.</p><p>Including or not including the device virtual address holes in the resource
+size will alter how the implementation provides support for
+<code class="code">VkSparseImageOpaqueMemoryBindInfo</code>.
+This operation <span class="normative">must</span> be supported for all sparse images, even ones created
+with <code class="code">VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>@ntrevett suggested expanding the NOTE tag below to encompass everything
+from “The cost is…” in the first bullet point through the current note.
+TBD.</p></td></tr></table></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If the holes are included in the size, this bind function becomes very
+    easy.
+    In most cases the <em class="parameter"><code>resourceOffset</code></em> is simply a device virtual
+    address offset and the implementation does not require any sophisticated
+    logic to determine what device virtual address to bind.
+    The cost is that the application <span class="normative">can</span> allocate more physical memory for
+    the resource than it needs.
+</li><li class="listitem">
+If the holes are not included in the size, the application <span class="normative">can</span> allocate
+    less physical memory than otherwise for the resource.
+    However, in this case the implementation <span class="normative">must</span> account for the holes
+    when mapping <em class="parameter"><code>resourceOffset</code></em> to the actual device virtual address
+    intended to be mapped.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>If the application always uses <code class="code">VkSparseImageMemoryBindInfo</code> to bind
+memory for the non-tail mip levels, any holes that are present in the
+resource size <span class="normative">may</span> never be bound.</p><p>Since <code class="code">VkSparseImageMemoryBindInfo</code> uses pixel locations to determine
+which device virtual addresses to bind, it is impossible to bind device
+virtual address holes with this operation.</p></td></tr></table></div><p><strong>Binding Metadata Memory. </strong>All metadata for sparse images have their own sparse properties and are
+embedded in the mip tail region for said properties.
+See the <a class="link" href="ch28s04.html#sparsememory-multiaspect" title="28.4.5. Multiple Aspects">Multiaspect</a> section for details.</p><p>Given that metadata is in a mip tail region, and the mip tail region <span class="normative">must</span>
+be reported as contiguous (either globally or per-array-layer), some
+implementations will have to resort to complicated offset → device virtual
+address mapping for handling <code class="code">VkSparseImageOpaqueMemoryBindInfo</code>.</p><p>To make this easier on the implementation, the
+<code class="code">VK_SPARSE_MEMORY_BIND_METADATA_BIT</code> explicitly denotes when metadata is
+bound with <code class="code">VkSparseImageOpaqueMemoryBindInfo</code>.
+When this flag is not present, the <em class="parameter"><code>resourceOffset</code></em> <span class="normative">may</span> be treated as a
+strict device virtual address offset.</p><p>When <code class="code">VK_SPARSE_MEMORY_BIND_METADATA_BIT</code> is present, the
+<em class="parameter"><code>resourceOffset</code></em> <span class="normative">must</span> have been derived explicitly from the
+<em class="parameter"><code>imageMipTailOffset</code></em> in the sparse resource properties returned for the
+metadata aspect.
+By manipulating the value returned for <em class="parameter"><code>imageMipTailOffset</code></em>, the
+<em class="parameter"><code>resourceOffset</code></em> does not have to correlate directly to a device virtual
+address offset, and <span class="normative">may</span> instead be whatever values makes it easiest for the
+implementation to derive the correct device virtual address.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch28s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch28.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch28s07.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

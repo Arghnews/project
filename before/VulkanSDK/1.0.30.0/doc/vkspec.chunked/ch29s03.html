@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.3. Presenting Directly to Display Devices</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><link rel="prev" href="ch29s02.html" title="29.2. WSI Surface" /><link rel="next" href="ch29s04.html" title="29.4. Querying for WSI Support" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch29s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch29s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="display"></a>29.3. Presenting Directly to Display Devices</h2></div></div></div><p>In some environments applications <span class="normative">can</span> also present Vulkan rendering
+directly to display devices without using an intermediate windowing system.
+This <span class="normative">can</span> be useful for embedded applications, or implementing the
+rendering/presentation backend of a windowing system using Vulkan.
+The <code class="literal">VK_KHR_display</code> extension provides the functionality necessary to
+enumerate display devices and create <code class="code">VkSurface</code> objects that target
+displays.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_display_enumeration"></a>29.3.1. Display Enumeration</h3></div></div></div><p>Various functions are provided for enumerating the available display devices
+present on a Vulkan physical device.
+To query information about the available displays, call:</p><p><a id="vkGetPhysicalDeviceDisplayPropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceDisplayPropertiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pPropertyCount,
+    VkDisplayPropertiesKHR*                     pProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is a physical device.
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> is a pointer to an integer related to the number of
+    display devices available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pProperties</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkDisplayPropertiesKHR</code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pProperties</code></em> is <code class="literal">NULL</code>, then the number of display devices available
+for <em class="parameter"><code>physicalDevice</code></em> is returned in <em class="parameter"><code>pPropertyCount</code></em>.
+Otherwise, <em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> point to a variable set by the user to
+the number of elements in the <em class="parameter"><code>pProperties</code></em> array, and on return the
+variable is overwritten with the number of structures actually written to
+<em class="parameter"><code>pProperties</code></em>.
+If the value of <em class="parameter"><code>pPropertyCount</code></em> is less than the number of display
+devices for <em class="parameter"><code>physicalDevice</code></em>, at most <em class="parameter"><code>pPropertyCount</code></em> structures
+will be written.
+If <em class="parameter"><code>pPropertyCount</code></em> is smaller than the number of display devices
+available for <em class="parameter"><code>physicalDevice</code></em>, <code class="code">VK_INCOMPLETE</code> will be returned
+instead of <code class="code">VK_SUCCESS</code> to indicate that not all the available values
+were returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPropertyCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pProperties</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pProperties</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPropertyCount</code></em> <code class="code">VkDisplayPropertiesKHR</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplayPropertiesKHR</code> structure is defined as:</p><p><a id="VkDisplayPropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayPropertiesKHR {
+    VkDisplayKHR                  display;
+    const char*                   displayName;
+    VkExtent2D                    physicalDimensions;
+    VkExtent2D                    physicalResolution;
+    VkSurfaceTransformFlagsKHR    supportedTransforms;
+    VkBool32                      planeReorderPossible;
+    VkBool32                      persistentContent;
+} VkDisplayPropertiesKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>display</code></em> is a handle that is used to refer to the display described
+    here.
+    This handle will be valid for the lifetime of the Vulkan instance.
+</li><li class="listitem">
+<em class="parameter"><code>displayName</code></em> is a pointer to a NULL-terminated string containing
+    the name of the display.
+    Generally, this will be the name provided by the display’s EDID.
+    It <span class="normative">can</span> be <code class="literal">NULL</code> if no suitable name is available.
+</li><li class="listitem">
+<em class="parameter"><code>physicalDimensions</code></em> describes the physical width and height of the
+    visible portion of the display, in millimeters.
+</li><li class="listitem">
+<em class="parameter"><code>physicalResolution</code></em> describes the physical, native, or preferred
+    resolution of the display.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>For devices which have no natural value to return here, implementations
+<span class="normative">should</span> return the maximum resolution supported.</p></td></tr></table></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>supportedTransforms</code></em> tells which transforms are supported by this
+    display.
+    This will contain one or more of the bits from
+    <code class="code">VkSurfaceTransformFlagsKHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>planeReorderPossible</code></em> tells whether the planes on this display <span class="normative">can</span>
+    have their z order changed.
+    If this is <code class="code">VK_TRUE</code>, the application <span class="normative">can</span> re-arrange the planes on
+    this display in any order relative to each other.
+</li><li class="listitem">
+<em class="parameter"><code>persistentContent</code></em> tells whether the display supports
+    self-refresh/internal buffering.
+    If this is true, the application <span class="normative">can</span> submit persistent present
+    operations on swapchains created against this display.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Persistent presents <span class="normative">may</span> have higher latency, and <span class="normative">may</span> use less power when
+the screen content is updated infrequently, or when only a portion of the
+screen needs to be updated in most frames.</p></td></tr></table></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_display_planes"></a>Display Planes</h4></div></div></div><p>Images are presented to individual planes on a display.
+Devices <span class="normative">must</span> support at least one plane on each display.
+Planes <span class="normative">can</span> be stacked and blended to composite multiple images on one
+display.
+Devices <span class="normative">may</span> support only a fixed stacking order and fixed mapping between
+planes and displays, or they <span class="normative">may</span> allow arbitrary application specified
+stacking orders and mappings between planes and displays.
+To query the properties of device display planes, call:</p><p><a id="vkGetPhysicalDeviceDisplayPlanePropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceDisplayPlanePropertiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pPropertyCount,
+    VkDisplayPlanePropertiesKHR*                pProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is a physical device.
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> is a pointer to an integer related to the number of
+    display planes available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pProperties</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkDisplayPlanePropertiesKHR</code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pProperties</code></em> is <code class="literal">NULL</code>, then the number of display planes available
+for <em class="parameter"><code>physicalDevice</code></em> is returned in <em class="parameter"><code>pPropertyCount</code></em>.
+Otherwise, <em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> point to a variable set by the user to
+the number of elements in the <em class="parameter"><code>pProperties</code></em> array, and on return the
+variable is overwritten with the number of structures actually written to
+<em class="parameter"><code>pProperties</code></em>.
+If the value of <em class="parameter"><code>pPropertyCount</code></em> is less than the number of display
+planes for <em class="parameter"><code>physicalDevice</code></em>, at most <em class="parameter"><code>pPropertyCount</code></em> structures
+will be written.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPropertyCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pProperties</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pProperties</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPropertyCount</code></em> <code class="code">VkDisplayPlanePropertiesKHR</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplayPlanePropertiesKHR</code> structure is defined as:</p><p><a id="VkDisplayPlanePropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayPlanePropertiesKHR {
+    VkDisplayKHR    currentDisplay;
+    uint32_t        currentStackIndex;
+} VkDisplayPlanePropertiesKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>currentDisplay</code></em> is the handle of the display the plane is currently
+    associated with.
+    If the plane is not currently attached to any displays, this will be
+    <code class="code">VK_NULL_HANDLE</code>.
+</li><li class="listitem">
+<em class="parameter"><code>currentStackIndex</code></em> is the current z-order of the plane.
+    This will be between 0 and the value returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</code></strong></span>() in
+    <em class="parameter"><code>pPropertyCount</code></em>.
+</li></ul></div><p>To determine which displays a plane is usable with, call</p><p><a id="vkGetDisplayPlaneSupportedDisplaysKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetDisplayPlaneSupportedDisplaysKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t                                    planeIndex,
+    uint32_t*                                   pDisplayCount,
+    VkDisplayKHR*                               pDisplays);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is a physical device.
+</li><li class="listitem">
+<em class="parameter"><code>planeIndex</code></em> is the plane which the application wishes to use, and
+    <span class="normative">must</span> be in the range <span class="eq">[0, physical device plane count - 1]</span>.
+</li><li class="listitem">
+<em class="parameter"><code>pDisplayCount</code></em> is a pointer to an integer related to the number of
+    display planes available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pDisplays</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkDisplayKHR</code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pDisplays</code></em> is <code class="literal">NULL</code>, then the number of displays usable with the
+specified <em class="parameter"><code>planeIndex</code></em> for <em class="parameter"><code>physicalDevice</code></em> is returned in
+<em class="parameter"><code>pDisplayCount</code></em>.
+Otherwise, <em class="parameter"><code>pDisplayCount</code></em> <span class="normative">must</span> point to a variable set by the user to
+the number of elements in the <em class="parameter"><code>pDisplays</code></em> array, and on return the
+variable is overwritten with the number of structures actually written to
+<em class="parameter"><code>pDisplays</code></em>.
+If the value of <em class="parameter"><code>pDisplayCount</code></em> is less than the number of display
+planes for <em class="parameter"><code>physicalDevice</code></em>, at most <em class="parameter"><code>pDisplayCount</code></em> structures will
+be written.
+If <em class="parameter"><code>pDisplayCount</code></em> is smaller than the number of displays usable with
+the specified <em class="parameter"><code>planeIndex</code></em> for <em class="parameter"><code>physicalDevice</code></em>, <code class="code">VK_INCOMPLETE</code>
+will be returned instead of <code class="code">VK_SUCCESS</code> to indicate that not all the
+available values were returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>planeIndex</code></em> <span class="normative">must</span> be less than the number of display planes
+    supported by the device as determined by calling
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</code></strong></span>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pDisplayCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pDisplayCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pDisplays</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pDisplays</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pDisplayCount</code></em> <code class="code">VkDisplayKHR</code> handles
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>Additional properties of displays are queried using specialized query
+functions.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_display_modes"></a>Display Modes</h4></div></div></div><p>Each display has one or more supported modes associated with it by default.
+These built-in modes are queried by calling:</p><p><a id="vkGetDisplayModePropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetDisplayModePropertiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkDisplayKHR                                display,
+    uint32_t*                                   pPropertyCount,
+    VkDisplayModePropertiesKHR*                 pProperties);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device associated with
+    <em class="parameter"><code>display</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> is the display to query.
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> is a pointer to an integer related to the number of
+    display modes available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pProperties</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkDisplayModePropertiesKHR</code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pProperties</code></em> is <code class="literal">NULL</code>, then the number of display modes available
+on the specified <em class="parameter"><code>display</code></em> for <em class="parameter"><code>physicalDevice</code></em> is returned in
+<em class="parameter"><code>pPropertyCount</code></em>.
+Otherwise, <em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> point to a variable set by the user to
+the number of elements in the <em class="parameter"><code>pProperties</code></em> array, and on return the
+variable is overwritten with the number of structures actually written to
+<em class="parameter"><code>pProperties</code></em>.
+If the value of <em class="parameter"><code>pPropertyCount</code></em> is less than the number of display
+modes for <em class="parameter"><code>physicalDevice</code></em>, at most <em class="parameter"><code>pPropertyCount</code></em> structures will
+be written.
+If <em class="parameter"><code>pPropertyCount</code></em> is smaller than the number of display modes
+available on the specified <em class="parameter"><code>display</code></em> for <em class="parameter"><code>physicalDevice</code></em>,
+<code class="code">VK_INCOMPLETE</code> will be returned instead of <code class="code">VK_SUCCESS</code> to indicate
+that not all the available values were returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> <span class="normative">must</span> be a valid <code class="code">VkDisplayKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pPropertyCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPropertyCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pProperties</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pProperties</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPropertyCount</code></em> <code class="code">VkDisplayModePropertiesKHR</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplayModePropertiesKHR</code> structure is defined as:</p><p><a id="VkDisplayModePropertiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayModePropertiesKHR {
+    VkDisplayModeKHR              displayMode;
+    VkDisplayModeParametersKHR    parameters;
+} VkDisplayModePropertiesKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>displayMode</code></em> is a handle to the display mode described in this
+    structure.
+    This handle will be valid for the lifetime of the Vulkan instance.
+</li><li class="listitem">
+<em class="parameter"><code>parameters</code></em> is a <code class="code">VkDisplayModeParametersKHR</code> structure
+    describing the display parameters associated with <em class="parameter"><code>displayMode</code></em>.
+</li></ul></div><p>The <code class="code">VkDisplayModeParametersKHR</code> structure is defined as:</p><p><a id="VkDisplayModeParametersKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayModeParametersKHR {
+    VkExtent2D    visibleRegion;
+    uint32_t      refreshRate;
+} VkDisplayModeParametersKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>visibleRegion</code></em> is the 2D extents of the visible region.
+</li><li class="listitem">
+<em class="parameter"><code>refreshRate</code></em> is a <span class="strong"><strong><code class="code">uint32_t</code></strong></span> that is the number of times the
+    display is refreshed each second multiplied by 1000.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>For example, a 60Hz display mode would report a <em class="parameter"><code>refreshRate</code></em> of 60,000.</p></td></tr></table></div><p>Additional modes <span class="normative">may</span> also be created by calling:</p><p><a id="vkCreateDisplayModeKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateDisplayModeKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkDisplayKHR                                display,
+    const VkDisplayModeCreateInfoKHR*           pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDisplayModeKHR*                           pMode);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device associated with
+    <em class="parameter"><code>display</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> is the display to create an additional mode for.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a <code class="code"><a class="link" href="ch29s03.html#VkDisplayModeCreateInfoKHR">VkDisplayModeCreateInfoKHR</a></code> structure
+    describing the new mode to create.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pMode</code></em> returns the handle of the mode created.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>display</code></em> <span class="normative">must</span> be a valid <code class="code">VkDisplayKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDisplayModeCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pMode</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDisplayModeKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>display</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_INITIALIZATION_FAILED</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplayModeCreateInfoKHR</code> structure is defined as:</p><p><a id="VkDisplayModeCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayModeCreateInfoKHR {
+    VkStructureType                sType;
+    const void*                    pNext;
+    VkDisplayModeCreateFlagsKHR    flags;
+    VkDisplayModeParametersKHR     parameters;
+} VkDisplayModeCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use, and <span class="normative">must</span> be zero.
+</li><li class="listitem">
+<em class="parameter"><code>parameters</code></em> is a <code class="code">VkDisplayModeParametersKHR</code> structure
+    describing the display parameters to use in creating the new mode.
+    If the parameters are not compatible with the specified display, the
+    implementation <span class="normative">must</span> return <code class="code">VK_ERROR_INITIALIZATION_FAILED</code>.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The <em class="parameter"><code>width</code></em> and <em class="parameter"><code>height</code></em> members of the <em class="parameter"><code>visibleRegion</code></em>
+    member of <em class="parameter"><code>parameters</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+The <em class="parameter"><code>refreshRate</code></em> member of <em class="parameter"><code>parameters</code></em> <span class="normative">must</span> be greater than
+    <code class="literal">0</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DISPLAY_MODE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li></ul></div></div><p>Applications that wish to present directly to a display <span class="normative">must</span> select which
+layer, or "plane" of the display they wish to target, and a mode to use with
+the display.
+Each display supports at least one plane.
+The capabilities of a given mode and plane combination are determined by
+calling:</p><p><a id="vkGetDisplayPlaneCapabilitiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetDisplayPlaneCapabilitiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkDisplayModeKHR                            mode,
+    uint32_t                                    planeIndex,
+    VkDisplayPlaneCapabilitiesKHR*              pCapabilities);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device associated with
+    <em class="parameter"><code>display</code></em>
+</li><li class="listitem">
+<em class="parameter"><code>mode</code></em> is the display mode the application intends to program when
+    using the specified plane.
+    Note this parameter also implicitly specifies a display.
+</li><li class="listitem">
+<em class="parameter"><code>planeIndex</code></em> is the plane which the application intends to use with
+    the display, and is less than the number of display planes supported by
+    the device.
+</li><li class="listitem">
+<em class="parameter"><code>pCapabilities</code></em> is a pointer to a
+    <code class="code"><a class="link" href="ch29s03.html#VkDisplayPlaneCapabilitiesKHR">VkDisplayPlaneCapabilitiesKHR</a></code> structure in which the capabilities
+    are returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>mode</code></em> <span class="normative">must</span> be a valid <code class="code">VkDisplayModeKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCapabilities</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDisplayPlaneCapabilitiesKHR</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>mode</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplayPlaneCapabilitiesKHR</code> structure is defined as:</p><p><a id="VkDisplayPlaneCapabilitiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplayPlaneCapabilitiesKHR {
+    VkDisplayPlaneAlphaFlagsKHR    supportedAlpha;
+    VkOffset2D                     minSrcPosition;
+    VkOffset2D                     maxSrcPosition;
+    VkExtent2D                     minSrcExtent;
+    VkExtent2D                     maxSrcExtent;
+    VkOffset2D                     minDstPosition;
+    VkOffset2D                     maxDstPosition;
+    VkExtent2D                     minDstExtent;
+    VkExtent2D                     maxDstExtent;
+} VkDisplayPlaneCapabilitiesKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>supportedAlpha</code></em> is a bitmask of
+    <code class="code"><a class="link" href="ch29s03.html#VkDisplayPlaneAlphaFlagBitsKHR">VkDisplayPlaneAlphaFlagBitsKHR</a></code> describing the supported alpha
+    blending modes.
+</li><li class="listitem">
+<em class="parameter"><code>minSrcPosition</code></em> is the minimum source rectangle offset supported by
+    this plane using the specified mode.
+</li><li class="listitem">
+<em class="parameter"><code>maxSrcPosition</code></em> is the maximum source rectangle offset supported by
+    this plane using the specified mode.
+    The <em class="parameter"><code>x</code></em> and <em class="parameter"><code>y</code></em> components of <em class="parameter"><code>maxSrcPosition</code></em> <span class="normative">must</span> each be
+    greater than or equal to the <em class="parameter"><code>x</code></em> and <em class="parameter"><code>y</code></em> components of
+    <em class="parameter"><code>minSrcPosition</code></em>, respectively.
+</li><li class="listitem">
+<em class="parameter"><code>minSrcExtent</code></em> is the minimum source rectangle size supported by
+    this plane using the specified mode.
+</li><li class="listitem">
+<em class="parameter"><code>maxSrcExtent</code></em> is the maximum source rectangle size supported by
+    this plane using the specified mode.
+</li><li class="listitem">
+<em class="parameter"><code>minDstPosition</code></em>, <em class="parameter"><code>maxDstPosition</code></em>, <em class="parameter"><code>minDstExtent</code></em>,
+    <em class="parameter"><code>maxDstExtent</code></em> all have similar semantics to their corresponding
+    "Src" equivalents, but apply to the output region within the mode rather
+    than the input region within the source image.
+    Unlike the "Src" offsets, <em class="parameter"><code>minDstPosition</code></em> and <em class="parameter"><code>maxDstPosition</code></em>
+    <span class="normative">may</span> contain negative values.
+</li></ul></div><p>The minimum and maximum position and extent fields describe the hardware
+limits, if any, as they apply to the specified display mode and plane.
+Vendors <span class="normative">may</span> support displaying a subset of a swapchain’s presentable images
+on the specified display plane.
+This is expressed by returning <em class="parameter"><code>minSrcPosition</code></em>, <em class="parameter"><code>maxSrcPosition</code></em>,
+<em class="parameter"><code>minSrcExtent</code></em>, and <em class="parameter"><code>maxSrcExtent</code></em> values that indicate a range of
+possible positions and sizes <span class="normative">may</span> be used to specify the region within the
+presentable images that source pixels will be read from when creating a
+swapchain on the specified display mode and plane.</p><p>Vendors <span class="normative">may</span> also support mapping the presentable images' content to a
+subset or superset of the visible region in the specified display mode.
+This is expressed by returning <em class="parameter"><code>minDstPosition</code></em>, <em class="parameter"><code>maxDstPosition</code></em>,
+<em class="parameter"><code>minDstExtent</code></em> and <em class="parameter"><code>maxDstExtent</code></em> values that indicate a range of
+possible positions and sizes <span class="normative">may</span> be used to describe the region within the
+display mode that the source pixels will be mapped to.</p><p>Other vendors <span class="normative">may</span> support only a 1-1 mapping between pixels in the
+presentable images and the display mode.
+This <span class="normative">may</span> be indicated by returning <span class="eq">(0,0)</span> for <em class="parameter"><code>minSrcPosition</code></em>,
+<em class="parameter"><code>maxSrcPosition</code></em>, <em class="parameter"><code>minDstPosition</code></em>, and <em class="parameter"><code>maxDstPosition</code></em>, and
+(display mode width, display mode height) for <em class="parameter"><code>minSrcExtent</code></em>,
+<em class="parameter"><code>maxSrcExtent</code></em>, <em class="parameter"><code>minDstExtent</code></em>, and <em class="parameter"><code>maxDstExtent</code></em>.</p><p>These values indicate the limits of the hardware’s individual fields.
+Not all combinations of values within the offset and extent ranges returned
+in <code class="code">VkDisplayPlaneCapabilitiesKHR</code> are guaranteed to be supported.
+Vendors <span class="normative">may</span> still fail presentation requests that specify unsupported
+combinations.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_display_surfaces"></a>29.3.2. Display Surfaces</h3></div></div></div><p>A complete display configuration includes a mode, one or more display planes
+and any parameters describing their behavior, and parameters describing some
+aspects of the images associated with those planes.
+Display surfaces describe the configuration of a single plane within a
+complete display configuration.
+To create a <code class="code">VkSurfaceKHR</code> structure for a display surface, call:</p><p><a id="vkCreateDisplayPlaneSurfaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateDisplayPlaneSurfaceKHR(
+    VkInstance                                  instance,
+    const VkDisplaySurfaceCreateInfoKHR*        pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkSurfaceKHR*                               pSurface);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> is the instance corresponding to the physical device the
+    targeted display is on.
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s03.html#VkDisplaySurfaceCreateInfoKHR">VkDisplaySurfaceCreateInfoKHR</a></code> structure specifying which mode,
+    plane, and other parameters to use, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> is the allocator used for host memory allocated for the
+    surface object when there is no more specific allocator available (see
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> points to a <code class="code">VkSurfaceKHR</code> handle in which the
+    created surface is returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>instance</code></em> <span class="normative">must</span> be a valid <code class="code">VkInstance</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDisplaySurfaceCreateInfoKHR</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pSurface</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceKHR</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDisplaySurfaceCreateInfoKHR</code> structure is defined as:</p><p><a id="VkDisplaySurfaceCreateInfoKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDisplaySurfaceCreateInfoKHR {
+    VkStructureType                   sType;
+    const void*                       pNext;
+    VkDisplaySurfaceCreateFlagsKHR    flags;
+    VkDisplayModeKHR                  displayMode;
+    uint32_t                          planeIndex;
+    uint32_t                          planeStackIndex;
+    VkSurfaceTransformFlagBitsKHR     transform;
+    float                             globalAlpha;
+    VkDisplayPlaneAlphaFlagBitsKHR    alphaMode;
+    VkExtent2D                        imageExtent;
+} VkDisplaySurfaceCreateInfoKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure and <span class="normative">must</span> be
+    <code class="code">VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use, and <span class="normative">must</span> be zero.
+</li><li class="listitem">
+<em class="parameter"><code>displayMode</code></em> is the mode to use when displaying this surface.
+</li><li class="listitem">
+<em class="parameter"><code>planeIndex</code></em> is the plane on which this surface appears.
+</li><li class="listitem">
+<em class="parameter"><code>planeStackIndex</code></em> is the z-order of the plane.
+</li><li class="listitem">
+<em class="parameter"><code>transform</code></em> is the transform to apply to the images as part of the
+    scanout operation.
+</li><li class="listitem">
+<em class="parameter"><code>globalAlpha</code></em> is the global alpha value.
+    This value is ignored if <em class="parameter"><code>alphaMode</code></em> is not
+    <code class="code">VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR</code>.
+</li><li class="listitem">
+<em class="parameter"><code>alphaMode</code></em> is the type of alpha blending to use.
+</li><li class="listitem">
+<em class="parameter"><code>imageSize</code></em> The size of the presentable images to use with the
+    surface.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Creating a display surface <span class="normative">must</span> not modify the state of the displays,
+planes, or other resources it names.
+For example, it <span class="normative">must</span> not apply the specified mode to be set on the
+associated display.
+Application of display configuration occurs as a side effect of presenting
+to a display surface.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>planeIndex</code></em> <span class="normative">must</span> be less than the number of display planes
+    supported by the device as determined by calling
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</code></strong></span>
+</li><li class="listitem">
+If the <em class="parameter"><code>planeReorderPossible</code></em> member of the
+    <code class="code">VkDisplayPropertiesKHR</code> structure returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPropertiesKHR</code></strong></span> for the display
+    corresponding to <em class="parameter"><code>displayMode</code></em> is <code class="code">VK_TRUE</code> then
+    <em class="parameter"><code>planeStackIndex</code></em> <span class="normative">must</span> be less than the number of display planes
+    supported by the device as determined by calling
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</code></strong></span>; otherwise
+    <em class="parameter"><code>planeStackIndex</code></em> <span class="normative">must</span> equal the <em class="parameter"><code>currentStackIndex</code></em> member of
+    <code class="code">VkDisplayPlanePropertiesKHR</code> returned by
+    <span class="strong"><strong><code class="code">vkGetPhysicalDeviceDisplayPlanePropertiesKHR</code></strong></span> for the display plane
+    corresponding to <em class="parameter"><code>displayMode</code></em>
+</li><li class="listitem">
+If <em class="parameter"><code>alphaMode</code></em> is <code class="code">VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR</code> then
+    <em class="parameter"><code>globalAlpha</code></em> <span class="normative">must</span> be between <code class="literal">0</code> and <code class="literal">1</code>, inclusive
+</li><li class="listitem">
+<em class="parameter"><code>alphaMode</code></em> <span class="normative">must</span> be <code class="literal">0</code> or one of the bits present in the
+    <em class="parameter"><code>supportedAlpha</code></em> member of <code class="code">VkDisplayPlaneCapabilitiesKHR</code>
+    returned by <span class="strong"><strong><code class="code">vkGetDisplayPlaneCapabilitiesKHR</code></strong></span> for the display plane
+    corresponding to <em class="parameter"><code>displayMode</code></em>
+</li><li class="listitem">
+The <em class="parameter"><code>width</code></em> and <em class="parameter"><code>height</code></em> members of <em class="parameter"><code>imageExtent</code></em> <span class="normative">must</span> be
+    less than the <em class="parameter"><code>maxImageDimensions2D</code></em> member of
+    <code class="code">VkPhysicalDeviceLimits</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DISPLAY_SURFACE_CREATE_INFO_KHR</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>displayMode</code></em> <span class="normative">must</span> be a valid <code class="code">VkDisplayModeKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>transform</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s05.html#VkSurfaceTransformFlagBitsKHR">VkSurfaceTransformFlagBitsKHR</a></code> value
+</li><li class="listitem">
+<em class="parameter"><code>alphaMode</code></em> <span class="normative">must</span> be a valid <code class="code"><a class="link" href="ch29s03.html#VkDisplayPlaneAlphaFlagBitsKHR">VkDisplayPlaneAlphaFlagBitsKHR</a></code> value
+</li></ul></div></div><p>Types of alpha blending supported by or used on a display are defined by the
+bitmask <code class="code">VkDisplayPlaneAlphaFlagBitsKHR</code>, which contains the following
+values:</p><p><a id="VkDisplayPlaneAlphaFlagBitsKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkDisplayPlaneAlphaFlagBitsKHR {
+    VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR = 0x00000001,
+    VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR = 0x00000002,
+    VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR = 0x00000004,
+    VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR = 0x00000008,
+} VkDisplayPlaneAlphaFlagBitsKHR;</pre><p>
+</p><p>These values are described as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR</code>: The source image will be
+    treated as opaque.
+</li><li class="listitem">
+<code class="code">VK_DISPLAY_PLANE_ALPHA_GLOBAL_BIT_KHR</code>: A global alpha value <span class="normative">must</span>
+    be specified that will be applied to all pixels in the source image.
+</li><li class="listitem">
+<code class="code">VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR</code>: The alpha value will be
+    determined by the alpha channel of the source image’s pixels.
+    If the source format contains no alpha values, no blending will be
+    applied.
+    The source alpha values are not premultiplied into the source image’s
+    other color channels.
+</li><li class="listitem">
+<code class="code">VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_PREMULTIPLIED_BIT_KHR</code>: This is
+    equivalent to <code class="code">VK_DISPLAY_PLANE_ALPHA_PER_PIXEL_BIT_KHR</code> except the
+    source alpha values are assumed to be premultiplied into the source
+    image’s other color channels.
+</li></ul></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch29s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch29.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch29s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

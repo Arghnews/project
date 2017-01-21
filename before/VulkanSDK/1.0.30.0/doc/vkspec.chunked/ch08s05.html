@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.5. Vertex Shaders</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch08.html" title="Chapter 8. Shaders" /><link rel="prev" href="ch08s04.html" title="8.4. Shader Inputs and Outputs" /><link rel="next" href="ch08s06.html" title="8.6. Tessellation Control Shaders" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch08s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="shaders-vertex"></a>8.5. Vertex Shaders</h2></div></div></div><p>Each vertex shader invocation operates on one vertex and its associated
+<a class="link" href="ch20s01.html" title="20.1. Vertex Attributes">vertex attribute</a> data, and outputs one vertex and
+associated data.
+Graphics pipelines <span class="normative">must</span> include a vertex shader, and the vertex shader
+stage is always the first shader stage in the graphics pipeline.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="shaders-vertex-execution"></a>8.5.1. Vertex Shader Execution</h3></div></div></div><p>A vertex shader <span class="normative">must</span> be executed at least once for each vertex specified by
+a draw command.
+During execution, the shader is presented with the index of the vertex and
+instance for which it has been invoked.
+Input variables declared in the vertex shader are filled by the
+implementation with the values of vertex attributes associated with the
+invocation being executed.</p><p>If the same vertex is specified multiple times in a draw command (e.g. by
+including the same index value multiple times in an index buffer) the
+implementation <span class="normative">may</span> reuse the results of vertex shading if it can statically
+determine that the vertex shader invocations will produce identical results.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>It is implementation-dependent when and if results of vertex shading are
+reused, and thus how many times the vertex shader will be executed.
+This is true also if the vertex shader contains stores or atomic operations
+(see <a class="link" href="ch31s01.html#features-features-vertexPipelineStoresAndAtomics"><em class="parameter"><code>vertexPipelineStoresAndAtomics</code></em></a>).</p></td></tr></table></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

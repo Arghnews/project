@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.11. Interpolation Decorations</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch08.html" title="Chapter 8. Shaders" /><link rel="prev" href="ch08s10.html" title="8.10. Compute Shaders" /><link rel="next" href="ch08s12.html" title="8.12. Static Use" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch08s10.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch08s12.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="shaders-interpolation-decorations"></a>8.11. Interpolation Decorations</h2></div></div></div><p>Interpolation decorations control the behavior of attribute interpolation in
+the fragment shader stage.
+Interpolation decorations <span class="normative">can</span> be applied to <span class="strong"><strong><code class="code">Input</code></strong></span> storage class
+variables in the fragment shader stage’s interface, and control the
+interpolation behavior of those variables.</p><p>Inputs that could be interpolated <span class="normative">can</span> be decorated by at most one of the
+following decorations:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<span class="strong"><strong><code class="code">Flat</code></strong></span>: no interpolation
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">NoPerspective</code></strong></span>: linear interpolation (for
+    <a class="link" href="ch24s06.html#line_linear_interpolation">lines</a> and
+    <a class="link" href="ch24s07.html#triangle_linear_interpolation">polygons</a>).
+</li></ul></div><p>Fragment input variables decorated with neither <span class="strong"><strong><code class="code">Flat</code></strong></span> nor
+<span class="strong"><strong><code class="code">NoPerspective</code></strong></span> use perspective-correct interpolation (for
+<a class="link" href="ch24s06.html#line_perspective_interpolation">lines</a> and
+<a class="link" href="ch24s07.html#triangle_perspective_interpolation">polygons</a>).</p><p>The presence of and type of interpolation is controlled by the above
+interpolation decorations as well as the auxiliary decorations <span class="strong"><strong><code class="code">Centroid</code></strong></span>
+and <span class="strong"><strong><code class="code">Sample</code></strong></span>.</p><p>A variable decorated with <span class="strong"><strong><code class="code">Flat</code></strong></span> will not be interpolated.
+Instead, it will have the same value for every fragment within a triangle.
+This value will come from a single <a class="link" href="ch23s01.html" title="23.1. Flat Shading">provoking vertex</a>.
+A variable decorated with <span class="strong"><strong><code class="code">Flat</code></strong></span> <span class="normative">can</span> also be decorated with
+<span class="strong"><strong><code class="code">Centroid</code></strong></span> or <span class="strong"><strong><code class="code">Sample</code></strong></span>, which will mean the same thing as decorating
+it only as <span class="strong"><strong><code class="code">Flat</code></strong></span>.</p><p>For fragment shader input variables decorated with neither <span class="strong"><strong><code class="code">Centroid</code></strong></span> nor
+<span class="strong"><strong><code class="code">Sample</code></strong></span>, the assigned variable <span class="normative">may</span> be interpolated anywhere within the
+pixel and a single value <span class="normative">may</span> be assigned to each sample within the pixel.</p><p><span class="strong"><strong><code class="code">Centroid</code></strong></span> and <span class="strong"><strong><code class="code">Sample</code></strong></span> <span class="normative">can</span> be used to control the location and
+frequency of the sampling of the decorated fragment shader input.
+If a fragment shader input is decorated with <span class="strong"><strong><code class="code">Centroid</code></strong></span>, a single value
+<span class="normative">may</span> be assigned to that variable for all samples in the pixel, but that
+value <span class="normative">must</span> be interpolated to a location that lies in both the pixel and in
+the primitive being rendered, including any of the pixel’s samples covered
+by the primitive.
+Because the location at which the variable is interpolated <span class="normative">may</span> be different
+in neighboring pixels, and derivatives <span class="normative">may</span> be computed by computing
+differences between neighboring pixels, derivatives of centroid-sampled
+inputs <span class="normative">may</span> be less accurate than those for non-centroid interpolated
+variables.
+If a fragment shader input is decorated with <span class="strong"><strong><code class="code">Sample</code></strong></span>, a separate value
+<span class="normative">must</span> be assigned to that variable for each covered sample in the pixel, and
+that value <span class="normative">must</span> be sampled at the location of the individual sample.
+When <em class="parameter"><code>rasterizationSamples</code></em> is <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, the pixel
+center <span class="normative">must</span> be used for <span class="strong"><strong><code class="code">Centroid</code></strong></span>, <span class="strong"><strong><code class="code">Sample</code></strong></span>, and undecorated
+attribute interpolation.</p><p>Fragment shader inputs that are signed or unsigned integers, integer
+vectors, or any double-precision floating-point type <span class="normative">must</span> be decorated with
+<span class="strong"><strong><code class="code">Flat</code></strong></span>.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s10.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch08.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch08s12.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>15.9. Image Operation Steps</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch15.html" title="Chapter 15. Image Operations" /><link rel="prev" href="ch15s08.html" title="15.8. Image Sample Operations" /><link rel="next" href="ch16.html" title="Chapter 16. Queries" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch15s08.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch16.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="textures-instructions"></a>15.9. Image Operation Steps</h2></div></div></div><p>Each step described in this chapter is performed by a subset of the image
+instructions:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Texel Input Validation Operations, Format Conversion, Texel Replacement,
+    Conversion to RGBA, and Component Swizzle: Performed by all instructions
+    except <span class="strong"><strong><code class="code">OpImageWrite</code></strong></span>.
+</li><li class="listitem">
+Depth Comparison: Performed by <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Dref</code></strong></span> instructions.
+</li><li class="listitem">
+All Texel output operations: Performed by <span class="strong"><strong><code class="code">OpImageWrite</code></strong></span>.
+</li><li class="listitem">
+Projection: Performed by all <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Proj</code></strong></span> instructions.
+</li><li class="listitem">
+Derivative Image Operations, Cube Map Operations, Scale Factor
+    Operation, Level-of-Detail Operation and Image Level(s) Selection, and
+    Texel Anisotropic Filtering: Performed by all <span class="strong"><strong><code class="code">OpImageSample</code></strong></span>* and
+    <span class="strong"><strong><code class="code">OpImageSparseSample</code></strong></span>* instructions.
+</li><li class="listitem">
+(s,t,r,q,a) to (u,v,w,a) Transformation, Wrapping, and (u,v,w,a) to
+    (i,j,k,l,n) Transformation And Array Layer Selection: Performed by all
+    <span class="strong"><strong><code class="code">OpImageSample</code></strong></span>, <span class="strong"><strong><code class="code">OpImageSparseSample</code></strong></span>, and
+    <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Gather</code></strong></span> instructions.
+</li><li class="listitem">
+Texel Gathering: Performed by <span class="strong"><strong><code class="code">OpImage</code></strong></span>*<span class="strong"><strong><code class="code">Gather</code></strong></span> instructions.
+</li><li class="listitem">
+Texel Filtering: Performed by all <span class="strong"><strong><code class="code">OpImageSample</code></strong></span>* and
+    <span class="strong"><strong><code class="code">OpImageSparseSample</code></strong></span>* instructions.
+</li><li class="listitem">
+Sparse Residency: Performed by all <span class="strong"><strong><code class="code">OpImageSparse</code></strong></span>* instructions.
+</li></ul></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch15s08.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch15.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch16.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

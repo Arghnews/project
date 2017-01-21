@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>9.7. Specialization Constants</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch09.html" title="Chapter 9. Pipelines" /><link rel="prev" href="ch09s06.html" title="9.6. Pipeline Cache" /><link rel="next" href="ch09s08.html" title="9.8. Pipeline Binding" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch09s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch09s08.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="pipelines-specialization-constants"></a>9.7. Specialization Constants</h2></div></div></div><p>Specialization constants are a mechanism whereby constants in a SPIR-V
+module <span class="normative">can</span> have their constant value specified at the time the
+<code class="code">VkPipeline</code> is created.
+This allows a SPIR-V module to have constants that <span class="normative">can</span> be modified while
+executing an application that uses the Vulkan API.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Specialization constants are useful to allow a compute shader to have its
+local workgroup size changed at runtime by the user, for example.</p></td></tr></table></div><p>Each instance of the <code class="code">VkPipelineShaderStageCreateInfo</code> structure
+contains a parameter <em class="parameter"><code>pSpecializationInfo</code></em>, which <span class="normative">can</span> be <code class="literal">NULL</code> to
+indicate no specialization constants, or point to a
+<code class="code">VkSpecializationInfo</code> structure.</p><p>The <code class="code">VkSpecializationInfo</code> structure is defined as:</p><p><a id="VkSpecializationInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSpecializationInfo {
+    uint32_t                           mapEntryCount;
+    const VkSpecializationMapEntry*    pMapEntries;
+    size_t                             dataSize;
+    const void*                        pData;
+} VkSpecializationInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>mapEntryCount</code></em> is the number of entries in the <em class="parameter"><code>pMapEntries</code></em>
+    array.
+</li><li class="listitem">
+<em class="parameter"><code>pMapEntries</code></em> is a pointer to an array of
+    <code class="code">VkSpecializationMapEntry</code> which maps constant IDs to offsets in
+    <em class="parameter"><code>pData</code></em>.
+</li><li class="listitem">
+<em class="parameter"><code>dataSize</code></em> is the byte size of the <em class="parameter"><code>pData</code></em> buffer.
+</li><li class="listitem">
+<em class="parameter"><code>pData</code></em> contains the actual constant values to specialize with.
+</li></ul></div><p><em class="parameter"><code>pMapEntries</code></em> points to a structure of type
+<code class="code"><a class="link" href="ch09s07.html#VkSpecializationMapEntry">VkSpecializationMapEntry</a></code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The <em class="parameter"><code>offset</code></em> member of any given element of <em class="parameter"><code>pMapEntries</code></em> <span class="normative">must</span>
+    be less than <em class="parameter"><code>dataSize</code></em>
+</li><li class="listitem">
+For any given element of <em class="parameter"><code>pMapEntries</code></em>, <em class="parameter"><code>size</code></em> <span class="normative">must</span> be less
+    than or equal to <em class="parameter"><code>dataSize</code></em> minus <em class="parameter"><code>offset</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>mapEntryCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pMapEntries</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>mapEntryCount</code></em> valid <code class="code">VkSpecializationMapEntry</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>dataSize</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>pData</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>dataSize</code></em> bytes
+</li></ul></div></div><p>The <code class="code">VkSpecializationMapEntry</code> structure is defined as:</p><p><a id="VkSpecializationMapEntry"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSpecializationMapEntry {
+    uint32_t    constantID;
+    uint32_t    offset;
+    size_t      size;
+} VkSpecializationMapEntry;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>constantID</code></em> is the ID of the specialization constant in SPIR-V.
+</li><li class="listitem">
+<em class="parameter"><code>offset</code></em> is the byte offset of the specialization constant value
+    within the supplied data buffer.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the byte size of the specialization constant value within
+    the supplied data buffer.
+</li></ul></div><p>If a <em class="parameter"><code>constantID</code></em> value is not a specialization constant ID used in the
+shader, that map entry does not affect the behavior of the pipeline.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+For a <em class="parameter"><code>constantID</code></em> specialization constant declared in a shader,
+    <em class="parameter"><code>size</code></em> <span class="normative">must</span> match the byte size of the <em class="parameter"><code>constantID</code></em>.
+    If the specialization constant is of type <span class="strong"><strong><code class="code">boolean</code></strong></span>, <em class="parameter"><code>size</code></em> <span class="normative">must</span>
+    be the byte size of <code class="code">VkBool32</code>
+</li></ul></div></div><p>In human readable SPIR-V:</p><pre class="programlisting">OpDecorate %x SpecId 13 ; decorate .x component of WorkgroupSize with ID 13
+OpDecorate %y SpecId 42 ; decorate .y component of WorkgroupSize with ID 42
+OpDecorate %z SpecId 3  ; decorate .z component of WorkgroupSize with ID 3
+OpDecorate %wgsize BuiltIn WorkgroupSize ; decorate WorkgroupSize onto constant
+%i32 = OpTypeInt 32 0 ; declare an unsigned 32-bit type
+%uvec3 = OpTypeVector %i32 3 ; declare a 3 element vector type of unsigned 32-bit
+%x = OpSpecConstant %i32 1 ; declare the .x component of WorkgroupSize
+%y = OpSpecConstant %i32 1 ; declare the .y component of WorkgroupSize
+%z = OpSpecConstant %i32 1 ; declare the .z component of WorkgroupSize
+%wgsize = OpSpecConstantComposite %uvec3 %x %y %z ; declare WorkgroupSize</pre><p>From the above we have three specialization constants, one for each of the
+x, y &amp; z elements of the WorkgroupSize vector.</p><p>Now to specialize the above via the specialization constants mechanism:</p><pre class="programlisting">const VkSpecializationMapEntry entries[] =
+{
+    {
+        13,                             // constantID
+        0 * sizeof(uint32_t),           // offset
+        sizeof(uint32_t)                // size
+    },
+    {
+        42,                             // constantID
+        1 * sizeof(uint32_t),           // offset
+        sizeof(uint32_t)                // size
+    },
+    {
+        3,                              // constantID
+        2 * sizeof(uint32_t),           // offset
+        sizeof(uint32_t)                // size
+    }
+};
+
+const uint32_t data[] = { 16, 8, 4 }; // our workgroup size is 16x8x4
+
+const VkSpecializationInfo info =
+{
+    3,                                  // mapEntryCount
+    entries,                            // pMapEntries
+    3 * sizeof(uint32_t),               // dataSize
+    data,                               // pData
+};</pre><p>Then when calling <code class="code"><a class="link" href="ch09s01.html#vkCreateComputePipelines">vkCreateComputePipelines</a></code>, and passing the
+<code class="code">VkSpecializationInfo</code> we defined as the <em class="parameter"><code>pSpecializationInfo</code></em>
+parameter of <code class="code"><a class="link" href="ch09s01.html#VkPipelineShaderStageCreateInfo">VkPipelineShaderStageCreateInfo</a></code>, we will create a compute
+pipeline with the runtime specified local workgroup size.</p><p>Another example would be that an application has a SPIR-V module that has
+some platform-dependent constants they wish to use.</p><p>In human readable SPIR-V:</p><pre class="programlisting">OpDecorate %1 SpecId 0  ; decorate our signed 32-bit integer constant
+OpDecorate %2 SpecId 12 ; decorate our 32-bit floating-point constant
+%i32 = OpTypeInt 32 1   ; declare a signed 32-bit type
+%float = OpTypeFloat 32 ; declare a 32-bit floating-point type
+%1 = OpSpecConstant %i32 -1 ; some signed 32-bit integer constant
+%2 = OpSpecConstant %float 0.5 ; some 32-bit floating-point constant</pre><p>From the above we have two specialization constants, one is a signed 32-bit
+integer and the second is a 32-bit floating-point.</p><p>Now to specialize the above via the specialization constants mechanism:</p><pre class="programlisting">struct SpecializationData {
+    int32_t data0;
+    float data1;
+};
+
+const VkSpecializationMapEntry entries[] =
+{
+    {
+        0,                                    // constantID
+        offsetof(SpecializationData, data0),  // offset
+        sizeof(SpecializationData::data0)     // size
+    },
+    {
+        12,                                   // constantID
+        offsetof(SpecializationData, data1),  // offset
+        sizeof(SpecializationData::data1)     // size
+    }
+};
+
+SpecializationData data;
+data.data0 = -42;    // set the data for the 32-bit integer
+data.data1 = 42.0f;  // set the data for the 32-bit floating-point
+
+const VkSpecializationInfo info =
+{
+    2,                                  // mapEntryCount
+    entries,                            // pMapEntries
+    sizeof(data),                       // dataSize
+    &amp;data,                              // pData
+};</pre><p>It is legal for a SPIR-V module with specializations to be compiled into a
+pipeline where no specialization info was provided.
+SPIR-V specialization constants contain default values such that if a
+specialization is not provided, the default value will be used.
+In the examples above, it would be valid for an application to only
+specialize some of the specialization constants within the SPIR-V module,
+and let the other constants use their default values encoded within the
+OpSpecConstant declarations.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s06.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch09.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch09s08.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

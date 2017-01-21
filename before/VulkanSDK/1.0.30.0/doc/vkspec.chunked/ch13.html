@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 13. Resource Descriptors</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="prev" href="ch12.html" title="Chapter 12. Samplers" /><link rel="next" href="ch13s01.html" title="13.1. Descriptor Types" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch12.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch13s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="chapter"><div class="titlepage"><div><div><h1 class="title"><a id="descriptorsets"></a>Chapter 13. Resource Descriptors</h1></div></div></div><p>Shaders access buffer and image resources by using special shader variables
+which are indirectly bound to buffer and image views via the API.
+These variables are organized into sets, where each set of bindings is
+represented by a <span class="emphasis"><em>descriptor set</em></span> object in the API and a descriptor set is
+bound all at once.
+A <span class="emphasis"><em>descriptor</em></span> is an opaque data structure representing a shader resource
+such as a buffer view, image view, sampler, or combined image sampler.
+The content of each set is determined by its <span class="emphasis"><em>descriptor set layout</em></span> and the
+sequence of set layouts that <span class="normative">can</span> be used by resource variables in shaders
+within a pipeline is specified in a <span class="emphasis"><em>pipeline layout</em></span>.</p><p>Each shader <span class="normative">can</span> use up to <em class="parameter"><code>maxBoundDescriptorSets</code></em> (see
+<a class="link" href="ch31s02.html" title="31.2. Limits">Limits</a>) descriptor sets, and each descriptor set <span class="normative">can</span>
+include bindings for descriptors of all descriptor types.
+Each shader resource variable is assigned a tuple of (set number, binding
+number, array element) that defines its location within a descriptor set
+layout.
+In GLSL, the set number and binding number are assigned via layout
+qualifiers, and the array element is implicitly assigned consecutively
+starting with index equal to zero for the first element of an array (and
+array element is zero for non-array variables):</p><p><strong>GLSL example. </strong>
+</p><pre class="programlisting">// Assign set number = M, binding number = N, array element = 0
+layout (set=M, binding=N) uniform sampler2D variableName;
+
+// Assign set number = M, binding number = N for all array elements, and
+// array element = I for the I'th member of the array.
+layout (set=M, binding=N) uniform sampler2D variableNameArray[I];</pre><p>
+</p><p><strong>SPIR-V example. </strong>
+</p><pre class="screen">// Assign set number = M, binding number = N, array element = 0
+               ...
+          %1 = OpExtInstImport "GLSL.std.450"
+               ...
+               OpName %10 "variableName"
+               OpDecorate %10 DescriptorSet M
+               OpDecorate %10 Binding N
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeFloat 32
+          %7 = OpTypeImage %6 2D 0 0 0 1 Unknown
+          %8 = OpTypeSampledImage %7
+          %9 = OpTypePointer UniformConstant %8
+         %10 = OpVariable %9 UniformConstant
+               ...
+
+// Assign set number = M, binding number = N for all array elements, and
+// array element = I for the I'th member of the array.
+               ...
+          %1 = OpExtInstImport "GLSL.std.450"
+               ...
+               OpName %13 "variableNameArray"
+               OpDecorate %13 DescriptorSet M
+               OpDecorate %13 Binding N
+          %2 = OpTypeVoid
+          %3 = OpTypeFunction %2
+          %6 = OpTypeFloat 32
+          %7 = OpTypeImage %6 2D 0 0 0 1 Unknown
+          %8 = OpTypeSampledImage %7
+          %9 = OpTypeInt 32 0
+         %10 = OpConstant %9 I
+         %11 = OpTypeArray %8 %10
+         %12 = OpTypePointer UniformConstant %11
+         %13 = OpVariable %12 UniformConstant
+               ...</pre><p>
+</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch12.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="ch13s01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

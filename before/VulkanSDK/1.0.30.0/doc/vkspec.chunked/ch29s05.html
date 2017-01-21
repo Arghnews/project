@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>29.5. Surface Queries</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch29.html" title="Chapter 29. Window System Integration (WSI)" /><link rel="prev" href="ch29s04.html" title="29.4. Querying for WSI Support" /><link rel="next" href="ch29s06.html" title="29.6. WSI Swapchain" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch29s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch29s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="_surface_queries"></a>29.5. Surface Queries</h2></div></div></div><p>To query the basic capabilities of a surface, needed in order to create a
+swapchain, call:</p><p><a id="vkGetPhysicalDeviceSurfaceCapabilitiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkSurfaceKHR                                surface,
+    VkSurfaceCapabilitiesKHR*                   pSurfaceCapabilities);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device that will be associated with
+    the swapchain to be created, as described for
+    <code class="code"><a class="link" href="ch29s06.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface that will be associated with the swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>pSurfaceCapabilities</code></em> is a pointer to an instance of the
+    <code class="code"><a class="link" href="ch29s05.html#VkSurfaceCapabilitiesKHR">VkSurfaceCapabilitiesKHR</a></code> structure in which the capabilities are
+    returned.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSurfaceCapabilities</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkSurfaceCapabilitiesKHR</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkSurfaceCapabilitiesKHR</code> structure is defined as:</p><p><a id="VkSurfaceCapabilitiesKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSurfaceCapabilitiesKHR {
+    uint32_t                         minImageCount;
+    uint32_t                         maxImageCount;
+    VkExtent2D                       currentExtent;
+    VkExtent2D                       minImageExtent;
+    VkExtent2D                       maxImageExtent;
+    uint32_t                         maxImageArrayLayers;
+    VkSurfaceTransformFlagsKHR       supportedTransforms;
+    VkSurfaceTransformFlagBitsKHR    currentTransform;
+    VkCompositeAlphaFlagsKHR         supportedCompositeAlpha;
+    VkImageUsageFlags                supportedUsageFlags;
+} VkSurfaceCapabilitiesKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>minImageCount</code></em> is the minimum number of images the specified device
+    supports for a swapchain created for the surface.
+</li><li class="listitem">
+<em class="parameter"><code>maxImageCount</code></em> is the maximum number of images the specified device
+    supports for a swapchain created for the surface.
+    A value of 0 means that there is no limit on the number of images,
+    though there <span class="normative">may</span> be limits related to the total amount of memory used
+    by swapchain images.
+</li><li class="listitem">
+<em class="parameter"><code>currentExtent</code></em> is the current width and height of the surface, or
+    the special value <span class="eq">(0xFFFFFFFF, 0xFFFFFFFF)</span> indicating that the
+    surface size will be determined by the extent of a swapchain targeting
+    the surface.
+</li><li class="listitem">
+<em class="parameter"><code>minImageExtent</code></em> contains the smallest valid swapchain extent for
+    the surface on the specified device.
+</li><li class="listitem">
+<em class="parameter"><code>maxImageExtent</code></em> contains the largest valid swapchain extent for the
+    surface on the specified device.
+</li><li class="listitem">
+<em class="parameter"><code>maxImageArrayLayers</code></em> is the maximum number of layers swapchain
+    images <span class="normative">can</span> have for a swapchain created for this device and surface.
+</li><li class="listitem">
+<em class="parameter"><code>supportedTransforms</code></em> is a bitmask of
+    <code class="code"><a class="link" href="ch29s05.html#VkSurfaceTransformFlagBitsKHR">VkSurfaceTransformFlagBitsKHR</a></code>, describing the presentation
+    transforms supported for the surface on the specified device.
+</li><li class="listitem">
+<em class="parameter"><code>currentTransform</code></em> is a bitmask of
+    <code class="code"><a class="link" href="ch29s05.html#VkSurfaceTransformFlagBitsKHR">VkSurfaceTransformFlagBitsKHR</a></code>, describing the surface’s current
+    transform relative to the presentation engine’s natural orientation.
+</li><li class="listitem">
+<em class="parameter"><code>supportedCompositeAlpha</code></em> is a bitmask of
+    <code class="code"><a class="link" href="ch29s05.html#VkCompositeAlphaFlagBitsKHR">VkCompositeAlphaFlagBitsKHR</a></code>, representing the alpha compositing
+    modes supported by the presentation engine for the surface on the
+    specified device.
+    Opaque composition <span class="normative">can</span> be achieved in any alpha compositing mode by
+    either using a swapchain image format that has no alpha component, or by
+    ensuring that all pixels in the swapchain images have an alpha value of
+    1.0.
+</li><li class="listitem">
+<em class="parameter"><code>supportedUsageFlags</code></em> is a bitmask of <code class="code"><a class="link" href="ch11s03.html#VkImageUsageFlagBits">VkImageUsageFlagBits</a></code>
+    representing the ways the application <span class="normative">can</span> use the presentable images of
+    a swapchain created for the surface on the specified device.
+    <code class="code">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> <span class="normative">must</span> be included in the set
+    but implementations <span class="normative">may</span> support additional usages.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Formulas such as <span class="eq">min(N, <em class="parameter"><code>maxImageCount</code></em>)</span> are not correct, since
+<em class="parameter"><code>maxImageCount</code></em> <span class="normative">may</span> be zero.</p></td></tr></table></div><p>The <em class="parameter"><code>supportedTransforms</code></em> and <em class="parameter"><code>currentTransform</code></em> members are of type
+<code class="code">VkSurfaceTransformFlagBitsKHR</code>, which contains the following values:</p><p><a id="VkSurfaceTransformFlagBitsKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkSurfaceTransformFlagBitsKHR {
+    VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR = 0x00000001,
+    VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR = 0x00000002,
+    VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR = 0x00000004,
+    VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR = 0x00000008,
+    VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR = 0x00000010,
+    VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR = 0x00000020,
+    VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR = 0x00000040,
+    VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR = 0x00000080,
+    VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR = 0x00000100,
+} VkSurfaceTransformFlagBitsKHR;</pre><p>
+</p><p>These values are described as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR</code>: The image content is
+    presented without being transformed.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR</code>: The image content is
+    rotated 90 degrees clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR</code>: The image content is
+    rotated 180 degrees clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR</code>: The image content is
+    rotated 270 degrees clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_BIT_KHR</code>: The image content
+    is mirrored horizontally.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90_BIT_KHR</code>: The
+    image content is mirrored horizontally, then rotated 90 degrees
+    clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_180_BIT_KHR</code>: The
+    image content is mirrored horizontally, then rotated 180 degrees
+    clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270_BIT_KHR</code>: The
+    image content is mirrored horizontally, then rotated 270 degrees
+    clockwise.
+</li><li class="listitem">
+<code class="code">VK_SURFACE_TRANSFORM_INHERIT_BIT_KHR</code>: The presentation transform
+    is not specified, and is instead determined by platform-specific
+    considerations and mechanisms outside Vulkan.
+</li></ul></div><p>The <em class="parameter"><code>supportedCompositeAlpha</code></em> member is of type
+<code class="code">VkCompositeAlphaFlagBitsKHR</code>, which contains the following values:</p><p><a id="VkCompositeAlphaFlagBitsKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkCompositeAlphaFlagBitsKHR {
+    VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR = 0x00000001,
+    VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR = 0x00000002,
+    VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR = 0x00000004,
+    VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR = 0x00000008,
+} VkCompositeAlphaFlagBitsKHR;</pre><p>
+</p><p>These values are described as follows:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR</code>: The alpha channel, if it
+    exists, of the images is ignored in the compositing process.
+    Instead, the image is treated as if it has a constant alpha of 1.0.
+</li><li class="listitem">
+<code class="code">VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR</code>: The alpha channel, if
+    it exists, of the images is respected in the compositing process.
+    The non-alpha channels of the image are expected to already be
+    multiplied by the alpha channel by the application.
+</li><li class="listitem">
+<code class="code">VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR</code>: The alpha channel, if
+    it exists, of the images is respected in the compositing process.
+    The non-alpha channels of the image are not expected to already be
+    multiplied by the alpha channel by the application; instead, the
+    compositor will multiply the non-alpha channels of the image by the
+    alpha channel during compositing.
+</li><li class="listitem">
+<code class="code">VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR</code>: The way in which the
+    presentation engine treats the alpha channel in the images is unknown to
+    the Vulkan API.
+    Instead, the application is responsible for setting the composite alpha
+    blending mode using native window system commands.
+    If the application does not set the blending mode using native window
+    system commands, then a platform-specific default will be used.
+</li></ul></div><p>To query the supported swapchain format-color space pairs for a surface,
+call:</p><p><a id="vkGetPhysicalDeviceSurfaceFormatsKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceSurfaceFormatsKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkSurfaceKHR                                surface,
+    uint32_t*                                   pSurfaceFormatCount,
+    VkSurfaceFormatKHR*                         pSurfaceFormats);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device that will be associated with
+    the swapchain to be created, as described for
+    <code class="code"><a class="link" href="ch29s06.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface that will be associated with the swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>pSurfaceFormatCount</code></em> is a pointer to an integer related to the
+    number of format pairs available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pSurfaceFormats</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code">VkSurfaceFormatKHR</code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pSurfaceFormats</code></em> is <code class="literal">NULL</code>, then the number of format pairs
+supported for the given <em class="parameter"><code>surface</code></em> is returned in
+<em class="parameter"><code>pSurfaceFormatCount</code></em>.
+Otherwise, <em class="parameter"><code>pSurfaceFormatCount</code></em> <span class="normative">must</span> point to a variable set by the
+user to the number of elements in the <em class="parameter"><code>pSurfaceFormats</code></em> array, and on
+return the variable is overwritten with the number of structures actually
+written to <em class="parameter"><code>pSurfaceFormats</code></em>.
+If the value of <em class="parameter"><code>pSurfaceFormatCount</code></em> is less than the number of format
+pairs supported, at most <em class="parameter"><code>pSurfaceFormatCount</code></em> structures will be
+written.
+If <em class="parameter"><code>pSurfaceFormatCount</code></em> is smaller than the number of format pairs
+supported for the given <em class="parameter"><code>surface</code></em>, <code class="code">VK_INCOMPLETE</code> will be returned
+instead of <code class="code">VK_SUCCESS</code> to indicate that not all the available values
+were returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pSurfaceFormatCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pSurfaceFormatCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pSurfaceFormats</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pSurfaceFormats</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pSurfaceFormatCount</code></em> <code class="code">VkSurfaceFormatKHR</code> structures
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkSurfaceFormatKHR</code> structure is defined as:</p><p><a id="VkSurfaceFormatKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkSurfaceFormatKHR {
+    VkFormat           format;
+    VkColorSpaceKHR    colorSpace;
+} VkSurfaceFormatKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>format</code></em> is a <code class="code">VkFormat</code> that is compatible with the specified
+    surface.
+</li><li class="listitem">
+<em class="parameter"><code>colorSpace</code></em> is a presentation <code class="code">VkColorSpaceKHR</code> that is
+    compatible with the surface.
+</li></ul></div><p>While the <em class="parameter"><code>format</code></em> of a presentable image refers to the encoding of each
+pixel, the <em class="parameter"><code>colorSpace</code></em> determines how the presentation engine
+interprets the pixel values.
+A color space in this document refers to a specific combination of color
+model (i.e. RGB, YUV, HSL etc.), the actual color space (defined by the
+chromaticities of its primaries and a white point in CIE Lab), and a
+transfer function that is applied before storing or transmitting color data
+in the given color space.</p><p>The <code class="code">VkColorSpaceKHR</code> is defined as follows:</p><p><a id="VkColorSpaceKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkColorSpaceKHR {
+    VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0,
+} VkColorSpaceKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_COLOR_SPACE_SRGB_NONLINEAR_KHR</code>: The presentation engine
+    supports the sRGB color space.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>If <em class="parameter"><code>pSurfaceFormats</code></em> includes just one entry, whose value for
+<em class="parameter"><code>format</code></em> is <code class="code">VK_FORMAT_UNDEFINED</code>, <em class="parameter"><code>surface</code></em> has no preferred
+format.
+In this case, the application <span class="normative">can</span> use any valid <code class="code">VkFormat</code> value.</p></td></tr></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>In the initial release of the <code class="literal">VK_KHR_surface</code> and <code class="literal">VK_KHR_swapchain</code>
+extensions, the token <code class="code">VK_COLORSPACE_SRGB_NONLINEAR_KHR</code> was used.
+Starting in the May 13, 2016 updates to the extension branches, matching
+release 1.0.13 of the core API specification,
+<code class="code">VK_COLOR_SPACE_SRGB_NONLINEAR_KHR</code> is used instead for consistency with
+Vulkan naming rules.
+The older enum is still available for backwards compatibility.</p></td></tr></table></div><p>To query the supported presentation modes for a surface, call:</p><p><a id="vkGetPhysicalDeviceSurfacePresentModesKHR"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkGetPhysicalDeviceSurfacePresentModesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    VkSurfaceKHR                                surface,
+    uint32_t*                                   pPresentModeCount,
+    VkPresentModeKHR*                           pPresentModes);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> is the physical device that will be associated with
+    the swapchain to be created, as described for
+    <code class="code"><a class="link" href="ch29s06.html#vkCreateSwapchainKHR">vkCreateSwapchainKHR</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> is the surface that will be associated with the swapchain.
+</li><li class="listitem">
+<em class="parameter"><code>pPresentModeCount</code></em> is a pointer to an integer related to the number
+    of presentation modes available or queried, as described below.
+</li><li class="listitem">
+<em class="parameter"><code>pPresentModes</code></em> is either <code class="literal">NULL</code> or a pointer to an array of
+    <code class="code"><a class="link" href="ch29s05.html#VkPresentModeKHR">VkPresentModeKHR</a></code> structures.
+</li></ul></div><p>If <em class="parameter"><code>pPresentModes</code></em> is <code class="literal">NULL</code>, then the number of presentation modes
+supported for the given <em class="parameter"><code>surface</code></em> is returned in
+<em class="parameter"><code>pPresentModeCount</code></em>.
+Otherwise, <em class="parameter"><code>pPresentModeCount</code></em> <span class="normative">must</span> point to a variable set by the user
+to the number of elements in the <em class="parameter"><code>pPresentModes</code></em> array, and on return
+the variable is overwritten with the number of values actually written to
+<em class="parameter"><code>pPresentModes</code></em>.
+If the value of <em class="parameter"><code>pPresentModeCount</code></em> is less than the number of
+presentation modes supported, at most <em class="parameter"><code>pPresentModeCount</code></em> values will be
+written.
+If <em class="parameter"><code>pPresentModeCount</code></em> is smaller than the number of presentation modes
+supported for the given <em class="parameter"><code>surface</code></em>, <code class="code">VK_INCOMPLETE</code> will be returned
+instead of <code class="code">VK_SUCCESS</code> to indicate that not all the available values
+were returned.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>surface</code></em> <span class="normative">must</span> be a valid <code class="code">VkSurfaceKHR</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pPresentModeCount</code></em> <span class="normative">must</span> be a pointer to a <code class="code">uint32_t</code> value
+</li><li class="listitem">
+If the value referenced by <em class="parameter"><code>pPresentModeCount</code></em> is not <code class="literal">0</code>, and <em class="parameter"><code>pPresentModes</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pPresentModes</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>pPresentModeCount</code></em> <code class="code"><a class="link" href="ch29s05.html#VkPresentModeKHR">VkPresentModeKHR</a></code> values
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li><li class="listitem">
+<code class="code">VK_INCOMPLETE</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_SURFACE_LOST_KHR</code>
+</li></ul></div></dd></dl></div></div><p>The definition of <code class="code">VkPresentModeKHR</code> is:</p><p><a id="VkPresentModeKHR"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkPresentModeKHR {
+    VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
+    VK_PRESENT_MODE_MAILBOX_KHR = 1,
+    VK_PRESENT_MODE_FIFO_KHR = 2,
+    VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3,
+} VkPresentModeKHR;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_PRESENT_MODE_IMMEDIATE_KHR</code>: The presentation engine does not
+    wait for a vertical blanking period to update the current image, meaning
+    this mode <span class="normative">may</span> result in visible tearing.
+    No internal queuing of presentation requests is needed, as the requests
+    are applied immediately.
+</li><li class="listitem">
+<code class="code">VK_PRESENT_MODE_MAILBOX_KHR</code>: The presentation engine waits for the
+    next vertical blanking period to update the current image.
+    Tearing <span class="normative">cannot</span> be observed.
+    An internal single-entry queue is used to hold pending presentation
+    requests.
+    If the queue is full when a new presentation request is received, the
+    new request replaces the existing entry, and any images associated with
+    the prior entry become available for re-use by the application.
+    One request is removed from the queue and processed during each vertical
+    blanking period in which the queue is non-empty.
+</li><li class="listitem">
+<code class="code">VK_PRESENT_MODE_FIFO_KHR</code>: The presentation engine waits for the
+    next vertical blanking period to update the current image.
+    Tearing <span class="normative">cannot</span> be observed.
+    An internal queue is used to hold pending presentation requests.
+    New requests are appended to the end of the queue, and one request is
+    removed from the beginning of the queue and processed during each
+    vertical blanking period in which the queue is non-empty.
+    This is the only value of <em class="parameter"><code>presentMode</code></em> that is <span class="normative">required</span> to be
+    supported.
+</li><li class="listitem">
+<code class="code">VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>: The presentation engine
+    generally waits for the next vertical blanking period to update the
+    current image.
+    If a vertical blanking period has already passed since the last update
+    of the current image then the presentation engine does not wait for
+    another vertical blanking period for the update, meaning this mode <span class="normative">may</span>
+    result in visible tearing in this case.
+    This mode is useful for reducing visual stutter with an application that
+    will mostly present a new image before the next vertical blanking
+    period, but may occasionally be late, and present a new image just after
+    the next vertical blanking period.
+    An internal queue is used to hold pending presentation requests.
+    New requests are appended to the end of the queue, and one request is
+    removed from the beginning of the queue and processed during or after
+    each vertical blanking period in which the queue is non-empty.
+</li></ul></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>For reference, the mode indicated by <code class="code">VK_PRESENT_MODE_FIFO_KHR</code> is
+equivalent to the behavior of {wgl|glX|egl}SwapBuffers with a swap interval
+of 1, while the mode indicated by <code class="code">VK_PRESENT_MODE_FIFO_RELAXED_KHR</code> is
+equivalent to the behavior of {wgl|glX}SwapBuffers with a swap interval of
+-1 (from the {WGL|GLX}_EXT_swap_control_tear extensions).</p></td></tr></table></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch29s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch29.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch29s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

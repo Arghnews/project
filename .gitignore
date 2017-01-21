@@ -1,0 +1,6 @@
+glm/
+neural_notes.pdf
+glfw-3.2.1
+*.swp
+exec
+*.o

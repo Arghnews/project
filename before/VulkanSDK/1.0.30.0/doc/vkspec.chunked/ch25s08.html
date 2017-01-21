@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>25.8. Depth Bounds Test</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch25.html" title="Chapter 25. Fragment Operations" /><link rel="prev" href="ch25s07.html" title="25.7. Depth and Stencil Operations" /><link rel="next" href="ch25s09.html" title="25.9. Stencil Test" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch25s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch25s09.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="fragops-dbt"></a>25.8. Depth Bounds Test</h2></div></div></div><p>The depth bounds test conditionally disables coverage of a sample based on
+the outcome of a comparison between the value <span class="eq">z<sub>a</sub></span> in the depth
+attachment at location <span class="eq">(x<sub>f</sub>,y<sub>f</sub>)</span> (for the appropriate sample) and a
+range of values.
+The test is enabled or disabled by the <em class="parameter"><code>depthBoundsTestEnable</code></em> member of
+<code class="code"><a class="link" href="ch25s07.html#VkPipelineDepthStencilStateCreateInfo">VkPipelineDepthStencilStateCreateInfo</a></code>: If the pipeline state object is
+created without the <code class="code">VK_DYNAMIC_STATE_DEPTH_BOUNDS</code> dynamic state
+enabled then the range of values used in the depth bounds test are defined
+by the <em class="parameter"><code>minDepthBounds</code></em> and <em class="parameter"><code>maxDepthBounds</code></em> members of the
+<code class="code"><a class="link" href="ch25s07.html#VkPipelineDepthStencilStateCreateInfo">VkPipelineDepthStencilStateCreateInfo</a></code> structure.
+Otherwise, to dynamically set the depth bounds range values call:</p><p><a id="vkCmdSetDepthBounds"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdSetDepthBounds(
+    VkCommandBuffer                             commandBuffer,
+    float                                       minDepthBounds,
+    float                                       maxDepthBounds);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is the command buffer into which the command will be
+    recorded.
+</li><li class="listitem">
+<em class="parameter"><code>minDepthBounds</code></em> is the lower bound of the range of depth values
+    used in the depth bounds test.
+</li><li class="listitem">
+<em class="parameter"><code>maxDepthBounds</code></em> is the upper bound of the range.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The currently bound graphics pipeline <span class="normative">must</span> have been created with the
+    <code class="code">VK_DYNAMIC_STATE_DEPTH_BOUNDS</code> dynamic state enabled
+</li><li class="listitem">
+<em class="parameter"><code>minDepthBounds</code></em> <span class="normative">must</span> be between <code class="literal">0.0</code> and <code class="literal">1.0</code>, inclusive
+</li><li class="listitem">
+<em class="parameter"><code>maxDepthBounds</code></em> <span class="normative">must</span> be between <code class="literal">0.0</code> and <code class="literal">1.0</code>, inclusive
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support graphics operations
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary
+Secondary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>GRAPHICS</p></td></tr></tbody></table></div></div><p>If <span class="eq"><em class="parameter"><code>minDepthBounds</code></em> ≤ z<sub>a</sub> ≤ <em class="parameter"><code>maxDepthBounds</code></em>}</span>, then
+the depth bounds test passes.
+Otherwise, the test fails and the sample’s coverage bit is cleared in the
+fragment.
+If there is no depth framebuffer attachment or if the depth bounds test is
+disabled, it is as if the depth bounds test always passes.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch25s07.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch25.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch25s09.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

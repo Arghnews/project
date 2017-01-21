@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5.6. Secondary Command Buffer Execution</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch05.html" title="Chapter 5. Command Buffers" /><link rel="prev" href="ch05s05.html" title="5.5. Queue Forward Progress" /><link rel="next" href="ch06.html" title="Chapter 6. Synchronization and Cache Control" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch05s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="commandbuffers-secondary"></a>5.6. Secondary Command Buffer Execution</h2></div></div></div><p>A secondary command buffer <span class="normative">must</span> not be directly submitted to a queue.
+Instead, secondary command buffers are recorded to execute as part of a
+primary command buffer with the command:</p><p><a id="vkCmdExecuteCommands"></a><strong> </strong>
+</p><pre class="programlisting">void vkCmdExecuteCommands(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    commandBufferCount,
+    const VkCommandBuffer*                      pCommandBuffers);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> is a handle to a primary command buffer that the
+    secondary command buffers are executed in.
+</li><li class="listitem">
+<em class="parameter"><code>commandBufferCount</code></em> is the length of the <em class="parameter"><code>pCommandBuffers</code></em>
+    array.
+</li><li class="listitem">
+<em class="parameter"><code>pCommandBuffers</code></em> is an array of secondary command buffer handles,
+    which are recorded to execute in the primary command buffer in the order
+    they are listed in the array.
+</li></ul></div><p>Once <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> has been called, any prior executions of the
+secondary command buffers specified by <em class="parameter"><code>pCommandBuffers</code></em> in any other
+primary command buffer become invalidated, unless those secondary command
+buffers were recorded with
+<code class="code">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> have been allocated with a <em class="parameter"><code>level</code></em> of
+    <code class="code">VK_COMMAND_BUFFER_LEVEL_PRIMARY</code>
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been allocated
+    with a <em class="parameter"><code>level</code></em> of <code class="code">VK_COMMAND_BUFFER_LEVEL_SECONDARY</code>
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> not be already pending
+    execution in <em class="parameter"><code>commandBuffer</code></em>, or appear twice in
+    <em class="parameter"><code>pCommandBuffers</code></em>, unless it was recorded with the
+    <code class="code">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code> flag
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> not be already pending
+    execution in any other <code class="code">VkCommandBuffer</code>, unless it was recorded
+    with the <code class="code">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code> flag
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> be in the executable
+    state
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been allocated
+    from a <code class="code">VkCommandPool</code> that was created for the same queue family as
+    the <code class="code">VkCommandPool</code> from which <em class="parameter"><code>commandBuffer</code></em> was allocated
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is being called within a render pass
+    instance, that render pass instance <span class="normative">must</span> have been begun with the
+    <em class="parameter"><code>contents</code></em> parameter of <span class="strong"><strong><code class="code">vkCmdBeginRenderPass</code></strong></span> set to
+    <code class="code">VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</code>
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is being called within a render pass
+    instance, any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been
+    recorded with the <code class="code">VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</code>
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is being called within a render pass
+    instance, any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been
+    recorded with <code class="code">VkCommandBufferInheritanceInfo</code>::<em class="parameter"><code>subpass</code></em> set to
+    the index of the subpass which the given command buffer will be executed
+    in
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is being called within a render pass
+    instance, any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been
+    recorded with a render pass that is compatible with the current render
+    pass - see <a class="xref" href="ch07s02.html" title="7.2. Render Pass Compatibility">Section 7.2, “Render Pass Compatibility”</a>
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is being called within a render pass
+    instance, and any given element of <em class="parameter"><code>pCommandBuffers</code></em> was recorded
+    with <code class="code">VkCommandBufferInheritanceInfo</code>::<em class="parameter"><code>framebuffer</code></em> not equal
+    to <code class="code"><a class="link" href="apds03.html#VK_NULL_HANDLE">VK_NULL_HANDLE</a></code>, that <code class="code">VkFramebuffer</code> <span class="normative">must</span> match the
+    <code class="code">VkFramebuffer</code> used in the current render pass instance
+</li><li class="listitem">
+If <span class="strong"><strong><code class="code">vkCmdExecuteCommands</code></strong></span> is not being called within a render pass
+    instance, any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> not have been
+    recorded with the <code class="code">VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</code>
+</li><li class="listitem">
+If the <a class="link" href="ch31s01.html#features-features-inheritedQueries">inherited queries</a> feature
+    is not enabled, <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> not have any queries
+    <a class="link" href="ch16s02.html#queries-operation-active">active</a>
+</li><li class="listitem">
+If <em class="parameter"><code>commandBuffer</code></em> has a <code class="code">VK_QUERY_TYPE_OCCLUSION</code> query
+    <a class="link" href="ch16s02.html#queries-operation-active">active</a>, then each element of
+    <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been recorded with
+    <code class="code">VkCommandBufferInheritanceInfo</code>::<em class="parameter"><code>occlusionQueryEnable</code></em> set to
+    <code class="code">VK_TRUE</code>
+</li><li class="listitem">
+If <em class="parameter"><code>commandBuffer</code></em> has a <code class="code">VK_QUERY_TYPE_OCCLUSION</code> query
+    <a class="link" href="ch16s02.html#queries-operation-active">active</a>, then each element of
+    <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been recorded with
+    <code class="code">VkCommandBufferInheritanceInfo</code>::<em class="parameter"><code>queryFlags</code></em> having all bits
+    set that are set for the query
+</li><li class="listitem">
+If <em class="parameter"><code>commandBuffer</code></em> has a <code class="code">VK_QUERY_TYPE_PIPELINE_STATISTICS</code>
+    query <a class="link" href="ch16s02.html#queries-operation-active">active</a>, then each element of
+    <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been recorded with
+    <code class="code">VkCommandBufferInheritanceInfo</code>::<em class="parameter"><code>pipelineStatistics</code></em> having
+    all bits set that are set in the <code class="code">VkQueryPool</code> the query uses
+</li><li class="listitem">
+Any given element of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> not begin any query
+    types that are <a class="link" href="ch16s02.html#queries-operation-active">active</a> in
+    <em class="parameter"><code>commandBuffer</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a valid <code class="code">VkCommandBuffer</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>commandBufferCount</code></em> valid <code class="code">VkCommandBuffer</code> handles
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be in the recording state
+</li><li class="listitem">
+The <code class="code">VkCommandPool</code> that <em class="parameter"><code>commandBuffer</code></em> was allocated from <span class="normative">must</span> support transfer, graphics, or compute operations
+</li><li class="listitem">
+<em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be a primary <code class="code">VkCommandBuffer</code>
+</li><li class="listitem">
+<em class="parameter"><code>commandBufferCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li><li class="listitem">
+Both of <em class="parameter"><code>commandBuffer</code></em>, and the elements of <em class="parameter"><code>pCommandBuffers</code></em> <span class="normative">must</span> have been created, allocated, or retrieved from the same <code class="code">VkDevice</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>commandBuffer</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Command Properties</strong></p></div></div></div><div class="informaltable"><table class="informaltable" cellpadding="4px" style="border-collapse: collapse;border-top: 3px solid #527bbd; border-bottom: 3px solid #527bbd; border-left: 3px solid #527bbd; border-right: 3px solid #527bbd; " width="100%"><colgroup><col class="col_1" /><col class="col_2" /><col class="col_3" /></colgroup><thead><tr><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Command Buffer Levels</th><th style="border-right: 1px solid #527bbd; border-bottom: 1px solid #527bbd; " align="left" valign="top">Render Pass Scope</th><th style="border-bottom: 1px solid #527bbd; " align="left" valign="top">Supported Queue Types</th></tr></thead><tbody><tr><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Primary</p></td><td style="border-right: 1px solid #527bbd; " align="left" valign="top"><p>Both</p></td><td style="" align="left" valign="top"><p>TRANSFER
+GRAPHICS
+COMPUTE</p></td></tr></tbody></table></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s05.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch05.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>14.3. Fragment Output Interface</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch14.html" title="Chapter 14. Shader Interfaces" /><link rel="prev" href="ch14s02.html" title="14.2. Vertex Input Interface" /><link rel="next" href="ch14s04.html" title="14.4. Fragment Input Attachment Interface" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch14s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch14s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="interfaces-fragmentoutput"></a>14.3. Fragment Output Interface</h2></div></div></div><p>When the fragment stage is present in a pipeline, the fragment shader
+outputs form an interface with the output attachments of the current
+subpass.
+The fragment shader output variables are matched by the <span class="strong"><strong><code class="code">Location</code></strong></span> and
+<span class="strong"><strong><code class="code">Component</code></strong></span> decorations to the color attachments specified in the
+<em class="parameter"><code>pColorAttachments</code></em> array of the <code class="code"><a class="link" href="ch07s01.html#VkSubpassDescription">VkSubpassDescription</a></code> structure
+that describes the subpass that the fragment shader is executed in.</p><p>The fragment shader output variables listed by <span class="strong"><strong><code class="code">OpEntryPoint</code></strong></span> with the
+<span class="strong"><strong><code class="code">Output</code></strong></span> storage class form the <span class="emphasis"><em>fragment output interface</em></span>.
+These variables <span class="normative">must</span> be identified with a <span class="strong"><strong><code class="code">Location</code></strong></span> decoration.
+They <span class="normative">can</span> also be identified with a <span class="strong"><strong><code class="code">Component</code></strong></span> decoration and/or an
+<span class="strong"><strong><code class="code">Index</code></strong></span> decoration.
+For the purposes of interface matching: variables declared without a
+<span class="strong"><strong><code class="code">Component</code></strong></span> decoration are considered to have a <span class="strong"><strong><code class="code">Component</code></strong></span> decoration
+of zero, and variables declared without an <span class="strong"><strong><code class="code">Index</code></strong></span> decoration are
+considered to have an <span class="strong"><strong><code class="code">Index</code></strong></span> decoration of zero.</p><p>A fragment shader output variable identified with a <span class="strong"><strong><code class="code">Location</code></strong></span> decoration
+of <span class="emphasis"><em>i</em></span> is directed to the color attachment indicated by
+<em class="parameter"><code>pColorAttachments</code></em>[<span class="emphasis"><em>i</em></span>], after passing through the blending unit as
+described in <a class="xref" href="ch26s01.html" title="26.1. Blending">Section 26.1, “Blending”</a>, if enabled.
+Locations are consumed as described in
+<a class="link" href="ch14s01.html#interfaces-iointerfaces-locations" title="14.1.4. Location Assignment">Location Assignment</a>.
+The number of available fragment output locations is given by the
+<em class="parameter"><code>maxFragmentOutputAttachments</code></em> member of the
+<code class="code">VkPhysicalDeviceLimits</code> structure.</p><p>Components of the output variables are assigned as described in
+<a class="link" href="ch14s01.html#interfaces-iointerfaces-components" title="14.1.5. Component Assignment">Component Assignment</a>.
+Output components identified as 0, 1, 2, and 3 will be directed to the R, G,
+B, and A inputs to the blending unit, respectively, or to the output
+attachment if blending is disabled.
+If two variables are placed within the same location, they <span class="normative">must</span> have the
+same underlying type (floating-point or integer).
+The input to blending or color attachment writes is undefined for components
+which do not correspond to a fragment shader output.</p><p>Fragment outputs identified with an <span class="strong"><strong><code class="code">Index</code></strong></span> of zero are directed to the
+first input of the blending unit associated with the corresponding
+<span class="strong"><strong><code class="code">Location</code></strong></span>.
+Outputs identified with an <span class="strong"><strong><code class="code">Index</code></strong></span> of one are directed to the second
+input of the corresponding blending unit.</p><p>No <span class="emphasis"><em>component aliasing</em></span> of output variables is allowed, that is there <span class="normative">must</span>
+not be two output variables which have the same location, component, and
+index, either explicitly declared or implied.</p><p>Output values written by a fragment shader <span class="normative">must</span> be declared with either
+<span class="strong"><strong><code class="code">OpTypeFloat</code></strong></span> or <span class="strong"><strong><code class="code">OpTypeInt</code></strong></span>, and a Width of 32.
+Composites of these types are also permitted.
+If the color attachment has a signed or unsigned normalized fixed-point
+format, color values are assumed to be floating-point and are converted to
+fixed-point as described in <a class="xref" href="ch02s08.html#fundamentals-fixedfpconv" title="2.8.1. Conversion from Normalized Fixed-Point to Floating-Point">Section 2.8.1, “Conversion from Normalized Fixed-Point to Floating-Point”</a>; otherwise no type
+conversion is applied.
+If the type of the values written by the fragment shader do not match the
+format of the corresponding color attachment, the result is undefined for
+those components.</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch14s02.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch14.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch14s04.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

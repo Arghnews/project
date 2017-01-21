@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>10.1. Host Memory</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch10.html" title="Chapter 10. Memory Allocation" /><link rel="prev" href="ch10.html" title="Chapter 10. Memory Allocation" /><link rel="next" href="ch10s02.html" title="10.2. Device Memory" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch10.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch10s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="memory-host"></a>10.1. Host Memory</h2></div></div></div><p>Host memory is memory needed by the Vulkan implementation for
+non-device-visible storage.
+This storage <span class="normative">may</span> be used for e.g. internal software structures.</p><p><a id="memory-allocation"></a>Vulkan provides applications the opportunity to perform host memory
+allocations on behalf of the Vulkan implementation.
+If this feature is not used, the implementation will perform its own memory
+allocations.
+Since most memory allocations are off the critical path, this is not meant
+as a performance feature.
+Rather, this <span class="normative">can</span> be useful for certain embedded systems, for debugging
+purposes (e.g. putting a guard page after all host allocations), or for
+memory allocation logging.</p><p>Allocators are provided by the application as a pointer to a
+<code class="code">VkAllocationCallbacks</code> structure:</p><p><a id="VkAllocationCallbacks"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkAllocationCallbacks {
+    void*                                   pUserData;
+    PFN_vkAllocationFunction                pfnAllocation;
+    PFN_vkReallocationFunction              pfnReallocation;
+    PFN_vkFreeFunction                      pfnFree;
+    PFN_vkInternalAllocationNotification    pfnInternalAllocation;
+    PFN_vkInternalFreeNotification          pfnInternalFree;
+} VkAllocationCallbacks;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is a value to be interpreted by the implementation of
+    the callbacks.
+    When any of the callbacks in <code class="code">VkAllocationCallbacks</code> are called, the
+    Vulkan implementation will pass this value as the first parameter to the
+    callback.
+    This value <span class="normative">can</span> vary each time an allocator is passed into a command,
+    even when the same object takes an allocator in multiple commands.
+</li><li class="listitem">
+<em class="parameter"><code>pfnAllocation</code></em> is a pointer to an application-defined memory
+    allocation function of type <code class="code"><a class="link" href="ch10s01.html#PFN_vkAllocationFunction">PFN_vkAllocationFunction</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>pfnReallocation</code></em> is a pointer to an application-defined memory
+    reallocation function of type <code class="code"><a class="link" href="ch10s01.html#PFN_vkReallocationFunction">PFN_vkReallocationFunction</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>pfnFree</code></em> is a pointer to an application-defined memory free
+    function of type <code class="code"><a class="link" href="ch10s01.html#PFN_vkFreeFunction">PFN_vkFreeFunction</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>pfnInternalAllocation</code></em> is a pointer to an application-defined
+    function that is called by the implementation when the implementation
+    makes internal allocations, and it is of type
+    <code class="code"><a class="link" href="ch10s01.html#PFN_vkInternalAllocationNotification">PFN_vkInternalAllocationNotification</a></code>.
+</li><li class="listitem">
+<em class="parameter"><code>pfnInternalFree</code></em> is a pointer to an application-defined function
+    that is called by the implementation when the implementation frees
+    internal allocations, and it is of type
+    <code class="code"><a class="link" href="ch10s01.html#PFN_vkInternalFreeNotification">PFN_vkInternalFreeNotification</a></code>.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pfnAllocation</code></em> <span class="normative">must</span> be a pointer to a valid user-defined
+    <code class="code"><a class="link" href="ch10s01.html#PFN_vkAllocationFunction">PFN_vkAllocationFunction</a></code>
+</li><li class="listitem">
+<em class="parameter"><code>pfnReallocation</code></em> <span class="normative">must</span> be a pointer to a valid user-defined
+    <code class="code"><a class="link" href="ch10s01.html#PFN_vkReallocationFunction">PFN_vkReallocationFunction</a></code>
+</li><li class="listitem">
+<em class="parameter"><code>pfnFree</code></em> <span class="normative">must</span> be a pointer to a valid user-defined
+    <code class="code"><a class="link" href="ch10s01.html#PFN_vkFreeFunction">PFN_vkFreeFunction</a></code>
+</li><li class="listitem">
+If either of <em class="parameter"><code>pfnInternalAllocation</code></em> or <em class="parameter"><code>pfnInternalFree</code></em> is not
+    <code class="literal">NULL</code>, both <span class="normative">must</span> be valid callbacks
+</li></ul></div></div><p>The type of <em class="parameter"><code>pfnAllocation</code></em> is:</p><p><a id="PFN_vkAllocationFunction"></a><strong> </strong>
+</p><pre class="programlisting">typedef void* (VKAPI_PTR *PFN_vkAllocationFunction)(
+    void*                                       pUserData,
+    size_t                                      size,
+    size_t                                      alignment,
+    VkSystemAllocationScope                     allocationScope);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is the value specified for
+    <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>::<em class="parameter"><code>pUserData</code></em> in the allocator specified
+    by the application.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the size in bytes of the requested allocation.
+</li><li class="listitem">
+<em class="parameter"><code>alignment</code></em> is the requested alignment of the allocation in bytes
+    and <span class="normative">must</span> be a power of two.
+</li><li class="listitem">
+<em class="parameter"><code>allocationScope</code></em> is a <code class="code"><a class="link" href="ch10s01.html#VkSystemAllocationScope">VkSystemAllocationScope</a></code> value
+    specifying the allocation scope of the lifetime of the allocation, as
+    described <a class="link" href="ch10s01.html#memory-host-allocation-scope">here</a>.
+</li></ul></div><p><a id="vkAllocationFunction_return_rules"></a>If <em class="parameter"><code>pfnAllocation</code></em> is unable to allocate the requested memory, it <span class="normative">must</span>
+return <code class="literal">NULL</code>.
+If the allocation was successful, it <span class="normative">must</span> return a valid pointer to memory
+allocation containing at least <em class="parameter"><code>size</code></em> bytes, and with the pointer value
+being a multiple of <em class="parameter"><code>alignment</code></em>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Correct Vulkan operation <span class="normative">cannot</span> be assumed if the application does not
+follow these rules.</p><p>For example, <em class="parameter"><code>pfnAllocation</code></em> (or <em class="parameter"><code>pfnReallocation</code></em>) could cause
+termination of running Vulkan instance(s) on a failed allocation for
+debugging purposes, either directly or indirectly.
+In these circumstances, it <span class="normative">cannot</span> be assumed that any part of any affected
+VkInstance objects are going to operate correctly (even
+<code class="code"><a class="link" href="ch03s02.html#vkDestroyInstance">vkDestroyInstance</a></code>), and the application <span class="normative">must</span> ensure it cleans up
+properly via other means (e.g. process termination).</p></td></tr></table></div><p>If <em class="parameter"><code>pfnAllocation</code></em> returns <code class="literal">NULL</code>, and if the implementation is unable
+to continue correct processing of the current command without the requested
+allocation, it <span class="normative">must</span> treat this as a run-time error, and generate
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code> at the appropriate time for the command in
+which the condition was detected, as described in <a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Return Codes</a>.</p><p>If the implementation is able to continue correct processing of the current
+command without the requested allocation, then it <span class="normative">may</span> do so, and <span class="normative">must</span> not
+generate <code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code> as a result of this failed
+allocation.</p><p>The type of <em class="parameter"><code>pfnReallocation</code></em> is:</p><p><a id="PFN_vkReallocationFunction"></a><strong> </strong>
+</p><pre class="programlisting">typedef void* (VKAPI_PTR *PFN_vkReallocationFunction)(
+    void*                                       pUserData,
+    void*                                       pOriginal,
+    size_t                                      size,
+    size_t                                      alignment,
+    VkSystemAllocationScope                     allocationScope);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is the value specified for
+    <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>::<em class="parameter"><code>pUserData</code></em> in the allocator specified
+    by the application.
+</li><li class="listitem">
+<em class="parameter"><code>pOriginal</code></em> <span class="normative">must</span> be either <code class="literal">NULL</code> or a pointer previously returned
+    by <em class="parameter"><code>pfnReallocation</code></em> or <em class="parameter"><code>pfnAllocation</code></em> of the same allocator.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the size in bytes of the requested allocation.
+</li><li class="listitem">
+<em class="parameter"><code>alignment</code></em> is the requested alignment of the allocation in bytes
+    and <span class="normative">must</span> be a power of two.
+</li><li class="listitem">
+<em class="parameter"><code>allocationScope</code></em> is a <code class="code"><a class="link" href="ch10s01.html#VkSystemAllocationScope">VkSystemAllocationScope</a></code> value
+    specifying the allocation scope of the lifetime of the allocation, as
+    described <a class="link" href="ch10s01.html#memory-host-allocation-scope">here</a>.
+</li></ul></div><p><em class="parameter"><code>pfnReallocation</code></em> <span class="normative">must</span> return an allocation with enough space for
+<em class="parameter"><code>size</code></em> bytes, and the contents of the original allocation from bytes
+zero to <span class="eq">min(original size, new size) - 1</span> <span class="normative">must</span> be preserved in the
+returned allocation.
+If <em class="parameter"><code>size</code></em> is larger than the old size, the contents of the additional
+space are undefined.
+If satisfying these requirements involves creating a new allocation, then
+the old allocation <span class="normative">should</span> be freed.</p><p>If <em class="parameter"><code>pOriginal</code></em> is <code class="literal">NULL</code>, then <em class="parameter"><code>pfnReallocation</code></em> <span class="normative">must</span> behave
+equivalently to a call to <code class="code"><a class="link" href="ch10s01.html#PFN_vkAllocationFunction">PFN_vkAllocationFunction</a></code> with the same
+parameter values (without <em class="parameter"><code>pOriginal</code></em>).</p><p>If <em class="parameter"><code>size</code></em> is zero, then <em class="parameter"><code>pfnReallocation</code></em> <span class="normative">must</span> behave equivalently
+to a call to <code class="code"><a class="link" href="ch10s01.html#PFN_vkFreeFunction">PFN_vkFreeFunction</a></code> with the same <em class="parameter"><code>pUserData</code></em>
+parameter value, and <em class="parameter"><code>pMemory</code></em> equal to <em class="parameter"><code>pOriginal</code></em>.</p><p>If <em class="parameter"><code>pOriginal</code></em> is non-<code class="literal">NULL</code>, the implementation <span class="normative">must</span> ensure that
+<em class="parameter"><code>alignment</code></em> is equal to the <em class="parameter"><code>alignment</code></em> used to originally allocate
+<em class="parameter"><code>pOriginal</code></em>.</p><p>If this function fails and <em class="parameter"><code>pOriginal</code></em> is non-<code class="literal">NULL</code> the application
+<span class="normative">must</span> not free the old allocation.</p><p><em class="parameter"><code>pfnReallocation</code></em> <span class="normative">must</span> follow the same
+<a class="link" href="ch10s01.html#vkAllocationFunction_return_rules">rules for return values as <span class="strong"><strong><code class="code">PFN_vkAllocationFunction</code></strong></span></a>.</p><p>The type of <em class="parameter"><code>pfnFree</code></em> is:</p><p><a id="PFN_vkFreeFunction"></a><strong> </strong>
+</p><pre class="programlisting">typedef void (VKAPI_PTR *PFN_vkFreeFunction)(
+    void*                                       pUserData,
+    void*                                       pMemory);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is the value specified for
+    <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>::<em class="parameter"><code>pUserData</code></em> in the allocator specified
+    by the application.
+</li><li class="listitem">
+<em class="parameter"><code>pMemory</code></em> is the allocation to be freed.
+</li></ul></div><p><em class="parameter"><code>pMemory</code></em> <span class="normative">may</span> be <code class="literal">NULL</code>, which the callback <span class="normative">must</span> handle safely.
+If <em class="parameter"><code>pMemory</code></em> is non-<code class="literal">NULL</code>, it <span class="normative">must</span> be a pointer previously allocated
+by <em class="parameter"><code>pfnAllocation</code></em> or <em class="parameter"><code>pfnReallocation</code></em>.
+The application <span class="normative">should</span> free this memory.</p><p>The type of <em class="parameter"><code>pfnInternalAllocation</code></em> is:</p><p><a id="PFN_vkInternalAllocationNotification"></a><strong> </strong>
+</p><pre class="programlisting">typedef void (VKAPI_PTR *PFN_vkInternalAllocationNotification)(
+    void*                                       pUserData,
+    size_t                                      size,
+    VkInternalAllocationType                    allocationType,
+    VkSystemAllocationScope                     allocationScope);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is the value specified for
+    <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>::<em class="parameter"><code>pUserData</code></em> in the allocator specified
+    by the application.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the requested size of an allocation.
+</li><li class="listitem">
+<em class="parameter"><code>allocationType</code></em> is the requested type of an allocation.
+</li><li class="listitem">
+<em class="parameter"><code>allocationScope</code></em> is a <code class="code"><a class="link" href="ch10s01.html#VkSystemAllocationScope">VkSystemAllocationScope</a></code> value
+    specifying the allocation scope of the lifetime of the allocation, as
+    described <a class="link" href="ch10s01.html#memory-host-allocation-scope">here</a>.
+</li></ul></div><p>This is a purely informational callback.</p><p>The type of <em class="parameter"><code>pfnInternalFree</code></em> is:</p><p><a id="PFN_vkInternalFreeNotification"></a><strong> </strong>
+</p><pre class="programlisting">typedef void (VKAPI_PTR *PFN_vkInternalFreeNotification)(
+    void*                                       pUserData,
+    size_t                                      size,
+    VkInternalAllocationType                    allocationType,
+    VkSystemAllocationScope                     allocationScope);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>pUserData</code></em> is the value specified for
+    <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>::<em class="parameter"><code>pUserData</code></em> in the allocator specified
+    by the application.
+</li><li class="listitem">
+<em class="parameter"><code>size</code></em> is the requested size of an allocation.
+</li><li class="listitem">
+<em class="parameter"><code>allocationType</code></em> is the requested type of an allocation.
+</li><li class="listitem">
+<em class="parameter"><code>allocationScope</code></em> is a <code class="code"><a class="link" href="ch10s01.html#VkSystemAllocationScope">VkSystemAllocationScope</a></code> value
+    specifying the allocation scope of the lifetime of the allocation, as
+    described <a class="link" href="ch10s01.html#memory-host-allocation-scope">here</a>.
+</li></ul></div><p><a id="memory-host-allocation-scope"></a>Each allocation has an <span class="emphasis"><em>allocation scope</em></span> which defines its lifetime and
+which object it is associated with.
+The allocation scope is provided in the <em class="parameter"><code>allocationScope</code></em> parameter
+passed to callbacks defined in <code class="code"><a class="link" href="ch10s01.html#VkAllocationCallbacks">VkAllocationCallbacks</a></code>.
+Possible values for this parameter are defined by
+<code class="code"><a class="link" href="ch10s01.html#VkSystemAllocationScope">VkSystemAllocationScope</a></code>:</p><p><a id="VkSystemAllocationScope"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkSystemAllocationScope {
+    VK_SYSTEM_ALLOCATION_SCOPE_COMMAND = 0,
+    VK_SYSTEM_ALLOCATION_SCOPE_OBJECT = 1,
+    VK_SYSTEM_ALLOCATION_SCOPE_CACHE = 2,
+    VK_SYSTEM_ALLOCATION_SCOPE_DEVICE = 3,
+    VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE = 4,
+} VkSystemAllocationScope;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_COMMAND</code> - The allocation is scoped to
+    the duration of the Vulkan command.
+</li><li class="listitem">
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_OBJECT</code> - The allocation is scoped to
+    the lifetime of the Vulkan object that is being created or used.
+</li><li class="listitem">
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_CACHE</code> - The allocation is scoped to the
+    lifetime of a <code class="code">VkPipelineCache</code> object.
+</li><li class="listitem">
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_DEVICE</code> - The allocation is scoped to
+    the lifetime of the Vulkan device.
+</li><li class="listitem">
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE</code> - The allocation is scoped to
+    the lifetime of the Vulkan instance.
+</li></ul></div><p>Most Vulkan commands operate on a single object, or there is a sole object
+that is being created or manipulated.
+When an allocation uses an allocation scope of
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_OBJECT</code> or
+<code class="code">VK_SYSTEM_ALLOCATION_SCOPE_CACHE</code>, the allocation is scoped to the
+object being created or manipulated.</p><p>When an implementation requires host memory, it will make callbacks to the
+application using the most specific allocator and allocation scope
+available:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If an allocation is scoped to the duration of a command, the allocator
+    will use the <code class="code">VK_SYSTEM_ALLOCATION_SCOPE_COMMAND</code> allocation scope.
+    The most specific allocator available is used: if the object being
+    created or manipulated has an allocator, that object’s allocator will be
+    used, else if the parent <code class="code">VkDevice</code> has an allocator it will be
+    used, else if the parent <code class="code">VkInstance</code> has an allocator it will be
+    used.
+    Else,
+</li><li class="listitem">
+If an allocation is associated with an object of type
+    <code class="code">VkPipelineCache</code>, the allocator will use the
+    <code class="code">VK_SYSTEM_ALLOCATION_SCOPE_CACHE</code> allocation scope.
+    The most specific allocator available is used (pipeline cache, else
+    device, else instance).
+    Else,
+</li><li class="listitem">
+If an allocation is scoped to the lifetime of an object, that object is
+    being created or manipulated by the command, and that object’s type is
+    not <code class="code">VkDevice</code> or <code class="code">VkInstance</code>, the allocator will use an
+    allocation scope of <code class="code">VK_SYSTEM_ALLOCATION_SCOPE_OBJECT</code>.
+    The most specific allocator available is used (object, else device, else
+    instance).
+    Else,
+</li><li class="listitem">
+If an allocation is scoped to the lifetime of a device, the allocator
+    will use an allocation scope of ename VK_SYSTEM_ALLOCATION_SCOPE_DEVICE.
+    The most specific allocator available is used (device, else instance).
+    Else,
+</li><li class="listitem">
+If the allocation is scoped to the lifetime of an instance and the
+    instance has an allocator, its allocator will be used with an allocation
+    scope of <code class="code">VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE</code>.
+</li><li class="listitem">
+Otherwise an implementation will allocate memory through an alternative
+    mechanism that is unspecified.
+</li></ul></div><p>Objects that are allocated from pools do not specify their own allocator.
+When an implementation requires host memory for such an object, that memory
+is sourced from the object’s parent pool’s allocator.</p><p>The application is not expected to handle allocating memory that is intended
+for execution by the host due to the complexities of differing security
+implementations across multiple platforms.
+The implementation will allocate such memory internally and invoke an
+application provided informational callback when these <span class="emphasis"><em>internal
+allocations</em></span> are allocated and freed.
+Upon allocation of executable memory, <em class="parameter"><code>pfnInternalAllocation</code></em> will be
+called.
+Upon freeing executable memory, <em class="parameter"><code>pfnInternalFree</code></em> will be called.
+An implementation will only call an informational callback for executable
+memory allocations and frees.</p><p>The <em class="parameter"><code>allocationType</code></em> parameter to the <em class="parameter"><code>pfnInternalAllocation</code></em> and
+<em class="parameter"><code>pfnInternalFree</code></em> functions <span class="normative">may</span> be one of the following values:</p><p><a id="VkInternalAllocationType"></a><strong> </strong>
+</p><pre class="programlisting">typedef enum VkInternalAllocationType {
+    VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE = 0,
+} VkInternalAllocationType;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_INTERNAL_ALLOCATION_TYPE_EXECUTABLE</code> - The allocation is
+    intended for execution by the host.
+</li></ul></div><p>An implementation <span class="normative">must</span> only make calls into an application-provided
+allocator during the execution of an API command.
+An implementation <span class="normative">must</span> only make calls into an application-provided
+allocator from the same thread that called the provoking API command.
+The implementation <span class="normative">should</span> not synchronize calls to any of the callbacks.
+If synchronization is needed, the callbacks <span class="normative">must</span> provide it themselves.
+The informational callbacks are subject to the same restrictions as the
+allocation callbacks.</p><p>If an implementation intends to make calls through an
+<code class="code">VkAllocationCallbacks</code> structure between the time a <span class="strong"><strong><code class="code">vkCreate*</code></strong></span>
+command returns and the time a corresponding <span class="strong"><strong><code class="code">vkDestroy*</code></strong></span> command
+begins, that implementation <span class="normative">must</span> save a copy of the allocator before the
+<span class="strong"><strong><code class="code">vkCreate*</code></strong></span> command returns.
+The callback functions and any data structures they rely upon <span class="normative">must</span> remain
+valid for the lifetime of the object they are associated with.</p><p>If an allocator is provided to a <span class="strong"><strong><code class="code">vkCreate*</code></strong></span> command, a <span class="emphasis"><em>compatible</em></span>
+allocator <span class="normative">must</span> be provided to the corresponding <span class="strong"><strong><code class="code">vkDestroy*</code></strong></span> command.
+Two <code class="code">VkAllocationCallbacks</code> structures are compatible if memory
+allocated with <em class="parameter"><code>pfnAllocation</code></em> or <em class="parameter"><code>pfnReallocation</code></em> in each <span class="normative">can</span> be
+freed with <em class="parameter"><code>pfnReallocation</code></em> or <em class="parameter"><code>pfnFree</code></em> in the other.
+An allocator <span class="normative">must</span> not be provided to a <span class="strong"><strong><code class="code">vkDestroy*</code></strong></span> command if an
+allocator was not provided to the corresponding <span class="strong"><strong><code class="code">vkCreate*</code></strong></span> command.</p><p>If a non-<code class="literal">NULL</code> allocator is used, the <em class="parameter"><code>pfnAllocation</code></em>,
+<em class="parameter"><code>pfnReallocation</code></em> and <em class="parameter"><code>pfnFree</code></em> members <span class="normative">must</span> be non-<code class="literal">NULL</code> and
+point to valid implementations of the callbacks.
+An application <span class="normative">can</span> choose to not provide informational callbacks by setting
+both <em class="parameter"><code>pfnInternalAllocation</code></em> and <em class="parameter"><code>pfnInternalFree</code></em> to <code class="literal">NULL</code>.
+<em class="parameter"><code>pfnInternalAllocation</code></em> and <em class="parameter"><code>pfnInternalFree</code></em> <span class="normative">must</span> either both be
+<code class="literal">NULL</code> or both be non-<code class="literal">NULL</code>.</p><p>If <em class="parameter"><code>pfnAllocation</code></em> or <em class="parameter"><code>pfnReallocation</code></em> fail, the implementation
+<span class="normative">may</span> fail object creation and/or generate an
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code> error, as appropriate.</p><p>Allocation callbacks <span class="normative">must</span> not call any Vulkan commands.</p><p>The following sets of rules define when an implementation is permitted to
+call the allocator callbacks.</p><p><em class="parameter"><code>pfnAllocation</code></em> or <em class="parameter"><code>pfnReallocation</code></em> <span class="normative">may</span> be called in the following
+situations:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Allocations scoped to a <code class="code">VkDevice</code> or <code class="code">VkInstance</code> <span class="normative">may</span> be
+    allocated from any API command.
+</li><li class="listitem">
+Allocations scoped to a command <span class="normative">may</span> be allocated from any API command.
+</li><li class="listitem"><p class="simpara">
+Allocations scoped to a <code class="code">VkPipelineCache</code> <span class="normative">may</span> only be allocated
+    from:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+<span class="strong"><strong><code class="code">vkCreatePipelineCache</code></strong></span>
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkMergePipelineCaches</code></strong></span> for <em class="parameter"><code>dstCache</code></em>
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkCreateGraphicsPipelines</code></strong></span> for <em class="parameter"><code>pPipelineCache</code></em>
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkCreateComputePipelines</code></strong></span> for <em class="parameter"><code>pPipelineCache</code></em>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Allocations scoped to a <code class="code">VkDescriptorPool</code> <span class="normative">may</span> only be allocated
+    from:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+any command that takes the pool as a direct argument
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkAllocateDescriptorSets</code></strong></span> for the <em class="parameter"><code>descriptorPool</code></em> member of
+    its <em class="parameter"><code>pAllocateInfo</code></em> parameter
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkCreateDescriptorPool</code></strong></span>
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Allocations scoped to a <code class="code">VkCommandPool</code> <span class="normative">may</span> only be allocated from:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+any command that takes the pool as a direct argument
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkCreateCommandPool</code></strong></span>
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkAllocateCommandBuffers</code></strong></span> for the <em class="parameter"><code>commandPool</code></em> member of its
+     <em class="parameter"><code>pAllocateInfo</code></em> parameter
+</li><li class="listitem">
+any <span class="strong"><strong><code class="code">vkCmd*</code></strong></span> command whose <em class="parameter"><code>commandBuffer</code></em> was allocated from
+     that <code class="code">VkCommandPool</code>
+</li></ul></div></li><li class="listitem">
+Allocations scoped to any other object <span class="normative">may</span> only be allocated in that
+    object’s <span class="strong"><strong><code class="code">vkCreate*</code></strong></span> command.
+</li></ul></div><p><em class="parameter"><code>pfnFree</code></em> <span class="normative">may</span> be called in the following situations:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Allocations scoped to a <code class="code">VkDevice</code> or <code class="code">VkInstance</code> <span class="normative">may</span> be freed
+    from any API command.
+</li><li class="listitem">
+Allocations scoped to a command <span class="normative">must</span> be freed by any API command which
+    allocates such memory.
+</li><li class="listitem">
+Allocations scoped to a <code class="code">VkPipelineCache</code> <span class="normative">may</span> be freed from
+    <span class="strong"><strong><code class="code">vkDestroyPipelineCache</code></strong></span>.
+</li><li class="listitem"><p class="simpara">
+Allocations scoped to a <code class="code">VkDescriptorPool</code> <span class="normative">may</span> be freed from
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+any command that takes the pool as a direct argument
+</li></ul></div></li><li class="listitem"><p class="simpara">
+Allocations scoped to a <code class="code">VkCommandPool</code> <span class="normative">may</span> be freed from:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: circle; "><li class="listitem">
+any command that takes the pool as a direct argument
+</li><li class="listitem">
+<span class="strong"><strong><code class="code">vkResetCommandBuffer</code></strong></span> whose <em class="parameter"><code>commandBuffer</code></em> was allocated from
+     that <code class="code">VkCommandPool</code>
+</li></ul></div></li><li class="listitem">
+Allocations scoped to any other object <span class="normative">may</span> be freed in that object’s
+    <span class="strong"><strong><code class="code">vkDestroy*</code></strong></span> command.
+</li><li class="listitem">
+Any command that allocates host memory <span class="normative">may</span> also free host memory of the
+    same scope.
+</li></ul></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch10.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch10.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch10s02.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

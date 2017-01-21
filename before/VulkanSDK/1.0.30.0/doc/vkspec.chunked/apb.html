@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Appendix B. Compressed Image Formats</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="prev" href="apas04.html" title="A.4. Precision and Operation of SPIR-V Instructions" /><link rel="next" href="apbs01.html" title="B.1. Block-Compressed Image Formats" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="apas04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="apbs01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="appendix"><div class="titlepage"><div><div><h1 class="title"><a id="_compressed_image_formats"></a>Appendix B. Compressed Image Formats</h1></div></div></div><p>The compressed texture formats used by Vulkan are described in the
+specifically identified sections of the <a class="link" href="ch01s04.html#data-format">Khronos Data Format Specification</a>, version 1.1.</p><p>Unless otherwise described, the quantities encoded in these compressed
+formats are treated as normalized, unsigned values.</p><p>Those formats listed as sRGB-encoded have in-memory representations of
+<span class="eq">R</span>, <span class="eq">G</span> and <span class="eq">B</span> components which are nonlinearly-encoded as
+<span class="eq">R'</span>, <span class="eq">G'</span>, and <span class="eq">B'</span>; any alpha component is unchanged.
+As part of filtering, the nonlinear <span class="eq">R'</span>, <span class="eq">G'</span>, and <span class="eq">B'</span> values
+are converted to linear <span class="eq">R</span>, <span class="eq">G</span>, and <span class="eq">B</span> components; any alpha
+component is unchanged.
+The conversion between linear and nonlinear encoding is performed as
+described in the “KHR_DF_TRANSFER_SRGB” section of the Khronos Data Format
+Specification.</p><p></p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="apas04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"> </td><td width="40%" align="right"> <a accesskey="n" href="apbs01.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

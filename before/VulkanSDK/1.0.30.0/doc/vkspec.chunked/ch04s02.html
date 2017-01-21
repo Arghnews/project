@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>4.2. Devices</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch04.html" title="Chapter 4. Devices and Queues" /><link rel="prev" href="ch04s01.html" title="4.1. Physical Devices" /><link rel="next" href="ch04s03.html" title="4.3. Queues" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch04s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch04s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="devsandqueues-devices"></a>4.2. Devices</h2></div></div></div><p>Device objects represent logical connections to physical devices.
+Each device exposes a number of <span class="emphasis"><em>queue families</em></span> each having one or more
+<span class="emphasis"><em>queues</em></span>.
+All queues in a queue family support the same operations.</p><p>As described in <a class="link" href="ch04s01.html" title="4.1. Physical Devices">Physical Devices</a>, a Vulkan application will first query for all physical devices in
+a system.
+Each physical device <span class="normative">can</span> then be queried for its capabilities, including
+its queue and queue family properties.
+Once an acceptable physical device is identified, an application will create
+a corresponding logical device.
+An application <span class="normative">must</span> create a separate logical device for each physical
+device it will use.
+The created logical device is then the primary interface to the physical
+device.</p><p>How to enumerate the physical devices in a system and query those physical
+devices for their queue family properties is described in the
+<a class="link" href="ch04s01.html" title="4.1. Physical Devices">Physical Device Enumeration</a>
+section above.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="devsandqueues-device-creation"></a>4.2.1. Device Creation</h3></div></div></div><p>Logical devices are represented by <code class="code">VkDevice</code> handles:</p><p><a id="VkDevice"></a><strong> </strong>
+</p><pre class="programlisting">VK_DEFINE_HANDLE(VkDevice)</pre><p>
+</p><p>A logical device is created as a <span class="emphasis"><em>connection</em></span> to a physical device.
+To create a logical device, call:</p><p><a id="vkCreateDevice"></a><strong> </strong>
+</p><pre class="programlisting">VkResult vkCreateDevice(
+    VkPhysicalDevice                            physicalDevice,
+    const VkDeviceCreateInfo*                   pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkDevice*                                   pDevice);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be one of the device handles returned from a
+    call to <span class="strong"><strong><code class="code">vkEnumeratePhysicalDevices</code></strong></span> (see
+    <a class="link" href="ch04s01.html" title="4.1. Physical Devices">Physical Device     Enumeration</a>).
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> is a pointer to a <code class="code"><a class="link" href="ch04s02.html#VkDeviceCreateInfo">VkDeviceCreateInfo</a></code> structure
+    containing information about how to create the device.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li><li class="listitem">
+<em class="parameter"><code>pDevice</code></em> points to a handle in which the created <code class="code">VkDevice</code> is
+    returned.
+</li></ul></div><p>Multiple logical devices <span class="normative">can</span> be created from the same physical device.
+Logical device creation <span class="normative">may</span> fail due to lack of device-specific resources
+(in addition to the other errors).
+If that occurs, <span class="strong"><strong><code class="code">vkCreateDevice</code></strong></span> will return
+<code class="code">VK_ERROR_TOO_MANY_OBJECTS</code>.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>physicalDevice</code></em> <span class="normative">must</span> be a valid <code class="code">VkPhysicalDevice</code> handle
+</li><li class="listitem">
+<em class="parameter"><code>pCreateInfo</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkDeviceCreateInfo</code> structure
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>pDevice</code></em> <span class="normative">must</span> be a pointer to a <code class="code">VkDevice</code> handle
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Return Codes</strong></p></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-successcodes" title="Success Codes">Success</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_SUCCESS</code>
+</li></ul></div></dd><dt><span class="term">
+<a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Failure</a>
+</span></dt><dd><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_HOST_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_OUT_OF_DEVICE_MEMORY</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_INITIALIZATION_FAILED</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_EXTENSION_NOT_PRESENT</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_FEATURE_NOT_PRESENT</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_TOO_MANY_OBJECTS</code>
+</li><li class="listitem">
+<code class="code">VK_ERROR_DEVICE_LOST</code>
+</li></ul></div></dd></dl></div></div><p>The <code class="code">VkDeviceCreateInfo</code> structure is defined as:</p><p><a id="VkDeviceCreateInfo"></a><strong> </strong>
+</p><pre class="programlisting">typedef struct VkDeviceCreateInfo {
+    VkStructureType                    sType;
+    const void*                        pNext;
+    VkDeviceCreateFlags                flags;
+    uint32_t                           queueCreateInfoCount;
+    const VkDeviceQueueCreateInfo*     pQueueCreateInfos;
+    uint32_t                           enabledLayerCount;
+    const char* const*                 ppEnabledLayerNames;
+    uint32_t                           enabledExtensionCount;
+    const char* const*                 ppEnabledExtensionNames;
+    const VkPhysicalDeviceFeatures*    pEnabledFeatures;
+} VkDeviceCreateInfo;</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> is the type of this structure.
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> is <code class="literal">NULL</code> or a pointer to an extension-specific structure.
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> is reserved for future use.
+</li><li class="listitem">
+<em class="parameter"><code>queueCreateInfoCount</code></em> is the unsigned integer size of the
+    <em class="parameter"><code>pQueueCreateInfos</code></em> array.
+    Refer to the <a class="link" href="ch04s03.html#devsandqueues-queue-creation" title="4.3.2. Queue Creation">Queue Creation</a> section
+    below for further details.
+</li><li class="listitem">
+<em class="parameter"><code>pQueueCreateInfos</code></em> is a pointer to an array of
+    <code class="code"><a class="link" href="ch04s03.html#VkDeviceQueueCreateInfo">VkDeviceQueueCreateInfo</a></code> structures describing the queues that are
+    requested to be created along with the logical device.
+    Refer to the <a class="link" href="ch04s03.html#devsandqueues-queue-creation" title="4.3.2. Queue Creation">Queue Creation</a> section
+    below for further details.
+</li><li class="listitem">
+<em class="parameter"><code>enabledLayerCount</code></em> is deprecated and ignored.
+</li><li class="listitem">
+<em class="parameter"><code>ppEnabledLayerNames</code></em> is deprecated and ignored.
+    See <a class="link" href="ch30s01.html#extended-functionality-device-layer-deprecation" title="30.1.1. Device Layer Deprecation">Device Layer     Deprecation</a>.
+</li><li class="listitem">
+<em class="parameter"><code>enabledExtensionCount</code></em> is the number of device extensions to
+    enable.
+</li><li class="listitem">
+<em class="parameter"><code>ppEnabledExtensionNames</code></em> is a pointer to an array of
+    <em class="parameter"><code>enabledExtensionCount</code></em> null-terminated UTF-8 strings containing the
+    names of extensions to enable for the created device.
+    See the <a class="link" href="ch30s02.html" title="30.2. Extensions">Extensions</a> section for
+    further details.
+</li><li class="listitem">
+<em class="parameter"><code>pEnabledFeatures</code></em> is <code class="literal">NULL</code> or a pointer to a
+    <code class="code"><a class="link" href="ch31s01.html#VkPhysicalDeviceFeatures">VkPhysicalDeviceFeatures</a></code> structure that contains boolean
+    indicators of all the features to be enabled.
+    Refer to the <a class="link" href="ch31s01.html" title="31.1. Features">Features</a> section for further details.
+</li></ul></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+The <em class="parameter"><code>queueFamilyIndex</code></em> member of any given element of
+    <em class="parameter"><code>pQueueCreateInfos</code></em> <span class="normative">must</span> be unique within <em class="parameter"><code>pQueueCreateInfos</code></em>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>sType</code></em> <span class="normative">must</span> be <code class="code">VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO</code>
+</li><li class="listitem">
+<em class="parameter"><code>pNext</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li><li class="listitem">
+<em class="parameter"><code>flags</code></em> <span class="normative">must</span> be <code class="literal">0</code>
+</li><li class="listitem">
+<em class="parameter"><code>pQueueCreateInfos</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>queueCreateInfoCount</code></em> valid <code class="code">VkDeviceQueueCreateInfo</code> structures
+</li><li class="listitem">
+If <em class="parameter"><code>enabledLayerCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>ppEnabledLayerNames</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>enabledLayerCount</code></em> null-terminated strings
+</li><li class="listitem">
+If <em class="parameter"><code>enabledExtensionCount</code></em> is not <code class="literal">0</code>, <em class="parameter"><code>ppEnabledExtensionNames</code></em> <span class="normative">must</span> be a pointer to an array of <em class="parameter"><code>enabledExtensionCount</code></em> null-terminated strings
+</li><li class="listitem">
+If <em class="parameter"><code>pEnabledFeatures</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pEnabledFeatures</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkPhysicalDeviceFeatures</code> structure
+</li><li class="listitem">
+<em class="parameter"><code>queueCreateInfoCount</code></em> <span class="normative">must</span> be greater than <code class="literal">0</code>
+</li></ul></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="devsandqueues-use"></a>4.2.2. Device Use</h3></div></div></div><p>The following is a high-level list of <code class="code">VkDevice</code> uses along with
+references on where to find more information:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Creation of queues.
+    See the <a class="link" href="ch04s03.html" title="4.3. Queues">Queues</a> section below for further
+    details.
+</li><li class="listitem">
+Creation and tracking of various synchronization constructs.
+    See <a class="link" href="ch06.html" title="Chapter 6. Synchronization and Cache Control">Synchronization and Cache Control</a> for further
+    details.
+</li><li class="listitem">
+Allocating, freeing, and managing memory.
+    See <a class="link" href="ch10.html" title="Chapter 10. Memory Allocation">Memory Allocation</a> and <a class="link" href="ch11.html" title="Chapter 11. Resource Creation">Resource Creation</a> for
+    further details.
+</li><li class="listitem">
+Creation and destruction of command buffers and command buffer pools.
+    See <a class="link" href="ch05.html" title="Chapter 5. Command Buffers">Command Buffers</a> for further details.
+</li><li class="listitem">
+Creation, destruction, and management of graphics state.
+    See <a class="link" href="ch09.html" title="Chapter 9. Pipelines">Pipelines</a> and <a class="link" href="ch13.html" title="Chapter 13. Resource Descriptors">Resource Descriptors</a>,
+    among others, for further details.
+</li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="devsandqueues-lost-device"></a>4.2.3. Lost Device</h3></div></div></div><p>A logical device <span class="normative">may</span> become <span class="emphasis"><em>lost</em></span> because of hardware errors, execution
+timeouts, power management events and/or platform-specific events.
+This <span class="normative">may</span> cause pending and future command execution to fail and cause
+hardware resources to be corrupted.
+When this happens, certain commands will return <code class="code">VK_ERROR_DEVICE_LOST</code>
+(see <a class="link" href="ch02s06.html#fundamentals-errorcodes" title="Error codes">Error Codes</a> for a list of such commands).
+After any such event, the logical device is considered <span class="emphasis"><em>lost</em></span>.
+It is not possible to reset the logical device to a non-lost state, however
+the lost state is specific to a logical device (<code class="code">VkDevice</code>), and the
+corresponding physical device (<code class="code">VkPhysicalDevice</code>) <span class="normative">may</span> be otherwise
+unaffected.
+In some cases, the physical device <span class="normative">may</span> also be lost, and attempting to
+create a new logical device will fail, returning <code class="code">VK_ERROR_DEVICE_LOST</code>.
+This is usually indicative of a problem with the underlying hardware, or its
+connection to the host.
+If the physical device has not been lost, and a new logical device is
+successfully created from that physical device, it <span class="normative">must</span> be in the non-lost
+state.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Whilst logical device loss <span class="normative">may</span> be recoverable, in the case of physical
+device loss, it is unlikely that an application will be able to recover
+unless additional, unaffected physical devices exist on the system.
+The error is largely informational and intended only to inform the user that
+their hardware has probably developed a fault or become physically
+disconnected, and <span class="normative">should</span> be investigated further.
+In many cases, physical device loss <span class="normative">may</span> cause other more serious issues
+such as the operating system crashing; in which case it <span class="normative">may</span> not be reported
+via the Vulkan API.</p></td></tr></table></div><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>Undefined behavior caused by an application error <span class="normative">may</span> cause a device to
+become lost.
+However, such undefined behavior <span class="normative">may</span> also cause unrecoverable damage to the
+process, and it is then not guaranteed that the API objects, including the
+<code class="code">VkPhysicalDevice</code> or the <code class="code">VkInstance</code> are still valid or that the
+error is recoverable.</p></td></tr></table></div><p>When a device is lost, its child objects are not implicitly destroyed and
+their handles are still valid.
+Those objects <span class="normative">must</span> still be destroyed before their parents or the device
+<span class="normative">can</span> be destroyed (see the <a class="link" href="ch02s03.html#fundamentals-objectmodel-lifetime" title="2.3.1. Object Lifetime">Object Lifetime</a> section).
+The host address space corresponding to device memory mapped using
+<code class="code"><a class="link" href="ch10s02.html#vkMapMemory">vkMapMemory</a></code> is still valid, and host memory accesses to these mapped
+regions are still valid, but the contents are undefined.
+It is still legal to call any API command on the device and child objects.</p><p>Once a device is lost, command execution <span class="normative">may</span> fail, and commands that return
+a <code class="code"><a class="link" href="ch02s06.html#VkResult">VkResult</a></code> <span class="normative">may</span> return <code class="code">VK_ERROR_DEVICE_LOST</code>.
+Commands that do not allow run-time errors <span class="normative">must</span> still operate correctly for
+valid usage and, if applicable, return valid data.</p><p>Commands that wait indefinitely for device execution (namely
+<code class="code"><a class="link" href="ch06s05.html#vkDeviceWaitIdle">vkDeviceWaitIdle</a></code>, <code class="code"><a class="link" href="ch06s05.html#vkQueueWaitIdle">vkQueueWaitIdle</a></code>, <code class="code"><a class="link" href="ch06s01.html#vkWaitForFences">vkWaitForFences</a></code>
+or <code class="code"><a class="link" href="ch29s06.html#vkAcquireNextImageKHR">vkAcquireNextImageKHR</a></code>
+with a maximum <em class="parameter"><code>timeout</code></em>, and <code class="code"><a class="link" href="ch16s02.html#vkGetQueryPoolResults">vkGetQueryPoolResults</a></code> with the
+<code class="code">VK_QUERY_RESULT_WAIT_BIT</code> bit set in <em class="parameter"><code>flags</code></em>) <span class="normative">must</span> return in
+finite time even in the case of a lost device, and return either
+<code class="code">VK_SUCCESS</code> or <code class="code">VK_ERROR_DEVICE_LOST</code>.
+For any command that <span class="normative">may</span> return <code class="code">VK_ERROR_DEVICE_LOST</code>, for the purpose
+of determining whether a command buffer is pending execution, or whether
+resources are considered in-use by the device, a return value of
+<code class="code">VK_ERROR_DEVICE_LOST</code> is equivalent to <code class="code">VK_SUCCESS</code>.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: editing-note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">editing-note</th></tr><tr><td align="left" valign="top"><p>TODO (piman) - I do not think we are very clear about what “in-use by the
+device” means.</p></td></tr></table></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="devsandqueues-destruction"></a>4.2.4. Device Destruction</h3></div></div></div><p>To destroy a device, call:</p><p><a id="vkDestroyDevice"></a><strong> </strong>
+</p><pre class="programlisting">void vkDestroyDevice(
+    VkDevice                                    device,
+    const VkAllocationCallbacks*                pAllocator);</pre><p>
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+<em class="parameter"><code>device</code></em> is the logical device to destroy.
+</li><li class="listitem">
+<em class="parameter"><code>pAllocator</code></em> controls host memory allocation as described in the
+    <a class="link" href="ch10s01.html#memory-allocation">Memory Allocation</a> chapter.
+</li></ul></div><p>To ensure that no work is active on the device, <code class="code"><a class="link" href="ch06s05.html#vkDeviceWaitIdle">vkDeviceWaitIdle</a></code> <span class="normative">can</span>
+be used to gate the destruction of the device.
+Prior to destroying a device, an application is responsible for
+destroying/freeing any Vulkan objects that were created using that device as
+the first parameter of the corresponding <span class="strong"><strong><code class="code">vkCreate*</code></strong></span> or
+<span class="strong"><strong><code class="code">vkAllocate*</code></strong></span> command.</p><div class="note" style="margin-left: 0; margin-right: 10%;"><table border="0" summary="Note: Note"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Note]" src="images/icons/note.png" /></td><th align="left">Note</th></tr><tr><td align="left" valign="top"><p>The lifetime of each of these objects is bound by the lifetime of the
+<code class="code">VkDevice</code> object.
+Therefore, to avoid resource leaks, it is critical that an application
+explicitly free all of these resources prior to calling
+<span class="strong"><strong><code class="code">vkDestroyDevice</code></strong></span>.</p></td></tr></table></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+All child objects created on <em class="parameter"><code>device</code></em> <span class="normative">must</span> have been destroyed
+    prior to destroying <em class="parameter"><code>device</code></em>
+</li><li class="listitem">
+If <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>device</code></em> was
+    created, a compatible set of callbacks <span class="normative">must</span> be provided here
+</li><li class="listitem">
+If no <code class="code">VkAllocationCallbacks</code> were provided when <em class="parameter"><code>device</code></em> was
+    created, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be <code class="literal">NULL</code>
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Valid Usage (Implicit)</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+If <em class="parameter"><code>device</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>device</code></em> <span class="normative">must</span> be a valid <code class="code">VkDevice</code> handle
+</li><li class="listitem">
+If <em class="parameter"><code>pAllocator</code></em> is not <code class="literal">NULL</code>, <em class="parameter"><code>pAllocator</code></em> <span class="normative">must</span> be a pointer to a valid <code class="code">VkAllocationCallbacks</code> structure
+</li></ul></div></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Host Synchronization</strong></p></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+Host access to <em class="parameter"><code>device</code></em> <span class="normative">must</span> be externally synchronized
+</li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s01.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch04.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch04s03.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>

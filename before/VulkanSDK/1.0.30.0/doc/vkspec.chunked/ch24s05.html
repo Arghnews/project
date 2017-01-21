@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>24.5. Points</title><link rel="stylesheet" type="text/css" href="config/vkspec-xhtml.css" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="home" href="index.html" title="Vulkan 1.0.30 - A Specification (with WSI extensions)" /><link rel="up" href="ch24.html" title="Chapter 24. Rasterization" /><link rel="prev" href="ch24s04.html" title="24.4. Sample Shading" /><link rel="next" href="ch24s06.html" title="24.6. Line Segments" /><script xmlns="" type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            MathML: { extensions: ["content-mathml.js"] },
+            tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] }
+        });
+    </script><script xmlns="" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><td width="20%" align="left"><a accesskey="p" href="ch24s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><th width="60%" align="center"> </th><td width="20%" align="right"> <a accesskey="n" href="ch24s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="primsrast-points"></a>24.5. Points</h2></div></div></div><p>A point is drawn by generating a set of fragments in the shape of a square
+centered around the vertex of the point.
+Each vertex has an associated point size that controls the width/height of
+that square.
+The point size is taken from the (potentially clipped) shader built-in
+<span class="strong"><strong><code class="code">PointSize</code></strong></span> written by:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+the geometry shader, if active;
+</li><li class="listitem">
+the tessellation evaluation shader, if active and no geometry shader is
+    active;
+</li><li class="listitem">
+the tessellation control shader, if active and no geometry or
+    tessellation evaluation shader is active; or
+</li><li class="listitem">
+the vertex shader, otherwise
+</li></ul></div><p>and clamped to the implementation-dependent point size range
+<span class="eq">[<em class="parameter"><code>pointSizeRange</code></em>[0],<em class="parameter"><code>pointSizeRange</code></em>[1]]</span>.
+If the value written to <span class="strong"><strong><code class="code">PointSize</code></strong></span> is less than or equal to zero, or if
+no value was written to <span class="strong"><strong><code class="code">PointSize</code></strong></span>, results are undefined.</p><p>Not all point sizes need be supported, but the size 1.0 <span class="normative">must</span> be supported.
+The range of supported sizes and the size of evenly-spaced gradations within
+that range are implementation-dependent.
+The range and gradations are obtained from the <em class="parameter"><code>pointSizeRange</code></em> and
+<em class="parameter"><code>pointSizeGranularity</code></em> members of <code class="code"><a class="link" href="ch31s02.html#VkPhysicalDeviceLimits">VkPhysicalDeviceLimits</a></code>.
+If, for instance, the size range is from 0.1 to 2.0 and the gradation size
+is 0.1, then the size 0.1, 0.2, …, 1.9, 2.0 are supported.
+Additional point sizes <span class="normative">may</span> also be supported.
+There is no requirement that these sizes be equally spaced.
+If an unsupported size is requested, the nearest supported size is used
+instead.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="primsrast-points-basic"></a>24.5.1. Basic Point Rasterization</h3></div></div></div><p>Point rasterization produces a fragment for each framebuffer pixel with one
+or more sample points that intersect a region centered at the point’s
+<span class="eq">(x<sub>f</sub>,y<sub>f</sub>)</span>.
+This region is a square with side equal to the current point size.
+Coverage bits that correspond to sample points that intersect the region are
+1, other coverage bits are 0.</p><p>All fragments produced in rasterizing a point are assigned the same
+associated data, which are those of the vertex corresponding to the point.
+However, the fragment shader built-in <span class="strong"><strong><code class="code">PointCoord</code></strong></span> contains point sprite
+texture coordinates.
+The <span class="eq">s</span> and <span class="eq">t</span> point sprite texture coordinates vary from zero to
+one across the point horizontally left-to-right and top-to-bottom,
+respectively.
+The following formulas are used to evaluate <span class="eq">s</span> and <span class="eq">t</span>:</p><div class="informalequation"><div class="mediaobject"><span class="phrase">\[
+  s = {1 \over 2} + { \left( x_p - x_f \right) \over size }
+\]
+\[
+  t = {1 \over 2} + { \left( y_p - y_f \right) \over size }.
+\]</span></div></div><p>where size is the point’s size, <span class="eq">(x<sub>p</sub>,y<sub>p</sub>)</span> is the location at which
+the point sprite coordinates are evaluated - this <span class="normative">may</span> be the framebuffer
+coordinates of the pixel center (i.e. at the half-integer) or the location
+of a sample, and <span class="eq">(x<sub>f</sub>,y<sub>f</sub>)</span> is the exact, unrounded framebuffer
+coordinate of the vertex for the point.
+When <em class="parameter"><code>rasterizationSamples</code></em> is <code class="code">VK_SAMPLE_COUNT_1_BIT</code>, the pixel
+center <span class="normative">must</span> be used.</p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch24s04.html"><img src="images/icons/prev.png" alt="Prev" /></a> </td><td width="20%" align="center"><a accesskey="u" href="ch24.html"><img src="images/icons/up.png" alt="Up" /></a></td><td width="40%" align="right"> <a accesskey="n" href="ch24s06.html"><img src="images/icons/next.png" alt="Next" /></a></td></tr><tr><td width="40%" align="left" valign="top"> </td><td width="20%" align="center"><a accesskey="h" href="index.html"><img src="images/icons/home.png" alt="Home" /></a></td><td width="40%" align="right" valign="top"> </td></tr></table></div></body></html>
