@@ -2,7 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "Util.hpp"
+#include "Shader.hpp"
 #include "Window_Inputs.hpp"
+#include "Camera.hpp"
 
 Window_Inputs inputs;
 
@@ -12,10 +14,8 @@ int main() {
     GLFWwindow* window = inputs.init_window();
     set_keyboard(inputs, window);
     while (!glfwWindowShouldClose(window)) {
-        // Keep running
-        inputs.doAll();
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        inputs.loop();
+        const v2 mouseDelta = inputs.cursorDelta();
     }
     inputs.close();
 }

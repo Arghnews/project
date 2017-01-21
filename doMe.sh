@@ -15,9 +15,10 @@ main() {
 	executable="exec"
 
 	cppFiles=( 
-    "main.cpp"
+    "Main.cpp"
     "Window_Inputs.cpp"
-    "camera.cpp"
+    "Camera.cpp"
+    "Shader.cpp"
 	)
 
 	compiler="g++"

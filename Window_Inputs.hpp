@@ -15,6 +15,7 @@ class Input {
         int action;
 
     public:
+
         void_func pressed_func;
         void_func released_func;
         void_func repeated_func;
@@ -27,6 +28,8 @@ class Input {
 
 class Window_Inputs {
     private:
+        v2 cursor_pos;
+        v2 last_cursor_pos;
         GLFWwindow* window;
         std::map<int, Input> inputs;
 
@@ -37,7 +40,10 @@ class Window_Inputs {
         GLFWwindow* getWindow();
 
         void input(int key, const int action);
-        void doAll();
+        void loop();
+
+        void cursor(const double& xPos, const double& yPos);
+        v2 cursorDelta();
 
         template <typename F>
             void setFunc(int key, int action, F f) {

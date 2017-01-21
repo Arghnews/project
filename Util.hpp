@@ -20,8 +20,14 @@ typedef glm::dvec3 v3;
 typedef glm::dvec4 v4;
 typedef glm::dquat dq;
 typedef glm::dmat4 m4;
-
 typedef std::vector<v3> vv3;
+
+static const v3 forward(0.0,0.0,1.0);
+static const v3 backward(0.0,0.0,-1.0);
+static const v3 left(-1.0,0.0,0.0);
+static const v3 right(1.0,0.0,0.0);
+static const v3 up(0.0,1.0,0.0);
+static const v3 down(0.0,-1.0,0.0);
 //typedef std::pair<float,float> Projection;
 
 static const v3 zeroV(0.0f,0.0f,0.0f);

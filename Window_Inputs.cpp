@@ -48,7 +48,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     // The callback functions receives the cursor position, 
     // measured in screen coordinates but relative to the top-left corner of the window client area
-    std::cout << "Cursor pos: (" << xpos << "," << ypos << ")" << "\n";
+    inputs.cursor(xpos,ypos);
 }
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -83,6 +83,7 @@ GLFWwindow* Window_Inputs::init_window() {
     if (!glfwInit()) {
         std::cerr << "glfw init failed" << "\n";
         // Initialization failed
+        exit(1);
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -107,6 +108,11 @@ GLFWwindow* Window_Inputs::init_window() {
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
 
+    // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+    glewExperimental = GL_TRUE;
+    // Initialize GLEW to setup the OpenGL Function pointers
+    glewInit();
+
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
@@ -114,6 +120,16 @@ GLFWwindow* Window_Inputs::init_window() {
 }
 
 Window_Inputs::Window_Inputs() {
+}
+
+void Window_Inputs::cursor(const double& xPos, const double& yPos) {
+    cursor_pos = v2(xPos, -yPos);
+}
+
+v2 Window_Inputs::cursorDelta() {
+    const v2 delta = cursor_pos - last_cursor_pos;
+    last_cursor_pos = cursor_pos;
+    return delta;
 }
 
 GLFWwindow* Window_Inputs::getWindow() {
@@ -124,7 +140,9 @@ void Window_Inputs::input(int key, const int action) {
     inputs[key].setAction(action);
 }
 
-void Window_Inputs::doAll() {
+void Window_Inputs::loop() {
+    glfwSwapBuffers(window);
+    glfwPollEvents();
     for (auto& inp: inputs) {
         Input& in = inp.second;
         in.doAction();
