@@ -94,19 +94,33 @@ int main() {
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
 
-        v3 lightPos(1.2f, 1.0f, 2.0f);
+        v3 lightPos(2.0f,0.0f,0.0f);
         m4 model;
 
         // normal cube
         // --
         normalShader.use();
-        GLint objectColorLoc = glGetUniformLocation(normalShader.Program, "objectColor");
-        GLint lightColorLoc  = glGetUniformLocation(normalShader.Program, "lightColor");
-        GLint lightPosLoc = glGetUniformLocation(normalShader.Program, "lightPos");
+        GLint matAmbientLoc  = glGetUniformLocation(normalShader.Program, "material.ambient");
+        GLint matDiffuseLoc  = glGetUniformLocation(normalShader.Program, "material.diffuse");
+        GLint matSpecularLoc = glGetUniformLocation(normalShader.Program, "material.specular");
+        GLint matShineLoc    = glGetUniformLocation(normalShader.Program, "material.shininess"); 
+
+        GLint lightAmbientLoc  = glGetUniformLocation(normalShader.Program, "light.ambient");
+        GLint lightDiffuseLoc  = glGetUniformLocation(normalShader.Program, "light.diffuse");
+        GLint lightSpecularLoc = glGetUniformLocation(normalShader.Program, "light.specular");
+          
+        glUniform3f(lightAmbientLoc,  0.2f, 0.2f, 0.2f);
+        glUniform3f(lightDiffuseLoc,  0.5f, 0.5f, 0.5f); // Let's darken the light a bit to fit the scene
+        glUniform3f(lightSpecularLoc, 1.0f, 1.0f, 1.0f);
+          
+        glUniform3f(matAmbientLoc,  0.05375f,   0.05f, 0.06625f);
+        glUniform3f(matDiffuseLoc,  0.18275f, 0.17f, 0.22525f);
+        glUniform3f(matSpecularLoc, 0.332741f, 0.328634f, 0.346435f);
+        glUniform1f(matShineLoc,    0.3f * 128.0f);
+
+        GLint lightPosLoc = glGetUniformLocation(normalShader.Program, "light.position");
         GLint viewPosLoc = glGetUniformLocation(normalShader.Program, "viewPos");
         // Don't forget to 'use' the corresponding shader program first (to set the uniform)
-        glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
-        glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f); // Also set light's color (white)
         glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z); 
         glUniform3f(viewPosLoc, camera.pos().x, camera.pos().y, camera.pos().z);
 
