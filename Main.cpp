@@ -45,8 +45,10 @@ int main() {
 
     inputs.setFunc(GLFW_KEY_LEFT_SHIFT,GLFW_PRESS,[&] () {camera.toggleSpeed(); });
 
-    Shader shaderProgram("vertex.shader", "fragment.shader");
+    Shader normalShader("vertex.shader", "fragment.shader");
+    Shader lightShader("light.vertex.shader", "light.fragment.shader");
 
+    // cube --
     GLuint VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -60,10 +62,22 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
+    //glEnableVertexAttribArray(1);
 
     glBindVertexArray(0); // Unbind VAO
+
+    // light --
+    GLuint lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+    // We only need to bind to the VBO, the container's VBO's data already contains the correct data.
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // Set the vertex attributes (only position data for our lamp)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0); 
+
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -75,37 +89,51 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindVertexArray(VAO);
-        shaderProgram.use();
 
-        //
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
 
-        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
-
         m4 model;
-        m4 trans;
-        m4 rotateM; //= glm::mat4_cast(qua);
-        m4 scale;
 
-        //trans = glm::translate(trans, pos);
-        //scale = glm::scale(scale, sca);
-        //model = trans * rotateM * scale;
+        // normal cube
+        // --
+        normalShader.use();
+        GLint objectColorLoc = glGetUniformLocation(normalShader.Program, "objectColor");
+        GLint lightColorLoc  = glGetUniformLocation(normalShader.Program, "lightColor");
+        // Don't forget to 'use' the corresponding shader program first (to set the uniform)
+        glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
+        glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f); // Also set light's color (white)
 
         m4 view = camera.update();
-
-        m4 projection;
-        projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-        //projection = glm::ortho(-3.0f,3.0f,-3.0f,3.0f,0.1f, 100.0f);
-
-        GLint modelLoc = glGetUniformLocation(shaderProgram.Program, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        GLint viewLoc = glGetUniformLocation(shaderProgram.Program, "view");
+        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
+        m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+        GLuint modelLoc = glGetUniformLocation(normalShader.Program, "model");
+        GLuint viewLoc = glGetUniformLocation(normalShader.Program, "view");
+        GLuint projectionLoc = glGetUniformLocation(normalShader.Program, "projection");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        GLint projectionLoc = glGetUniformLocation(shaderProgram.Program, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glBindVertexArray(VAO);
+        model = m4();
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glBindVertexArray(0);
+
+        // light source
+        // --
+        lightShader.use();
+        modelLoc = glGetUniformLocation(lightShader.Program, "model");
+        viewLoc = glGetUniformLocation(lightShader.Program, "view");
+        projectionLoc = glGetUniformLocation(lightShader.Program, "projection");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        model = m4();
+        v3 lightPos(1.2f, 1.0f, 2.0f);
+        model = glm::translate(model, lightPos);
+        model = glm::scale(model, v3(0.2f));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glBindVertexArray(lightVAO);
 
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
