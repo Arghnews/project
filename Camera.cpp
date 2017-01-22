@@ -46,4 +46,3 @@ m4 Camera::update() { // view matrix
     const v3 up_relative = UP * orient;
     return glm::lookAt(pos, pos + facing, up_relative);
 }
-

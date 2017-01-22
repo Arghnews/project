@@ -54,12 +54,12 @@ badd +1 Shader.hpp
 badd +1 Main.cpp
 badd +1 Camera.cpp
 badd +2 vertex.shader
-badd +1 fragment.shader
+badd +12 fragment.shader
 badd +1 data.hpp
 badd +1 graphics_cw/arm.cpp
 badd +168 graphics_cw/crap.hpp
 badd +1 Camera.hpp
-badd +0 light.vertex.shader
+badd +2 light.vertex.shader
 badd +0 light.fragment.shader
 args camera.cpp
 edit data.hpp
@@ -175,12 +175,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 2 - ((1 * winheight(0) + 34) / 69)
+let s:l = 1 - ((0 * winheight(0) + 34) / 68)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-2
-normal! 05|
+1
+normal! 0
 tabedit Main.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -294,12 +294,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 122 - ((39 * winheight(0) + 34) / 68)
+let s:l = 134 - ((35 * winheight(0) + 34) / 68)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-122
-normal! 0
+134
+normal! 019|
 tabedit vertex.shader
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -317,8 +317,8 @@ set nosplitright
 wincmd t
 set winheight=1 winwidth=1
 exe '1resize ' . ((&lines * 16 + 35) / 70)
-exe '2resize ' . ((&lines * 16 + 35) / 70)
-exe '3resize ' . ((&lines * 16 + 35) / 70)
+exe '2resize ' . ((&lines * 21 + 35) / 70)
+exe '3resize ' . ((&lines * 11 + 35) / 70)
 exe '4resize ' . ((&lines * 16 + 35) / 70)
 argglobal
 setlocal keymap=
@@ -425,12 +425,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 8) / 16)
+let s:l = 14 - ((13 * winheight(0) + 8) / 16)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
-normal! 0
+14
+normal! 027|
 wincmd w
 argglobal
 edit fragment.shader
@@ -538,12 +538,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 7 - ((6 * winheight(0) + 8) / 16)
+let s:l = 13 - ((12 * winheight(0) + 10) / 21)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-7
-normal! 0
+13
+normal! 022|
 wincmd w
 argglobal
 edit light.vertex.shader
@@ -559,8 +559,8 @@ setlocal cinkeys=0{,0},0),:,0#,!^F,o,O,e
 setlocal cinoptions=
 setlocal cinwords=if,else,while,do,for,switch
 setlocal colorcolumn=
-setlocal comments=s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-
-setlocal commentstring=/*%s*/
+setlocal comments=:#
+setlocal commentstring=#\ %s
 setlocal complete=.,w,b,u,t,i
 setlocal concealcursor=
 setlocal conceallevel=0
@@ -576,8 +576,8 @@ setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
 setlocal expandtab
-if &filetype != ''
-setlocal filetype=
+if &filetype != 'conf'
+setlocal filetype=conf
 endif
 setlocal foldcolumn=0
 setlocal foldenable
@@ -590,7 +590,7 @@ setlocal foldminlines=1
 setlocal foldnestmax=20
 setlocal foldtext=foldtext()
 setlocal formatexpr=
-setlocal formatoptions=tcq
+setlocal formatoptions=ql
 setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
 setlocal grepprg=
 setlocal iminsert=0
@@ -651,7 +651,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 8) / 16)
+let s:l = 1 - ((0 * winheight(0) + 5) / 11)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -764,16 +764,17 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 3 - ((2 * winheight(0) + 8) / 16)
+let s:l = 1 - ((0 * winheight(0) + 8) / 16)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-3
-normal! 0
+1
+normal! 017|
 wincmd w
+2wincmd w
 exe '1resize ' . ((&lines * 16 + 35) / 70)
-exe '2resize ' . ((&lines * 16 + 35) / 70)
-exe '3resize ' . ((&lines * 16 + 35) / 70)
+exe '2resize ' . ((&lines * 21 + 35) / 70)
+exe '3resize ' . ((&lines * 11 + 35) / 70)
 exe '4resize ' . ((&lines * 16 + 35) / 70)
 tabedit graphics_cw/arm.cpp
 set splitbelow splitright
@@ -894,6 +895,7 @@ exe s:l
 normal! zt
 473
 normal! 06|
+2wincmd w
 tabedit Window_Inputs.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -1013,6 +1015,7 @@ exe s:l
 normal! zt
 97
 normal! 034|
+2wincmd w
 tabedit Window_Inputs.hpp
 set splitbelow splitright
 set nosplitbelow
@@ -1132,6 +1135,7 @@ exe s:l
 normal! zt
 39
 normal! 053|
+2wincmd w
 tabedit Camera.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -1251,6 +1255,7 @@ exe s:l
 normal! zt
 13
 normal! 015|
+2wincmd w
 tabedit Camera.hpp
 set splitbelow splitright
 set nosplitbelow
@@ -1370,6 +1375,7 @@ exe s:l
 normal! zt
 17
 normal! 0
+2wincmd w
 tabedit Util.hpp
 set splitbelow splitright
 set nosplitbelow
@@ -1489,6 +1495,7 @@ exe s:l
 normal! zt
 80
 normal! 026|
+2wincmd w
 tabedit doMe.sh
 set splitbelow splitright
 set nosplitbelow
@@ -1606,6 +1613,7 @@ exe s:l
 normal! zt
 20
 normal! 06|
+2wincmd w
 tabedit Shader.hpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -1847,9 +1855,10 @@ normal! zt
 2
 normal! 0
 wincmd w
+2wincmd w
 exe '1resize ' . ((&lines * 13 + 35) / 70)
 exe '2resize ' . ((&lines * 53 + 35) / 70)
-tabnext 2
+tabnext 3
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
 endif

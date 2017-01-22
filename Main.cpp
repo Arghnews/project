@@ -59,11 +59,11 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
-    // Color attribute
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
-    //glEnableVertexAttribArray(1);
+    // Normals attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0); // Unbind VAO
 
@@ -74,7 +74,7 @@ int main() {
     // We only need to bind to the VBO, the container's VBO's data already contains the correct data.
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // Set the vertex attributes (only position data for our lamp)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
     glBindVertexArray(0); 
 
@@ -86,14 +86,15 @@ int main() {
 
         // Render
         // Clear the colorbufer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
 
+        v3 lightPos(1.2f, 1.0f, 2.0f);
         m4 model;
 
         // normal cube
@@ -101,9 +102,11 @@ int main() {
         normalShader.use();
         GLint objectColorLoc = glGetUniformLocation(normalShader.Program, "objectColor");
         GLint lightColorLoc  = glGetUniformLocation(normalShader.Program, "lightColor");
+        GLint lightPosLoc = glGetUniformLocation(normalShader.Program, "lightPos");
         // Don't forget to 'use' the corresponding shader program first (to set the uniform)
         glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
         glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f); // Also set light's color (white)
+        glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z); 
 
         m4 view = camera.update();
         float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
@@ -119,6 +122,7 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         glBindVertexArray(0);
+        // --
 
         // light source
         // --
@@ -128,14 +132,15 @@ int main() {
         projectionLoc = glGetUniformLocation(lightShader.Program, "projection");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glBindVertexArray(lightVAO);
         model = m4();
-        v3 lightPos(1.2f, 1.0f, 2.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, v3(0.2f));
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glBindVertexArray(lightVAO);
-
         glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+        glBindVertexArray(0);
+        // --
 
         inputs.loop(); // polls loop and executes functions
     }
