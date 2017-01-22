@@ -146,7 +146,7 @@ void createShapes() {
     shapes[shoulder] = (new Shape(&cubePointsBottom,
             &cubeColours,&cubeColoursPurple,&cubeColoursGreen,
             shoulder,bottom_upRightTop,canCollideWith,
-            v3(1.0f,7.5f,1.0f),zeroV));
+            v3(0.3f,4.5f,0.3f),zeroV));
 
     canCollideWith = {shoulder, arm};
     // shoulder->arm
@@ -160,7 +160,7 @@ void createShapes() {
     shapes[arm] = (new Shape(&cubePointsBottom,
             &cubeColours,&cubeColoursPurple,&cubeColoursGreen,
             arm,bottom_upRightTop,canCollideWith,
-            v3(1.0f,5.5f,1.0f),zeroV));
+            v3(0.3f,3.5f,0.3f),zeroV));
 
     // arm->forearm
     canCollideWith = {arm,forearm};
@@ -174,7 +174,7 @@ void createShapes() {
     shapes[forearm] = (new Shape(&cubePointsBottom,
             &cubeColours,&cubeColoursPurple,&cubeColoursGreen,
             forearm,bottom_upRightTop,canCollideWith,
-            v3(1.0f,4.5f,1.0f),zeroV));
+            v3(0.3f,5.5f,0.3f),zeroV));
 
     // forearm->platter
     canCollideWith = {forearm,platter};

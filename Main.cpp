@@ -103,10 +103,12 @@ int main() {
         GLint objectColorLoc = glGetUniformLocation(normalShader.Program, "objectColor");
         GLint lightColorLoc  = glGetUniformLocation(normalShader.Program, "lightColor");
         GLint lightPosLoc = glGetUniformLocation(normalShader.Program, "lightPos");
+        GLint viewPosLoc = glGetUniformLocation(normalShader.Program, "viewPos");
         // Don't forget to 'use' the corresponding shader program first (to set the uniform)
         glUniform3f(objectColorLoc, 1.0f, 0.5f, 0.31f);
         glUniform3f(lightColorLoc,  1.0f, 1.0f, 1.0f); // Also set light's color (white)
         glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z); 
+        glUniform3f(viewPosLoc, camera.pos().x, camera.pos().y, camera.pos().z);
 
         m4 view = camera.update();
         float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;

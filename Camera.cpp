@@ -27,6 +27,10 @@ Camera::Camera(const float& sp) :
     speed = slow_speed;
 }
 
+v3 Camera::pos() {
+    return (trans * v4(0.0f, 0.0f, 0.0f, 1.0f));
+}
+
 void Camera::move(const v3& v) { // change translation matrix by v
     trans = glm::translate(trans, speed * (v * orient));
 }

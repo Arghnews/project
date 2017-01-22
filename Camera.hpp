@@ -13,6 +13,8 @@ class Camera {
         Camera();
         Camera(const float& sp);
 
+        v3 pos();
+
         void toggleSpeed();
 
         void move(const v3& v); // change translation matrix by v
