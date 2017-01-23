@@ -1,5 +1,0 @@
-/dcs/14/u1419657/project/VulkanSDK/1.0.30.0/examples/build/CMakeFiles/edit_cache.dir
-/dcs/14/u1419657/project/VulkanSDK/1.0.30.0/examples/build/CMakeFiles/rebuild_cache.dir
-/dcs/14/u1419657/project/VulkanSDK/1.0.30.0/examples/build/CMakeFiles/cubepp.dir
-/dcs/14/u1419657/project/VulkanSDK/1.0.30.0/examples/build/CMakeFiles/cube.dir
-/dcs/14/u1419657/project/VulkanSDK/1.0.30.0/examples/build/CMakeFiles/vulkaninfo.dir
