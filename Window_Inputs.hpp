@@ -41,7 +41,8 @@ class Window_Inputs {
         v2 windowSize();
 
         void input(int key, const int action);
-        void loop();
+        void swapBuffers();
+        void processInput();
 
         void cursor(const double& xPos, const double& yPos);
         v2 cursorDelta();

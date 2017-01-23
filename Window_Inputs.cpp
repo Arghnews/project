@@ -146,8 +146,11 @@ void Window_Inputs::input(int key, const int action) {
     inputs[key].setAction(action);
 }
 
-void Window_Inputs::loop() {
+void Window_Inputs::swapBuffers() {
     glfwSwapBuffers(window);
+}
+
+void Window_Inputs::processInput() {
     glfwPollEvents();
     for (auto& inp: inputs) {
         Input& in = inp.second;

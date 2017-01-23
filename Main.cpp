@@ -158,7 +158,8 @@ int main() {
         glBindVertexArray(0);
         // --
 
-        inputs.loop(); // polls loop and executes functions
+        inputs.swapBuffers(); // swaps buffers
+        inputs.processInput(); // polls input and executes action based on that
     }
 
 
