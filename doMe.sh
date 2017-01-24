@@ -25,8 +25,10 @@ main() {
 
 	compilerFlags="-O3 -std=c++11"
 
-	libraries="-lglfw -lGL -lGLEW"
-#cmd='g++  -I/modules/cs324/glew-1.11.0/include -O3 -std=c++11 -L/usr/X11R6/lib -L/modules/cs324/glew-1.11.0/lib -Wl,-rpath,/modules/cs324/glew-1.11.0/lib Shape.cpp Cuboid.cpp AABB.cpp Octtree.cpp arm.cpp State.cpp Movement.cpp -lglut -lGL -lGLU -lX11 -lm -lGLEW -o arm'
+    #libraries="-lGLEW -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi"
+#g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi
+    # at least on my home ubuntu, glfw -> dynamic/shared, glfw3 static
+    libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi"
 
 	includes=""
 
@@ -92,14 +94,16 @@ main() {
     # if any files were recompiled or if the executable doesn't exist
     # link the objects
 	if [ ${#recompiles[@]} -gt 0 ] || [ ! -f $executable ]; then
-        local link="$compiler $compilerFlags $includes $libraries -o $executable"
+        local link="$compiler $compilerFlags $includes"
         local objectlist=""
         for f in ${cppFiles[@]}; do
             local obj="$(echo $f | sed -E "s/^(.*)\.c(pp)?$/\1.o/g")"
             objectlist="$objectlist $obj"
         done
-        p "Linking ->" $link $objectlist
-		$link $objectlist # link
+        local after="$libraries -o $executable"
+        local linkCmd="$link $objectlist $after"
+        p "Linking ->" $linkCmd
+		$linkCmd # link
         # if linker errored
         [ $? -ne 0 ] && echoErr "Linking failed" && exit 1
         v "Linked successfully"
