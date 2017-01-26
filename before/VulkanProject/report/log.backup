@@ -1,0 +1,360 @@
+
+Date:   Fri Nov 25 18:14:09 2016 +0000
+
+    Looks nice
+
+Date:   Fri Nov 25 17:49:10 2016 +0000
+
+    Need to figure out how to render many things etc, get a better way to translate between worldly "Thing" objects and the actual vertices to render stuff
+
+Date:   Fri Nov 25 16:32:59 2016 +0000
+
+    Renamed method to move object, as that iss what it is, now going to think what next, maybe render several things?
+
+Date:   Fri Nov 25 16:21:35 2016 +0000
+
+    Changed camera name to instance string const, moved divide times by 10 into physics class
+
+Date:   Fri Nov 25 16:04:53 2016 +0000
+
+    Think have cracked simple physics for now, linear decel easier, multiplied by dt to be consistent across timesteps
+
+Date:   Fri Nov 25 14:06:16 2016 +0000
+
+    Need to normalize result of sideways motion vector crossed with up vector, else when object is tilted will move sideways slower, still cannot move up/down, need to investigate that next
+
+Date:   Fri Nov 25 12:50:55 2016 +0000
+
+    Just got it working, if you change things like the time delta passed in it rockets off, so still need looking at
+
+Date:   Fri Nov 25 10:55:42 2016 +0000
+
+    Need to tweak force parameters, currently shoot off, maybe in wrong dir etc got to find out
+
+Date:   Fri Nov 25 09:44:39 2016 +0000
+
+    Need to add vector of force vectors to each thing so that the physics method that resolves the forces on an object can take them all
+
+Date:   Fri Nov 25 08:01:24 2016 +0000
+
+    Integrated physics snazzy I believe, need to do more testing, hugh tesselation support seems pooped
+
+Date:   Fri Nov 25 05:51:34 2016 +0000
+
+    Dont normalize lookingAt when making camera, and changed physics to work with things rather than abstract states, now going to move physics code to master while loop
+
+Date:   Fri Nov 25 05:16:20 2016 +0000
+
+    Updated things to have a camera inside instead, cleaned up classes a bit, still yet to integrate physics, should make changing lookingAt vector a method on class so can also normalize every time
+
+Date:   Fri Nov 25 03:38:14 2016 +0000
+
+    About to integrate stuffz
+
+Date:   Fri Nov 25 02:54:57 2016 +0000
+
+    Changed input to take object (camera) name to move, about to integrate physics class into my objects
+
+Date:   Thu Nov 24 12:40:50 2016 +0000
+
+    About to go for lunch, need to integrate phys stuff
+
+Date:   Thu Nov 24 12:20:46 2016 +0000
+
+    Fixed swapchain recreate, due to pointer type change
+
+Date:   Thu Nov 24 12:00:11 2016 +0000
+
+    Moved stuff to input classes etc, working atm, now going to apply physics stuff to limit framerate
+
+Date:   Thu Nov 24 08:35:30 2016 +0000
+
+    Moved turnObject to be more implementation specific for subclasses, kept some of it for cursor outside at top level as need window dimensions though
+
+Date:   Thu Nov 24 08:00:17 2016 +0000
+
+    Done with floats, going to integrate physics into main loop
+
+Date:   Thu Nov 24 07:11:18 2016 +0000
+
+    About to change again, suspect float->doubles is issue
+
+Date:   Thu Nov 24 06:51:48 2016 +0000
+
+    About to switch to doubles, all good so far
+
+Date:   Thu Nov 24 06:31:13 2016 +0000
+
+    About to change to doubles and include Physics, this broke integrate branch before, this is good point
+
+Date:   Thu Nov 24 04:18:17 2016 +0000
+
+    Going to try and add Physics cpp into program main loop now
+
+Date:   Thu Nov 24 04:01:40 2016 +0000
+
+    Credit to Gaffer on Games, using his code as a basis for fps and tickrate, seems to work atm
+
+Date:   Tue Nov 22 10:36:22 2016 +0000
+
+    Think momentum/mass works, wooho!
+
+Date:   Tue Nov 22 07:59:42 2016 +0000
+
+    Going to try and convert this to incorporate mass
+
+Date:   Tue Nov 22 07:09:18 2016 +0000
+
+    About to turn from just velocity etc to momentum, ie add in mass
+
+Date:   Tue Nov 22 05:02:44 2016 +0000
+
+    Euler blows up quick, got basic air resist with rk4
+
+Date:   Tue Nov 22 04:39:20 2016 +0000
+
+    Testing out physics from gaffer on games
+
+Date:   Sat Nov 19 14:08:31 2016 +0000
+
+    Now about to figure out how to render multiple seperate things
+
+Date:   Sat Nov 19 13:58:19 2016 +0000
+
+    Mostly decoupled physics, still need to take a look at frame times if slip behind
+
+Date:   Sat Nov 19 13:30:16 2016 +0000
+
+    Splitting up still to physics etc, using virtual func seems messy but dont think I have a choice save a cast when getting derived or top level items from a map
+
+Date:   Sat Nov 19 09:08:00 2016 +0000
+
+    Moved physics sort of to another class, still need to complete move
+
+Date:   Sat Nov 19 07:40:36 2016 +0000
+
+    Decoupled timekeeping and a helper file, changed not_make_but_make_file to include all header dependencies
+
+Date:   Sat Nov 19 05:26:22 2016 +0000
+
+    Big rework, framerate and tickrate decoupled, main loop using an if to decide which to do, may need tweaking, no more delta, implemented airres/friction (fancy names) but basically just decel proportional to velocity and to square of it, stops sliding at low speeds
+
+Date:   Fri Nov 18 23:28:52 2016 +0000
+
+    Velocity etc works atm with different framerates, this is with decel constant as 0, I suspect this is the problem and will investigate this next
+
+Date:   Fri Nov 18 22:05:08 2016 +0000
+
+    Believed to have fixed physics with square decel independent of framerate, see notes file, about to add mass
+
+Date:   Thu Nov 17 23:54:17 2016 +0000
+
+    Changed movement to use accel, eg. for movement in x, x -= xSpeed*xSpeed*worldDecelv.x * decelConst
+
+Date:   Thu Nov 17 21:18:02 2016 +0000
+
+    Fixed god damn problem, was vsync
+
+Date:   Thu Nov 17 19:41:02 2016 +0000
+
+    Saved in broken state, going to test timing
+
+Date:   Thu Nov 17 18:25:27 2016 +0000
+
+    Currently broken above 60fps
+
+Date:   Thu Nov 17 14:05:24 2016 +0000
+
+    Added destroying of debug callback on close for clean closing
+
+Date:   Wed Nov 16 21:02:43 2016 +0000
+
+    Camera and mouse fixed to be independent of framerate
+
+Date:   Wed Nov 16 17:08:18 2016 +0000
+
+    vim relative lines
+
+Date:   Wed Nov 16 16:55:52 2016 +0000
+
+    Better camera, limits angles, added in delta frametime, need to use this in velocities etc
+
+Date:   Wed Nov 16 12:15:52 2016 +0000
+
+    Going for lunch
+
+Date:   Wed Nov 16 07:57:53 2016 +0000
+
+    Added shift to whiz about, added remove executable to bash script
+
+Date:   Wed Nov 16 07:44:05 2016 +0000
+
+    Smoother camera using very simple velocity idea
+
+Date:   Wed Nov 16 06:37:59 2016 +0000
+
+    Added speed modifiers and up/down movement
+
+Date:   Wed Nov 16 06:06:13 2016 +0000
+
+    Made better, will only do what it needs, ie. will not link if compile error
+
+Date:   Wed Nov 16 05:27:59 2016 +0000
+
+    Makescriptthing added clean function(yes it it still bad) and mouse camera working nicely
+
+Date:   Wed Nov 16 03:25:12 2016 +0000
+
+    Two spinning squares, removed texture stuff
+
+Date:   Wed Nov 16 03:10:23 2016 +0000
+
+    Now actual start point to add movement etc
+
+Date:   Wed Nov 16 03:08:34 2016 +0000
+
+    Moved from all vars static (oops) to members
+
+Date:   Wed Nov 16 02:37:05 2016 +0000
+
+    Made if header for cpp file exists and changed recompile, fixed typo
+
+Date:   Wed Nov 16 02:32:11 2016 +0000
+
+    About to start afresh
+
+Date:   Wed Nov 16 02:24:25 2016 +0000
+
+    Added runMe.sh to master
+
+Date:   Sat Nov 12 23:40:15 2016 +0000
+
+    Depth testing done
+
+Date:   Sat Nov 12 22:06:05 2016 +0000
+
+    Textures working, now refactored into header/cpp files
+
+Date:   Sat Nov 12 17:13:03 2016 +0000
+
+    Done a simple texturing thingey!
+
+Date:   Fri Nov 11 23:40:23 2016 +0000
+
+    Just finished adding in texture to program from file
+
+Date:   Fri Nov 11 22:50:39 2016 +0000
+
+    Loaded textures and loaded them onto gpu with about 200 functions
+
+Date:   Fri Nov 11 22:12:44 2016 +0000
+
+    Added texture load
+
+Date:   Fri Nov 11 19:17:08 2016 +0000
+
+    Starting textures
+
+Date:   Fri Nov 11 16:13:29 2016 +0000
+
+    Moved pipeline bit to pipeline - about to try the separate queue for command buffer execution thing again
+
+Date:   Fri Nov 11 15:16:04 2016 +0000
+
+    Achieved spinning square, had to had in descriptor info into pipeline
+
+Date:   Fri Nov 11 14:16:08 2016 +0000
+
+    Descriptor layout and buffer done
+
+Date:   Thu Nov 10 19:39:21 2016 +0000
+
+    Done index buffer
+
+Date:   Thu Nov 10 17:24:31 2016 +0000
+
+    Working rectangle using index buffer before separate queue for transfer
+
+Date:   Thu Nov 10 14:49:40 2016 +0000
+
+    Added staging buffer, did not do separate queue for mem transfer and graphics
+
+Date:   Thu Nov 10 13:54:31 2016 +0000
+
+    I CHANGED IT!
+
+Date:   Wed Nov 9 19:39:07 2016 +0000
+
+    My "make" equivalent :)
+
+Date:   Wed Nov 9 19:32:38 2016 +0000
+
+    Done basic tutorial
+
+Date:   Wed Nov 9 19:25:13 2016 +0000
+
+    Using Swapchain like Vulkan types, tutorial uses SwapChain, note difference
+
+Date:   Wed Nov 9 19:21:22 2016 +0000
+
+    Added resizeable/recreate SwapChain, except for recreate SwapChain on present
+
+Date:   Wed Nov 9 18:43:23 2016 +0000
+
+    Added simple usleep for now
+
+Date:   Wed Nov 9 18:32:32 2016 +0000
+
+    Finished triangle! And added usleep to stop program freezing the computer
+
+Date:   Wed Nov 9 17:14:54 2016 +0000
+
+    Disabled dynamic state to stop validation warn, finished command buffer
+
+Date:   Wed Nov 9 16:09:11 2016 +0000
+
+    Finished graphics pipeline
+
+Date:   Wed Nov 9 14:22:38 2016 +0000
+
+    Programmable pipeline in
+
+Date:   Tue Nov 8 18:45:34 2016 +0000
+
+    Simple example shaders
+
+Date:   Tue Nov 8 18:44:41 2016 +0000
+
+    My sh-ee-t makefile because I don't understand makefiles
+
+Date:   Tue Nov 8 15:28:04 2016 +0000
+
+    About to start graphics pipeline
+
+Date:   Tue Nov 8 15:22:18 2016 +0000
+
+    Forgot to remove error
+
+Date:   Tue Nov 8 15:19:45 2016 +0000
+
+    Done swap chain!
+
+Date:   Tue Nov 8 13:48:05 2016 +0000
+
+    Added swap chain adequacy checks
+
+Date:   Mon Nov 7 19:31:44 2016 +0000
+
+    Added physical device, need to add logical interface next
+
+Date:   Mon Nov 7 17:38:45 2016 +0000
+
+    Copied in validation layers
+
+Date:   Mon Nov 7 16:44:14 2016 +0000
+
+    Window open
+
+Date:   Mon Nov 7 16:15:02 2016 +0000
+
+    Vulkan setup

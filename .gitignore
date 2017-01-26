@@ -4,4 +4,9 @@ glfw-3.2.1
 *.swp
 exec
 *.o
-VulkanSDK
+*.aux
+*.bbl
+*.blg
+*.log
+*.pdf
+*.jpg
