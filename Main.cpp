@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <string>
 
 #include "Util.hpp"
 #include "Shader.hpp"
@@ -30,8 +31,13 @@ int main() {
 
     set_keyboard(inputs,window,camera);
     
-    Shader normalShader("vertex.shader", "fragment.shader");
-    Shader lightShader("light.vertex.shader", "light.fragment.shader");
+    std::string shaderDir = "shaders/";
+    std::string normalVertex = shaderDir + "vertex.shader";
+    std::string normalFrag = shaderDir + "fragment.shader";
+    std::string lightVertex = shaderDir + "light.vertex.shader";
+    std::string lightFrag = shaderDir + "light.fragment.shader";
+    Shader normalShader(normalVertex.c_str(), normalFrag.c_str());
+    Shader lightShader(lightVertex.c_str(), lightFrag.c_str());
 
     // cube --
     GLuint VBO, VAO;

@@ -20,12 +20,12 @@ main() {
     "Cuboid.cpp"
     "Camera.cpp"
     "Shader.cpp"
-    "Actor.cpp"
-    #"Window_Inputs.cpp"
+    #"Actor.cpp"
+    "Window_Inputs.cpp"
+    "Main.cpp"
     )
 
 	#cppFiles=( 
-    #"Main.cpp"
 	#)
 
 	compiler="g++"
