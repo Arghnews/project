@@ -24,20 +24,24 @@ P_State::P_State(v3 pos, float m) :
 void P_State::recalculate() {
     velocity = momentum * inverse_mass;
     acceleration = force * inverse_mass;
+    orient = glm::normalize(orient);
 }
 
 void P_State::add_force(const v3& f) {
     forces.push_back(f);
 }
 
-v3 P_State::net_force() {
+v3 P_State::net_force() const {
     // sum of forces on object
     v3 net(zeroV);
     for (const auto& f: forces) {
         net += f;
     }
-    forces.clear();
     return net;
+}
+
+void P_State::clear_forces() {
+    forces.clear();
 }
 
 std::ostream& operator<<(std::ostream& stream, const P_State& state) {

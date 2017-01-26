@@ -31,9 +31,10 @@ class P_State {
         const float mass;
         const float inverse_mass;
 
-        void recalculate();
         void add_force(const v3& force);
-        v3 net_force();
+        void clear_forces();
+        void recalculate();
+        v3 net_force() const;
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 };
