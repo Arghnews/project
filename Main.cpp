@@ -17,34 +17,19 @@
 #include "Camera.hpp"
 #include "data.hpp"
 
+// extern in Window_Inputs cpp
 Window_Inputs inputs;
 
-void set_keyboard(Window_Inputs& w_in, GLFWwindow* window, Camera& c);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera);
 
 int main() {
 
     GLFWwindow* window = inputs.init_window(1440, 1440);
 
     Camera camera;
+
+    set_keyboard(inputs,window,camera);
     
-    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
-    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
-
-    inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {std::cout << "Left mouse\n"; });
-
-    // must be capture by value here
-    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
-
-    // camera
-    inputs.setFunc2(GLFW_KEY_W,[&] () {camera.move(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_S,[&] () {camera.move(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_A,[&] () {camera.move(LEFT); });
-    inputs.setFunc2(GLFW_KEY_D,[&] () {camera.move(RIGHT); });
-    inputs.setFunc2(GLFW_KEY_UP,[&] () {camera.move(UP); });
-    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {camera.move(DOWN); });
-
-    inputs.setFunc(GLFW_KEY_LEFT_SHIFT,GLFW_PRESS,[&] () {camera.toggleSpeed(); });
-
     Shader normalShader("vertex.shader", "fragment.shader");
     Shader lightShader("light.vertex.shader", "light.fragment.shader");
 
@@ -65,6 +50,7 @@ int main() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     glEnableVertexAttribArray(1);
 
+
     glBindVertexArray(0); // Unbind VAO
 
     // light --
@@ -80,6 +66,8 @@ int main() {
 
 
     while (!glfwWindowShouldClose(window)) {
+
+        inputs.processInput(); // polls input and executes action based on that
 
         const v2 mouseDelta = inputs.cursorDelta();
         camera.rotate(mouseDelta);
@@ -159,7 +147,6 @@ int main() {
         // --
 
         inputs.swapBuffers(); // swaps buffers
-        inputs.processInput(); // polls input and executes action based on that
     }
 
 
@@ -168,3 +155,22 @@ int main() {
     inputs.close();
 }
 
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera) {
+    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
+    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
+
+    inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {std::cout << "Left mouse\n"; });
+
+    // must be capture by value here
+    inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
+
+    // camera
+    inputs.setFunc2(GLFW_KEY_W,[&] () {camera.move(FORWARD); });
+    inputs.setFunc2(GLFW_KEY_S,[&] () {camera.move(BACKWARD); });
+    inputs.setFunc2(GLFW_KEY_A,[&] () {camera.move(LEFT); });
+    inputs.setFunc2(GLFW_KEY_D,[&] () {camera.move(RIGHT); });
+    inputs.setFunc2(GLFW_KEY_UP,[&] () {camera.move(UP); });
+    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {camera.move(DOWN); });
+
+    inputs.setFunc(GLFW_KEY_LEFT_SHIFT,GLFW_PRESS,[&] () {camera.toggleSpeed(); });
+}
