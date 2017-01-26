@@ -8,6 +8,9 @@
 #include "Util.hpp"
 #include "P_State.hpp"
 
+#include <iostream>
+#include <sstream>
+
 /* a simple class that encompasses the physical state of an object
  * Things like it's position, momentum, mass and orientation are here
 */
@@ -35,4 +38,9 @@ v3 P_State::net_force() {
     }
     forces.clear();
     return net;
+}
+
+std::ostream& operator<<(std::ostream& stream, const P_State& state) {
+    stream << "Mass:" << state.mass << ", pos:" << printV(state.position)
+    << ", velo:" << printV(state.velocity) << ", force:" << printV(state.force);
 }

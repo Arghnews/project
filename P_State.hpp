@@ -10,6 +10,9 @@
 
 #include "Util.hpp"
 
+#include <iostream>
+#include <sstream>
+
 class P_State {
     private:
         vv3 forces;
@@ -31,6 +34,8 @@ class P_State {
         void recalculate();
         void add_force(const v3& force);
         v3 net_force();
+
+        friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 };
 
 #endif
