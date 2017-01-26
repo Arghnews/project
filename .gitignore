@@ -4,3 +4,9 @@ glfw-3.2.1
 *.swp
 exec
 *.o
+*.aux
+*.bbl
+*.blg
+*.log
+*.pdf
+*.jpg

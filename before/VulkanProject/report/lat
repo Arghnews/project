@@ -1,0 +1,16 @@
+#!/bin/bash
+
+targ=$1
+if [ ! -z ${targ+x} ]; then
+	targ='progress_report'
+fi
+i=0
+pdflatex $targ
+let i=$i+$?
+bibtex $targ
+let i=$i+$?
+pdflatex $targ
+let i=$i+$?
+pdflatex $targ
+let i=$i+$?
+[ $i -eq 0 ] && okular progress_report.pdf

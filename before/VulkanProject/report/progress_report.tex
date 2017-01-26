@@ -1,0 +1,198 @@
+\documentclass[titlepage]{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst} % First paragraph first line indent
+\usepackage{graphicx} \iffalse Allows including of images\fi
+\usepackage{longtable} \iffalse Multipage tables\fi
+\usepackage{url} % bibtex url
+\usepackage{listings} % for code listings
+\usepackage{color}
+\setlength{\parskip}{1em}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\linespread{1.16125}
+\renewcommand{\lstlistingname}{Code}
+\lstset{
+	language=C++,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3
+}
+
+% go through and changes single and double quote sets
+% also change terminology so player = person playing, actor = player in game
+
+\title{Progress report on project - Mitigating latency in an online 3D first-person shooter}
+\author{Justin Riddell u1419657}
+
+\begin{document}
+
+\maketitle
+
+\section{The project (in brief)}
+
+	A common genre of videogames today is the first-person shooter, where players play as actors in a 3 dimensional game world and attempt to shoot opponents. These games commonly take place over the internet, with a central server hosting the game world and players all connecting to it, never directly to each other - a classic client-server architecture. A player's gameplay experience may be heavily affected by the time it takes for them to communicate with the central gameplay server (their latency), as communication over the inherently unreliable network that is the internet has non-significant delay. The goal of the project is to investigate methods that can be used to improve player experience in such a game, when they have a significant latency - defining significant here is slightly difficult: most people would struggle to notice 5 milliseconds of latency between them pressing a key and their character reacting by moving forward, however as latency increases it becomes more noticeable and at say 100ms most people would likely be able to identify there was a delay between action and response \cite{Nielsen}.
+
+	In order to implement various techniques to mitigate the effects of latency on player experience, a very basic 3D multiplayer first person shooter will need to be created that will be used as a test harness. Players will play and see the game through their game client. Initially, clients will simply receive a snapshot of the game world from the server and show this to player. If the player has 1000ms (1 second) of latency and the player presses a key on their keyboard to move forward, this information will then be transmitted to the server; the server will simulate a new world with the result of the player's action of forward motion, likely moving the player's actor forward, and send this information back to the player, who will then see their actor move forward in the game world. This means that before the player sees the result of their action, a full round-trip time of double their latency (assuming latency in both directions is equal) has occurred, in this case of 2 seconds. Especially in realtime fast-paced games or ones where objects move at high velocity, this kind of delay is very noticeable and significantly affects player experience. This simple model of a client simply providing a snapshot of the world to the server is therefore unacceptable.
+	
+	As stated, various techniques shall be implemented to improve upon the ``dumb client'' \cite{carmack} model aforementioned. Techniques such as lag compensation: when player A shoots player B, when the server receives this information it shall rewind time by player A's latency, to see if when player A fired they did indeed hit player B; prediction - when a player moves, rather than having to wait for a round-trip time before seeing the response (their actor moving) the response shall be shown immediately, this can cause a problem if say that player in fact died before their movement started, and they therefore could never have made that move - a misprediction. These will be deployed in combinations and a small survey taken to get subjective feedback from players on player experience with combinations of techniques and varying latencies and network reliabilities.
+
+\newpage
+
+\section{Progress so far}
+
+	The project requires, as a base, a networked game in which players can move around a simple world and shoot at other players. To this end, the majority of time so far has been devoted to learning how to use the chosen graphical API to render a scene on screen as well as putting together a basic world with a simple concept of physics. The language being used is C++ and the graphical API is Vulkan \cite{vulkan}, a low-level and low overhead \cite[Page~3]{vulkanArch} new graphics API, that is being chosen primarily for learning purposes. Vulkan, combined with C++, gives the developer great insight into and control over all aspects of how the program is working, however this is at the cost of greater code length and greater time investment into understanding concepts as less abstraction occurs. The high performance aspects of Vulkan will not be heavily utilised here, as this project is not about creating a new graphically demanding game or some such, rather the graphics aspect is to achieve a world that can be used for testing on.
+
+	\subsection*{Vulkan}
+
+	Gaining a basic understanding of Vulkan was primarily enabled through use of this excellent tutorial \cite{Overvoorde}, that was fully followed. Vulkan is low level such that the code required to produce just a simple triangle takes almost 1000 lines as all elements must be setup and specified by the developer. A Vulkan instance is set up, a physical device selected (graphics card) and a logical device created and bound to that physical device. Commands like drawing or memory movement will be submitted to queues that the logical device has. A window surface to render to is needed, although this platform-dependent complexity is mostly handled by the platform-agnostic GLFW \cite{GLFW}. The Swapchain is a queue of images that are selected and rendered to, then presented at the time of actually drawing. A framebuffer must be created for every image in the Swapchain, as well as an ImageView. A render pass must be created to specify how the contents of the image should be used. One or more graphics pipelines may be set up ahead of time as they cannot change once made for optimisation purposes, each one involving configuration of the programmable pipeline like shaders, rasterization configuration, colour blending, depth stenciling and so on. Command buffers in Vulkan, allocated from a Command Pool, are submitted to one of the aforementioned queues that are bound to a logical device. Commands must therefore be recorded into a command buffer whilst in a render pass and after binding the graphics pipeline, and the buffer then submitted onto the queue to be drawn.
+
+	In order to actually display an image, the final step is to acquire an image from the Swapchain and submit a command buffer on it before presenting it back to the Swapchain for drawing. Additionally to these basic steps, a vertex buffer (which surprisingly contains vertices) is used to hold vertices and is bound to the graphics pipeline on creation. Also an index buffer is used to save on redundant data in the vertex buffer and effectively point to the vertices in the vertex buffer by index, allowing drawing of a rectangle of 2 triangles using 6 integer pointers and 4 vertices rather than 6 vertices 2 of which are duplicates. Two last concepts that are used in the program are that of staging buffers, for instance when transferring data to gpu memory, first it is placed into a staging buffer that the cpu may write to, before being transferred to gpu only memory, and uniform buffer objects, that are updated every frame to edit data in the shader, for instance the view matrix.
+	
+	\subsection*{Computer Graphics Labs}
+
+	This was after following the majority of the Warwick University labs on an introduction to OpenGL through the CS324 labs \cite{Bhalerao} except the last two labs. Unfortunately it must noted however that whilst these labs did provide a good introduction to many concepts in graphics, they make use of a very old version of OpenGL and the fixed-function pipeline as opposed to the far more performant and modern programmable pipeline that is commonplace nowadays, and therefore the methods employed were not entirely relevant to the project, mostly their concepts instead.
+
+	The labs covered concepts such as simple triangle drawing, acting on input through the mouse and keyboard using GLUT \cite{GLUT}, geometric transformations on objects like a triangle by pushing on appropriate transformation matrices onto the ``stack'', orthographic projection to simulate viewing things like in the real world and the model view projection matrix, basic lighting (although not in the shader), basic texturing and blending. Some of these concepts would be useful (the same or related) when it came to going through the Vulkan tutorial afterward, for example the model view projection matrix concept or using a library and attaching callbacks to process input to the window. Following the labs and the Vulkan tutorial took significant time, often with the labs additional work was done beyond the content of the lab to increase understanding.
+
+	\subsection*{Physics and game simulation rate}
+
+	After following these tutorials on the graphics element, attempts were made at creating a basic sense of physics in the game world by making the user able to move around with the keyboard and look around using the mouse. The conceptual issue here is the real world is continuous and ideally the game world would mirror the real world as closely as possible, however since this project does not have access to infinite computine power, the game world will have to be simulated a number of times per second in discrete chunks. However, this results in a problem if the number of simulations per second is not taken into account when doing a calculation of (for example) movement: say that when a player presses the ``w'' key on their keyboard their character should move forward with a force of 5 (units here are arbitrary), and their actor weighs unit mass. If the game world is simulated 30 times per second and ignoring any other forces the player's actor should move forward by 5 units * 30 simulations per second for a movement of 150 units in a second. Now let the game world be more precisely simulated, 60 times per second: the result is the force is now 5 units * 60 simulations per second or 300 units of movement. Obviously, this is not ideal: ideally actors would move at the same speed no matter what the simulation rate of the world is.
+
+	Originally this was solved by taking the difference in time between this point in this simulation and this same point in time last simulation, which for 60 simulations per second should be roughly 16.67ms, and multiplying any movement amount by this delta time. This was normalized for convenience, such that at 60 simulations per second the delta time would equal 1, at 30 simulations per second delta time would be 2, at 120 it would be 0.5 and so on. This allowed for movement to be independent of the number of simulations per second, however it was decided this was inappropriate to use going forward. Using simple Euler integration (essentially s=ut+0.5a$t^2$) worked well for a simple example but for a game that would be networked, using a potentially fully variable time difference could result in difficult nondeterministic behaviour when a client and server need to agree on the world state. Furthermore, as explained by Fiedler \cite{fiedlerInteg}, this explicit Euler can be prone to ``blowing up'' - it's values becoming enormous or tiny - if the number of samples per second is not high enough; it is unstable. Instead, a Runge-Kutta \cite{wolframRK4} method of integration was adopted as per Fiedler's article \cite{fiedlerInteg} that essentially integrates 4 times with varying delta timestep sizes, and then uses a Taylor series to average to give a more accurate result.
+
+	This allows for the game world to have a simple concept of physics that is solid and will be expanded upon. When the player moves forward at the moment they produce a force in the direction they are facing, when they move left they produce one that is in the direction of the cross product of their forward direction and the absolute up vector of the world, and so on. Actors in the world reach a terminal velocity in a direction when a linear deceleration force proportional to their velocity equals their force of moving in that direction. This could be expanded to include forces such as gravity, for instance, although first a floor will be needed to prevent players accelerating downwards at their terminal velocity (in that direction) indefinitely.
+
+	Another aspect that needed decoupling was that of the renderer rendering frames a number of times per second and the simulation simulating the new game world. Whilst these are the same and tied together it would mean that the framerate would have to be at least the rate of the physics engine, as if the framerate became lower the physics simulation would have to slow down, potentially leading to the aforementioned issue of the simulation ``blowing up'' if the resolution of the physics engine (the number of simulations per second) being too low. Fiedler's next article \cite{fiedlerTimestep} provides a good way to approach this in his final block of code. In his words: ``The renderer produces time and the simulation consumes it in discrete dt sized chunks''. This allows for the physics simulation to essentially assume a fixed timestep to work with, which is easier than a varying one, with the renderer running at a speed and then allowing the simulation to consume leftover time to do as many simulation as it can. This was used a base for the current implementation of the game, with some tweaks to allow the framerate and the simulation rate to be set according to variables.
+	
+	Crucially, this separates the rendering of the scene and the simulating of the physics and game world (\ref{mainLoop}), which will be key later when a server and client are produced, where the server will not need to render the scene. The client, however, may still need to retain a large amount of the simulation code in order to implement techniques such as prediction.
+
+\linespread{1.0}
+
+% maybe take screen of code here showing the simulate and render bits separately
+\begin{lstlisting}[caption={The main loop of the game, note the separate renderer and world simulation parts}, label=mainLoop, frame=tb]
+while ( !glfwWindowShouldClose( window ) ) {
+	double newTime = time_now();
+
+	double frameTime = ( newTime - currentTime )/1000000.0f; // to ms
+	currentTime = newTime;
+
+	accumulator += frameTime;
+	while ( accumulator >= dt )
+	{
+		glfwPollEvents(); // polls input, any callbacks bound on keypress/mousemovement etc called
+		input.processKeyInput(); // my method to update input class/keyboard state
+
+		// move main camera
+		moveThingRelativeToSelf( MAIN_CAMERA , input.movementVectorFromKeys() );
+		// turn main camera based on mouse movement
+		input.turnObjectFromMouse( WINDOW_WIDTH , WINDOW_HEIGHT , MAIN_CAMERA );
+
+		// ---- simulate world -----
+		world->physics.integrate( MAIN_CAMERA, t, dt ); // simulate and update the world state
+		// ---- -----
+		t += dt;
+		accumulator -= dt;
+	}
+	const Thing* camera = world->object( MAIN_CAMERA );
+	// ---- renderer -----
+	vulkan.updateUniformBuffer( // update data passed to shader, not needed in server
+	camera->position,
+	camera->lookingAt
+	);
+	vulkan.drawFrame(); // draw the frame, removed in a server
+	// ---- -----
+
+	const double loopMaxTime = 1000000000.0/fps;
+	double nsThisLoop = time_now() - newTime;
+
+	long nanoSleep = static_cast<long>( loopMaxTime - nsThisLoop );
+	nanoSleep = std::max( 0l , nanoSleep );
+	// sleep for remainder of frame
+	std::this_thread::sleep_for( std::chrono::nanoseconds( nanoSleep ) );
+}
+\end{lstlisting}
+
+\linespread{1.16125}
+	A summary of progress so far would be take a lot of relevant knowledge toward graphics as well as simulating a world has been gained and employed to produce the latest version of the game program so far. However, compared to the original timetable progress has been slower than expected, as a large majority of time until now has been spent learning the necessary prerequisites and therefore a relatively short amount of time has actually been spent on the program itself. Also, reorganisation of the code and changing the architecture for better encapsulation have been utilised to produce a program that is easier to reason about - the world and the physics are completely detached from the renderer, which is key. No networking has been done yet.
+
+\newpage
+
+\section{Revised Timetable}
+	
+	Despite progress until now being slower than expected due to prerequisites taking longer than anticipated to learn, the timetable remains fairly similar and not unreasonably optimistic for the second term. Given progress so far, it is anticipated that learning new concepts and integrating them may take longer than expected, so more has been allocated for them. For example, the game world will need simple collision detection, a relatively complex topic, this may in itself take between one and two weeks to learn and implement correctly.
+
+	Timetable is being displayed using approximate time in weeks to complete a task rather specifying task x will be done in weeks y-z. This more flexible approach mirrors the way the work shall be done. Some time is left at the end of term 2 as other deadlines and anything remaining that has run over will be done.
+
+	\textit{This timetable is beginning from Week 9 in term 1.}
+
+	\begin{longtable}{|c p{5.5cm} p{8cm}|}
+		\hline
+		Time(Weeks) & Task & Notes \\
+		\hline\hline\endhead % repeats lines above at head of every page
+		
+		0.5 & Add in shape vertex data into the world simulation & Currently shape is rendered and only the camera that is the player view is in the world state \\
+		\hline
+		0.5 & Fully understand how to render multiple things using Vulkan & \\
+		\hline
+
+		& End of term & \\
+		\hline
+
+		1-2 & Implement simple collision detection \cite{Petersen} & It is anticipated after this, for a while, work shall cease on game physics \\
+		\hline
+
+		1 & First networked implementation of the game & Essentially, need game to be split into three programs, where server produce world states, client consumes a world state and renders it, intermediary program on server transmits state, as long as game is well encapsulated this should be feasible without difficulty \\
+		\hline
+
+		1-2 & Add a way for an actor in game to shoot another & And be notified of hit or miss \\
+		\hline
+
+		2 & Server side lag compensation & Effective rewinding of time equal to the latency of that player to determine whether the shot the player fired did indeed hit at that moment in time, update world state accordingly, clients then receive this and have to accept it \\
+		\hline
+
+		& Midpoint of term 2 & \\
+		\hline
+
+		2 & Client side prediction & Client now becomes not a ``dumb client'', if player shoots another and appears to hit according to their world view, then the client will presume the player did hit and immediately give feedback - this may be changed afterward if the server deems that it was not in fact a hit \\
+		\hline
+
+		1 & Test iterations of program, get user feedback &  \\
+		\hline
+
+		1 & Finishing touches & Round out rough edges, optional features \\
+		\hline
+
+		1 & Extrapolation & (optional) When miss a packet, extrapolate new world state based on previous data \\
+		\hline
+		
+	\end{longtable}
+
+\section{Ethics}
+
+	An informal survey with a few close peers will be done reviewing gameplay experience, no personal data need be collected, no permission is required. There are no other ethical concerns.
+
+\section{Project management}
+
+	The method of project management being employed is relatively informal. Development is focused on programming and frequent testing of changes, often with smaller standalone test programs being created first to provide a proof of concept, before integrating the change into the main program. When appropriate, code is refactored and the architecture changed to attempt to keep different components of the game in their own classes to provide encapsulation. This encapsulation is inspired by a functional programming style like that of Haskell \cite{haskellWiki}, a desire to minimise side effects and allow code to be more easily reasoned about from the top level, particularly as the code becomes more complex.
+
+	A GitHub repository is being used to keep previous version as well create branches of the code before merging back into the master branch when it is satisfactory.
+
+\section{Conclusion}
+
+	The project is complex and pleasing in that it combines many aspects from different areas into one. This has resulted in initial progress being slower than expected as often a great deal of learning is involved, during which actual code generated toward the project is little. After this fallow periods, however, productivity tends to increase and the game progresses until the next section like this. Learning the basics of graphics is a large task, taking a correspondingly large amount of time. The intricate complexities of a time-step for a physics engine and decoupling the client framerate from the server's underlying simulation rate were more challenging than expected. Additionally, the verbosity of Vulkan and control afforded by C++ cannot be ignored, they insist on a clarity of mind and understanding of many aspects that are often abstracted away by higher level constructs.
+
+	Nevertheless, the project so far has been enjoyable and a solid base has been created that can be built upon further in the second term to implement networking and then techniques to compensate for latency.
+
+\clearpage
+\bibliographystyle{plain}
+\bibliography{progress_report}
+
+\end{document}

@@ -1,0 +1,126 @@
+\documentclass{article}
+\usepackage[margin=1.0in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst} % First paragraph first line indent
+\usepackage{graphicx} \iffalse Allows including of images\fi
+\usepackage{longtable} \iffalse Multipage tables\fi
+\usepackage{url} % bibtex url
+
+\title{Mitigating latency in an online 3D first-person shooter}
+\author{Justin Riddell u1419657}
+
+\begin{document}
+
+\maketitle
+
+\section{The problem}
+
+	Many popular modern video games are networked using an architecture where players (clients) connect to a server that hosts the game world. A subset of these games are those that could be called `first-person shooters', where players are human models in the 3D game world maintained by the server and see the world through the eyes of their character. They wield a weapon and will usually be attempting to shoot the opposing players, controlling their character's movement and ability to fire through a mouse and keyboard.
+
+	Consider a simple way to set this up: a server simulates the world and the players in it 20 times per second. When a client presses move forward on their keyboard, this information is sent to the server. The server receives this and on the next simulation of the world will incorporate this change into the world and send the new world state to all of the clients. This is often referred to as a thin or dumb client \cite[Page~2]{Bernier}.
+	
+	However, if a client's latency to the server is 150ms (it takes 150ms for a message sent from the client to reach the server), then the minimum time after the client has pressed forward and the client sees the result on their screen of their forward motion is 300ms (twice their latency to the server, assuming latency to and from the server are equal). This results in the unnatural experience of actual movement being seen on screen by the player long after they pressed the button.
+
+	A similar problem exists when player A shoots at player B: player A has to `lead their shot' or shoot in front of player B - assuming player B maintains their velocity - by an amount proportional to their (player A's) latency. This is because after player A shoots at where they see player B is, once this information is sent to the server - at least 150ms later - player B may have moved, resulting in player A correctly shooting player B on their screen however the server perceiving player A to have missed and shot behind player B who has since moved to somewhere else. Essentially all clients (term clients and players may be used interchangeably) see their view of the world that is at least their latency behind the actual world on the server, this is the source of the problem.
+
+	Another issue is that if a packet from the server to the client is dropped, the client will have to wait until the next update from the server to render the next state of the game world, resulting in a non-smooth experience. This problem is particularly relevant if packets are transmitted over unreliable networks, the internet being the pertinent example. 
+
+	The ideal environment for this type of game is on LAN, where client latency is typically extremely low (less than 5ms) and where packet loss is typically near 0\% (less than 0.1\%). In a LAN environment all these issues listed would either not be present or be of such small impact as to be unnoticeable.
+
+\section{Objectives}
+	
+	Players with not-insignificant latency and/or packet loss - the norm for a connection over an unreliable network will receive a degraded experience compared to those with a LAN-like connection using this simple client-server model. The goal, therefore, of the project, is to attempt to improve the experience for players without a perfect network connection by utilising several techniques on the client and server.
+
+	On the client, to attempt to solve the issue of delay after the client issues a command, a form of prediction that allows the client to immediately see the result of their action can be implemented, such as the client immediately moving forward; initially similar to that of John Carmack's implementation of this in the original Quake \cite{carmack} - ``I am now allowing the client to guess at the results of the users movement until the authoritative response from the server comes through''. Whilst this improves the experience for the client, there is the issue that when the client is wrong it will have to accept the new gamestate that it receives from the server on the next update which may disagree with the gamestate that the player sees.
+
+	To mitigate the issue of having no data to render if a packet is dropped the client could buffer packets received from the server. This would introduce constant latency however would allow up to n packets to be dropped depending on how large the buffer is \cite{volvoSource} and for the player still to see smooth gameplay. Keeping overall latency low will be key to ensuring the goal of the best player experience so buffering will likely only be undertaken for one frame at most.
+
+	On the side of the server when a packet is received from the client that states that the client shot another player, the server will have to step back in time by an amount of time equal to the client's latency to see where the target player was and then deduce whether or not it was in fact a hit - the server is authoritative. It may then have to replay player actions since that rewound gamestate to reach a new up-to-date gamestate and broadcast this to other players on the next update.
+
+	Potentially, this technique combined with prediction can result in a player believing they have moved behind a wall and so cannot be killed, then receiving information from the server that they were in fact shot and killed before they were behind cover, resulting in the player perceiving themselves to have been killed behind cover. This may be unavoidable given this model; a tradeoff that must be made.
+
+	These techniques and others could be implemented and improved on. Several different versions of the game may exist implementing different combinations of techniques to assess their effectiveness, at various latencies and rates of packet loss.
+
+	In order to implement various techniques and deduce their effectiveness that will be measured by subjective user experience, a testbed will be needed. The testbed will be the server that hosts the virtual 3D world and the clients that are able to connect as players in the world. The world will be very simple, allowing players to move and shoot, it is effectively a vehicle to allow testing of the specified techniques to reduce latency.\\
+
+	Assumptions are specified below:
+	\begin{itemize}
+		\item Bullets travel at infinite speed
+		\item Player movement may not accurately simulate the real world (acceleration etc.)
+		\item In real world games, fully trusting the client on whether or not a bullet hit cannot be done due to issue of hackers. The option of whether to trust the client fully or not for this project is left open
+	\end{itemize}
+
+	A survey will be undertaken of various states of the game with various latencies to determine if the compensation techniques on a user with a poor connection can provide a user experience similar to a user with a better connection.
+
+\subsection*{Stretch goals}
+	
+	\begin{itemize}
+		\item Ability to increase or decrease network upload/download rate for client dynamically depending on their available bandwidth
+		\item Weaponry that fires projectiles
+		\item Implement server using asynchronous events - this may fundamentally change the implementation of the server however may allow even lower latencies at the cost of added complexity and likely more processing needing to be done server side
+		\item Objects in game (eg. bouncy balls)
+
+	\end{itemize}
+
+\section{Methodology}
+	
+	Agile - a methodology of programming involving fast development and frequent testing will be adopted.
+
+\section{Timetable}
+	
+	It is assumed that the project duration is from week 1 to week 20, with weeks 1-10 corresponding to term 1 and weeks 11-20 to term 2. Holiday time may be used to complete objectives that should have been done if behind, or advance ahead of schedule. Alternatively, it may be used to retest or refactor existing code.
+
+	This timetable is quite flexible; it more reflects dependencies that exist and an approximate order of what is to be done. This may change during development. It should also be noted that due to non-uniform module selection across terms 1 and 2, more work may be done during term 2.\\
+
+	\begin{longtable}{|c p{5.5cm} p{8cm}|}
+		\hline
+		Weeks & Task & Notes \\
+		\hline\hline\endhead % repeats lines above at head of every page
+		
+		1-2 & Specification & Project specification \\
+		\hline
+		2-3 & Research and playing about to learn more about languages/technologies & But mostly research... \\
+		\hline
+
+		3-7 & Simple world hosted on a server that can update at specified rate & Updated world should feature changes since last update, world will be state of game \\
+		\hline
+		5-6 & Simple player client that can connect to and exist in world & First version of this may in server code, will move this to separate code piece as appropriate and implement networking to allow remote connection \\
+		\hline
+		6-7 & Player client able to move around the world & \\
+		\hline
+
+		7-8 & Client able to shoot at where it perceives other players to be & \\
+		\hline
+		7-8 & Server able to register shot receieved from client and pass info to hit client & \\
+		\hline
+		7-8 & Client able to receive information that have been shot and display it to user & Once here, this is initial naive version of program \\
+		\hline
+
+		9-11 & Implement server-side lag compensation & If player shoots, when server receives this, server effectively rewinds game-state to see if player did in fact hit, next version of gamestate to test at end \\
+		\hline\hline
+
+		12-15 & Client side prediction & Challenge is smoothly rendering client world view if client did not predict correctly \\
+		\hline
+		12-15 & Server side reconciliation of client side prediction & Telling the client if correct or not, again another version of game \\
+		\hline
+
+		16-18 & Client side interpolation and possibly extrapolation & Challenge may be making this work with other techniques, last game of state to test \\
+		\hline
+		
+		19 & Test iterations of game with varying latencies, collect user feedback & This could be done at start of term 3 instead if need be \\
+		\hline
+		
+	\end{longtable}
+
+\section{Resources}
+	
+A C-like language such as C++ or Go \cite{Go} (in order to better learn the language) will be used along with OpenGL to render the world on the client and process input from the server, as well as sending the client's input to the server. The server will also run a C-like language to create and update the game world - the server will be authoritative - and process inputs from clients and send information back to them. Other software or libraries may be used such as ZeroMQ \cite{ZeroMQ} for sending messages between the client and server which is very low overhead and wraps network communcation. The test platform used will be Linux, ideally a system with multiple cores, and development will primarily be done on DCS machines.
+
+\section{Legal, social, ethical and professional issues}
+
+The aforementioned survey will only be conducted informally with colleagues and peers playing the game and asking for feedback, no sensitive information will be collected.
+
+\bibliographystyle{plain}
+\bibliography{spec}
+
+\end{document}

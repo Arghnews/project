@@ -1,0 +1,180 @@
+
+    Looks nice
+
+    Need to figure out how to render many things etc, get a better way to translate between worldly "Thing" objects and the actual vertices to render stuff
+
+    Renamed method to move object, as that iss what it is, now going to think what next, maybe render several things?
+
+    Changed camera name to instance string const, moved divide times by 10 into physics class
+
+    Think have cracked simple physics for now, linear decel easier, multiplied by dt to be consistent across timesteps
+
+    Need to normalize result of sideways motion vector crossed with up vector, else when object is tilted will move sideways slower, still cannot move up/down, need to investigate that next
+
+    Just got it working, if you change things like the time delta passed in it rockets off, so still need looking at
+
+    Need to tweak force parameters, currently shoot off, maybe in wrong dir etc got to find out
+
+    Need to add vector of force vectors to each thing so that the physics method that resolves the forces on an object can take them all
+
+    Integrated physics snazzy I believe, need to do more testing, hugh tesselation support seems pooped
+
+    Dont normalize lookingAt when making camera, and changed physics to work with things rather than abstract states, now going to move physics code to master while loop
+
+    Updated things to have a camera inside instead, cleaned up classes a bit, still yet to integrate physics, should make changing lookingAt vector a method on class so can also normalize every time
+
+    About to integrate stuffz
+
+    Changed input to take object (camera) name to move, about to integrate physics class into my objects
+
+    About to go for lunch, need to integrate phys stuff
+
+    Fixed swapchain recreate, due to pointer type change
+
+    Moved stuff to input classes etc, working atm, now going to apply physics stuff to limit framerate
+
+    Moved turnObject to be more implementation specific for subclasses, kept some of it for cursor outside at top level as need window dimensions though
+
+    Done with floats, going to integrate physics into main loop
+
+    About to change again, suspect float->doubles is issue
+
+    About to switch to doubles, all good so far
+
+    About to change to doubles and include Physics, this broke integrate branch before, this is good point
+
+    Going to try and add Physics cpp into program main loop now
+
+    Credit to Gaffer on Games, using his code as a basis for fps and tickrate, seems to work atm
+
+    Think momentum/mass works, wooho!
+
+    Going to try and convert this to incorporate mass
+
+    About to turn from just velocity etc to momentum, ie add in mass
+
+    Euler blows up quick, got basic air resist with rk4
+
+    Testing out physics from gaffer on games
+
+    Now about to figure out how to render multiple seperate things
+
+    Mostly decoupled physics, still need to take a look at frame times if slip behind
+
+    Splitting up still to physics etc, using virtual func seems messy but dont think I have a choice save a cast when getting derived or top level items from a map
+
+    Moved physics sort of to another class, still need to complete move
+
+    Decoupled timekeeping and a helper file, changed not_make_but_make_file to include all header dependencies
+
+    Big rework, framerate and tickrate decoupled, main loop using an if to decide which to do, may need tweaking, no more delta, implemented airres/friction (fancy names) but basically just decel proportional to velocity and to square of it, stops sliding at low speeds
+
+    Velocity etc works atm with different framerates, this is with decel constant as 0, I suspect this is the problem and will investigate this next
+
+    Believed to have fixed physics with square decel independent of framerate, see notes file, about to add mass
+
+    Changed movement to use accel, eg. for movement in x, x -= xSpeed*xSpeed*worldDecelv.x * decelConst
+
+    Fixed god damn problem, was vsync
+
+    Saved in broken state, going to test timing
+
+    Currently broken above 60fps
+
+    Added destroying of debug callback on close for clean closing
+
+    Camera and mouse fixed to be independent of framerate
+
+    vim relative lines
+
+    Better camera, limits angles, added in delta frametime, need to use this in velocities etc
+
+    Going for lunch
+
+    Added shift to whiz about, added remove executable to bash script
+
+    Smoother camera using very simple velocity idea
+
+    Added speed modifiers and up/down movement
+
+    Made better, will only do what it needs, ie. will not link if compile error
+
+    Makescriptthing added clean function(yes it it still bad) and mouse camera working nicely
+
+    Two spinning squares, removed texture stuff
+
+    Now actual start point to add movement etc
+
+    Moved from all vars static (oops) to members
+
+    Made if header for cpp file exists and changed recompile, fixed typo
+
+    About to start afresh
+
+    Added runMe.sh to master
+
+    Depth testing done
+
+    Textures working, now refactored into header/cpp files
+
+    Done a simple texturing thingey!
+
+    Just finished adding in texture to program from file
+
+    Loaded textures and loaded them onto gpu with about 200 functions
+
+    Added texture load
+
+    Starting textures
+
+    Moved pipeline bit to pipeline - about to try the separate queue for command buffer execution thing again
+
+    Achieved spinning square, had to had in descriptor info into pipeline
+
+    Descriptor layout and buffer done
+
+    Done index buffer
+
+    Working rectangle using index buffer before separate queue for transfer
+
+    Added staging buffer, did not do separate queue for mem transfer and graphics
+
+    I CHANGED IT!
+
+    My "make" equivalent :)
+
+    Done basic tutorial
+
+    Using Swapchain like Vulkan types, tutorial uses SwapChain, note difference
+
+    Added resizeable/recreate SwapChain, except for recreate SwapChain on present
+
+    Added simple usleep for now
+
+    Finished triangle! And added usleep to stop program freezing the computer
+
+    Disabled dynamic state to stop validation warn, finished command buffer
+
+    Finished graphics pipeline
+
+    Programmable pipeline in
+
+    Simple example shaders
+
+    My sh-ee-t makefile because I don't understand makefiles
+
+    About to start graphics pipeline
+
+    Forgot to remove error
+
+    Done swap chain!
+
+    Added swap chain adequacy checks
+
+    Added physical device, need to add logical interface next
+
+    Copied in validation layers
+
+    Window open
+
+    Vulkan setup
