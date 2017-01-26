@@ -21,13 +21,24 @@ P_State::P_State(v3 pos, float m) :
     inverse_mass(1.0f/m) {
     }
 
+void P_State::turn(const v3& v) {
+    orient = v * orient;
+}
+
 void P_State::recalculate() {
     velocity = momentum * inverse_mass;
     acceleration = force * inverse_mass;
     orient = glm::normalize(orient);
 }
 
+// forces are relative to objects facing direction
 void P_State::add_force(const v3& f) {
+    // order matters
+    forces.push_back(f * orient);
+}
+
+// force is absolute, ie v(0,-1,0) is down
+void P_State::add_force_abs(const v3& f) {
     forces.push_back(f);
 }
 

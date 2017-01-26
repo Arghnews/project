@@ -36,7 +36,6 @@ void Camera::move(const v3& v) { // change translation matrix by v
 }
 
 void Camera::turn(const v3& v) { // turn by vec
-    //orient = dq(glm::vec3(0.0, -glm::radians(1.0), 0.0)) * orient;
     orient = v * orient;
 }
 

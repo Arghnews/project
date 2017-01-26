@@ -31,6 +31,7 @@ set softtabstop=4
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
 set tabstop=4
 set whichwrap=b,s,<,>,h,l,[,]
+set window=59
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
@@ -50,6 +51,7 @@ badd +0 vertex.shader
 badd +0 fragment.shader
 badd +0 light.vertex.shader
 badd +0 light.fragment.shader
+badd +786 ~/cs324cw/code/arm.cpp
 argglobal
 silent! argdel *
 argadd Main.cpp
@@ -172,7 +174,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 27) / 54)
+let s:l = 1 - ((0 * winheight(0) + 29) / 58)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -296,11 +298,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 45 - ((34 * winheight(0) + 27) / 54)
+let s:l = 52 - ((29 * winheight(0) + 29) / 58)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-45
+52
 normal! 0
 tabedit Camera.cpp
 set splitbelow splitright
@@ -312,8 +314,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 31 + 28) / 56)
-exe '2resize ' . ((&lines * 21 + 28) / 56)
+exe '1resize ' . ((&lines * 31 + 30) / 60)
+exe '2resize ' . ((&lines * 25 + 30) / 60)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -546,15 +548,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 10) / 21)
+let s:l = 1 - ((0 * winheight(0) + 12) / 25)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 1
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 31 + 28) / 56)
-exe '2resize ' . ((&lines * 21 + 28) / 56)
+exe '1resize ' . ((&lines * 31 + 30) / 60)
+exe '2resize ' . ((&lines * 25 + 30) / 60)
 tabedit Window_Inputs.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -565,8 +567,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 31 + 28) / 56)
-exe '2resize ' . ((&lines * 21 + 28) / 56)
+exe '1resize ' . ((&lines * 31 + 30) / 60)
+exe '2resize ' . ((&lines * 25 + 30) / 60)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -679,11 +681,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 15) / 31)
+let s:l = 8 - ((7 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
+8
 normal! 0
 wincmd w
 argglobal
@@ -799,15 +801,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 10) / 21)
+let s:l = 1 - ((0 * winheight(0) + 12) / 25)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 1
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 31 + 28) / 56)
-exe '2resize ' . ((&lines * 21 + 28) / 56)
+exe '1resize ' . ((&lines * 31 + 30) / 60)
+exe '2resize ' . ((&lines * 25 + 30) / 60)
 tabedit vertex.shader
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -824,10 +826,10 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 12 + 28) / 56)
-exe '2resize ' . ((&lines * 13 + 28) / 56)
-exe '3resize ' . ((&lines * 12 + 28) / 56)
-exe '4resize ' . ((&lines * 13 + 28) / 56)
+exe '1resize ' . ((&lines * 17 + 30) / 60)
+exe '2resize ' . ((&lines * 18 + 30) / 60)
+exe '3resize ' . ((&lines * 13 + 30) / 60)
+exe '4resize ' . ((&lines * 6 + 30) / 60)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -940,7 +942,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 6) / 12)
+let s:l = 1 - ((0 * winheight(0) + 8) / 17)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1060,11 +1062,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 6) / 13)
+let s:l = 28 - ((3 * winheight(0) + 9) / 18)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
+28
 normal! 0
 wincmd w
 argglobal
@@ -1180,11 +1182,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 6) / 12)
+let s:l = 10 - ((9 * winheight(0) + 6) / 13)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-1
+10
 normal! 0
 wincmd w
 argglobal
@@ -1300,17 +1302,17 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 2 - ((1 * winheight(0) + 6) / 13)
+let s:l = 1 - ((0 * winheight(0) + 3) / 6)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-2
+1
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 12 + 28) / 56)
-exe '2resize ' . ((&lines * 13 + 28) / 56)
-exe '3resize ' . ((&lines * 12 + 28) / 56)
-exe '4resize ' . ((&lines * 13 + 28) / 56)
+exe '1resize ' . ((&lines * 17 + 30) / 60)
+exe '2resize ' . ((&lines * 18 + 30) / 60)
+exe '3resize ' . ((&lines * 13 + 30) / 60)
+exe '4resize ' . ((&lines * 6 + 30) / 60)
 tabedit Util.hpp
 set splitbelow splitright
 set nosplitbelow
@@ -1429,7 +1431,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 27) / 54)
+let s:l = 1 - ((0 * winheight(0) + 29) / 58)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt

@@ -31,10 +31,13 @@ class P_State {
         const float mass;
         const float inverse_mass;
 
-        void add_force(const v3& force);
+        void add_force(const v3& force); // relative to orient
+        void add_force_abs(const v3& force); // absolute, ie. down
         void clear_forces();
         void recalculate();
         v3 net_force() const;
+
+        void turn(const v3& v); // turn by vec, ie. left
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 };

@@ -14,12 +14,19 @@ main() {
 
 	executable="exec"
 
-	cppFiles=( 
-    "Main.cpp"
-    "Window_Inputs.cpp"
+    cppFiles=(
+    "P_State.cpp"
+    "Physics.cpp"
+    "Cuboid.cpp"
     "Camera.cpp"
     "Shader.cpp"
-	)
+    "Actor.cpp"
+    #"Window_Inputs.cpp"
+    )
+
+	#cppFiles=( 
+    #"Main.cpp"
+	#)
 
 	compiler="g++"
 

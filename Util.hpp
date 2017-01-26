@@ -17,6 +17,8 @@
 #include <limits>
 #include <math.h>
 
+typedef int Id;
+
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;
 typedef glm::fvec4 v4;
