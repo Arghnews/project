@@ -37,18 +37,19 @@ int main() {
 
     G_Cuboid cube(&vertices,"shaders/vertex.shader","shaders/fragment.shader");
 
-    const float fps_max = 60.0f;
+    const long fps_max = 600l;
     
-    float t = 0.0f;
-    const float dt = 0.01f; // run at tickrate 100
+    const long tickrate = 100l;
+    const long dt = (1e6l)/tickrate; // run at tickrate 100
 
-    float currentTime = timeNowMicros();
-    float acc = 0.0f;
+    long t = 0l;
+    long currentTime = timeNowMicros();
+    long acc = 0l;
 
     while (!glfwWindowShouldClose(window)) {
 
-        float newTime = timeNowMicros();
-        float frameTime = newTime - currentTime;
+        long newTime = timeNowMicros();
+        long frameTime = newTime - currentTime;
         currentTime = newTime;
         acc += frameTime;
 
@@ -95,8 +96,8 @@ int main() {
         // Render end -- -- --
         
         // sleep if fps would be > fps_max
-        long remainingFrameTime = (long)((1000.0f * 1000.0f) / fps_max - (timeNowMicros() - newTime));
-        std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,remainingFrameTime)));
+        long spareFrameTime = 1e6l / fps_max - (timeNowMicros() - newTime);
+        std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers
     }
