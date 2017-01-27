@@ -74,9 +74,9 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 
 
 // builds a cuboid that matches the graphical coordinates
-L_Cuboid::L_Cuboid(const fv& points, v3 topCenter) :
+L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter) :
     originalTopCenter(topCenter) {
-    
+    const fv& points = *points_in;
     // first calc the faces
     const int size = points.size(); // 3d
     // 108 points -> faces

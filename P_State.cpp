@@ -15,10 +15,10 @@
  * Things like it's position, momentum, mass and orientation are here
 */
 
-P_State::P_State(v3 pos, float m) :
-    position(pos),
+P_State::P_State(float m, v3 pos) :
     mass(m),
-    inverse_mass(1.0f/m) {
+    inverse_mass(1.0f/m),
+    position(pos) {
     }
 
 void P_State::turn(const v3& v) {

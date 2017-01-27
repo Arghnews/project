@@ -31,7 +31,7 @@ class L_Cuboid {
     public:
         bool static colliding(const L_Cuboid& s1, const L_Cuboid& s2);
 
-        L_Cuboid(const fv& points, v3 topCenter);
+        L_Cuboid(const fv* points, v3 topCenter);
         vv3 faces; // 24 vertices
         vv3 vertices; // 8 vertices unique
         vv3 edges; // 24 edges, between vertices

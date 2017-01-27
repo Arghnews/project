@@ -22,7 +22,7 @@ main() {
     "G_Cuboid.cpp"
     "L_Cuboid.cpp"
     "P_State.cpp"
-    #"Actor.cpp"
+    "Actor.cpp"
     "Window_Inputs.cpp"
     "Main.cpp"
     )

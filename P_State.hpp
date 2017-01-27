@@ -17,7 +17,7 @@ class P_State {
     private:
         vv3 forces;
     public:
-        P_State(v3 pos, float m);
+        P_State(float m, v3 pos=v3());
         // primary
         v3 position;
         v3 momentum;
