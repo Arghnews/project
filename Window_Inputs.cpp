@@ -5,8 +5,13 @@
 #include <iostream>
 #include "Util.hpp"
 #include "Window_Inputs.hpp"
+#include <deque>
 
-extern Window_Inputs inputs; // should be defined in main
+// handles mouse buttons and keyboard
+static std::deque<Key_Input> key_inputs;
+
+// handles cursor pos movement
+static std::deque<v2> cursor_inputs;
 
 Input::Input() : 
     action(NOP),
@@ -38,17 +43,17 @@ void Input::doAction() {
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    inputs.input(key, action);
+    key_inputs.push_back(Key_Input(key,action));
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    inputs.input(button, action);
+    key_inputs.push_back(Key_Input(button,action));
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     // The callback functions receives the cursor position, 
     // measured in screen coordinates but relative to the top-left corner of the window client area
-    inputs.cursor(xpos,ypos);
+    cursor_inputs.push_back(v2(xpos,ypos));
 }
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
@@ -128,22 +133,21 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
 Window_Inputs::Window_Inputs() {
 }
 
-void Window_Inputs::cursor(const double& xPos, const double& yPos) {
-    cursor_pos = v2(xPos, yPos);
-}
-
 v2 Window_Inputs::cursorDelta() {
-    const v2 delta = cursor_pos - last_cursor_pos;
-    last_cursor_pos = cursor_pos;
+    // if queue empty, cursor hasn't moved
+    if (cursor_inputs.empty()) {
+        return v2(zeroV);
+    }
+
+    const v2 latestPos = cursor_inputs.back(); 
+    const v2 delta = latestPos - cursor_pos;
+    cursor_pos = latestPos;
+    cursor_inputs.clear();
     return delta;
 }
 
 GLFWwindow* Window_Inputs::getWindow() {
     return window;
-}
-
-void Window_Inputs::input(int key, const int action) {
-    inputs[key].setAction(action);
 }
 
 void Window_Inputs::swapBuffers() {
@@ -152,7 +156,15 @@ void Window_Inputs::swapBuffers() {
 
 void Window_Inputs::processInput() {
     glfwPollEvents();
-    for (auto& inp: inputs) {
+    
+    // update all keys in keymap from inputs
+    for (const auto& key_input: key_inputs) {
+        keymap[key_input.key].setAction(key_input.action);
+    }
+    key_inputs.clear();
+
+    
+    for (auto& inp: keymap) {
         Input& in = inp.second;
         in.doAction();
     }

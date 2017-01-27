@@ -18,12 +18,11 @@
 #include "Camera.hpp"
 #include "data.hpp"
 
-// extern in Window_Inputs cpp
-Window_Inputs inputs;
-
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera);
 
 int main() {
+
+    Window_Inputs inputs;
 
     GLFWwindow* window = inputs.init_window(1440, 1440);
 

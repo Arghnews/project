@@ -9,6 +9,14 @@
 typedef std::function<void()> void_func;
 static const void_func NOPfunc = ([](){});
 
+struct Key_Input {
+    const int key;
+    const int action;
+    Key_Input(const int& key, const int& action) :
+        key(key), action(action) {
+    }
+};
+
 class Input {
     private:
         static const int NOP = -1;
@@ -29,9 +37,8 @@ class Input {
 class Window_Inputs {
     private:
         v2 cursor_pos;
-        v2 last_cursor_pos;
         GLFWwindow* window;
-        std::map<int, Input> inputs;
+        std::map<int, Input> keymap;
 
     public:
         Window_Inputs();
@@ -40,24 +47,22 @@ class Window_Inputs {
         GLFWwindow* getWindow();
         v2 windowSize();
 
-        void input(int key, const int action);
         void swapBuffers();
         void processInput();
 
-        void cursor(const double& xPos, const double& yPos);
         v2 cursorDelta();
 
         template <typename F>
         void setFunc(int key, int action, F f) {
             switch (action) {
                 case GLFW_PRESS:
-                    inputs[key].pressed_func = f;
+                    keymap[key].pressed_func = f;
                     break;
                 case GLFW_REPEAT:
-                    inputs[key].repeated_func = f;
+                    keymap[key].repeated_func = f;
                     break;
                 case GLFW_RELEASE:
-                    inputs[key].released_func = f;
+                    keymap[key].released_func = f;
                     break;
             }
         }
@@ -67,7 +72,6 @@ class Window_Inputs {
             setFunc(key,GLFW_PRESS,f);
             setFunc(key,GLFW_REPEAT,f);
         }
-
 
         void close();
 };
