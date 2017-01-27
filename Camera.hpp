@@ -23,7 +23,7 @@ class Camera {
 
         void rotate(const v2& offset); // rotate by mouse input
 
-        m4 update(); // view matrix
+        m4 viewMatrix(); // view matrix
 };
 
 #endif

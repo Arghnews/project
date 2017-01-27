@@ -43,7 +43,7 @@ void Camera::rotate(const v2& offset) { // rotate by mouse input
     orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
 }
 
-m4 Camera::update() { // view matrix
+m4 Camera::viewMatrix() { // view matrix
     const v3 pos = (trans * v4(0.0f, 0.0f, 0.0f, 1.0f));
     const v3 facing = FORWARD * orient;
     const v3 up_relative = UP * orient;
