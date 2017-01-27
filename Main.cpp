@@ -37,7 +37,7 @@ int main() {
 
     G_Cuboid cube(&vertices,"shaders/vertex.shader","shaders/fragment.shader");
 
-    const long fps_max = 600l;
+    const long fps_max = 60l;
     
     const long tickrate = 100l;
     const long dt = (1e6l)/tickrate; // run at tickrate 100

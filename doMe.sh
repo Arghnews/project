@@ -16,12 +16,12 @@ main() {
 
 
     cppFiles=(
-    "P_State.cpp"
     "Physics.cpp"
-    "Cuboid.cpp"
-    "Camera.cpp"
     "Shader.cpp"
+    "Camera.cpp"
     "G_Cuboid.cpp"
+    "L_Cuboid.cpp"
+    "P_State.cpp"
     #"Actor.cpp"
     "Window_Inputs.cpp"
     "Main.cpp"
