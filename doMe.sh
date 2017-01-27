@@ -14,12 +14,14 @@ main() {
 
 	executable="exec"
 
+
     cppFiles=(
     "P_State.cpp"
     "Physics.cpp"
     "Cuboid.cpp"
     "Camera.cpp"
     "Shader.cpp"
+    "G_Cuboid.cpp"
     #"Actor.cpp"
     "Window_Inputs.cpp"
     "Main.cpp"

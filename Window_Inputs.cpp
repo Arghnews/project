@@ -127,6 +127,10 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
+
+    // turn off v-sync
+    // do sleeping myself
+    glfwSwapInterval(0);
     return window;
 }
 
