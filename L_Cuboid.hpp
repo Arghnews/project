@@ -21,15 +21,15 @@ typedef std::pair<float, float> Projection;
 class L_Cuboid {
     private:
         const v3 originalTopCenter;
+        vv3 static getAxes(const vv3& edges1, const vv3& edges2);
         vv3 static calcVertices(const vv3& vertices, const v3& pos, const fq& ori);
         vv3 static calcEdges(const vv3& v);
-        float calcFurthestVertex(const vv3& vertices);
-        void recalc(const v3& pos=v3(), const fq& ori=fq());
-        vv3 static getAxes(const vv3& edges1, const vv3& edges2);
         std::pair<float, float> static project(const v3& axis_in, const vv3& verts);
+        float calcFurthestVertex(const vv3& vertices);
 
     public:
         bool static colliding(const L_Cuboid& s1, const L_Cuboid& s2);
+        void recalc(const v3& pos=v3(), const fq& ori=fq());
 
         L_Cuboid(const fv* points, v3 topCenter);
         vv3 faces; // 24 vertices

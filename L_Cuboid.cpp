@@ -40,7 +40,7 @@ vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
 
 bool L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     vv3 allAxes = getAxes(s1.uniqEdges, s2.uniqEdges);
-    assert(allAxes.size() == 15 && "Should get 15 axes");
+    assert(allAxes.size() <= 15 && "Should get <= 15 axes");
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);
     };

@@ -61,7 +61,8 @@ void Physics::integrate(P_State& state,
 
     state.position = state.position + dxdt * dt;
     state.momentum = state.momentum + dpdt * dt;
-	state.clear_forces();
+	state.clear_forces(); // clear forces vector
+    state.recalc(); // update secondary values
 }
 
 /*

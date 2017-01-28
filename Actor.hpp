@@ -22,7 +22,12 @@ class Actor {
         L_Cuboid l_cuboid;
         G_Cuboid g_cuboid;
         P_State p_state;
+        bool changed_state;
     public:
+        const L_Cuboid& logical_cuboid();
+        P_State& state_to_change();
+        void add_force(const v3& force);
+        void add_force_abs(const v3& force);
         Actor(const fv* vertexData,
         std::string vertShader,
         std::string fragShader,

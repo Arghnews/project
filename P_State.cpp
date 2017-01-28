@@ -25,9 +25,8 @@ void P_State::turn(const v3& v) {
     orient = v * orient;
 }
 
-void P_State::recalculate() {
+void P_State::recalc() {
     velocity = momentum * inverse_mass;
-    acceleration = force * inverse_mass;
     orient = glm::normalize(orient);
 }
 

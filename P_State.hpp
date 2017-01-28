@@ -26,7 +26,6 @@ class P_State {
 
         // secondary
         v3 velocity;
-        v3 acceleration;
 
         const float mass;
         const float inverse_mass;
@@ -34,7 +33,7 @@ class P_State {
         void add_force(const v3& force); // relative to orient
         void add_force_abs(const v3& force); // absolute, ie. down
         void clear_forces();
-        void recalculate();
+        void recalc();
         v3 net_force() const;
 
         void turn(const v3& v); // turn by vec, ie. left

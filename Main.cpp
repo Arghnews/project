@@ -21,6 +21,8 @@
 #include "Camera.hpp"
 #include "G_Cuboid.hpp"
 #include "data.hpp"
+#include "Actor.hpp"
+#include "Physics.hpp"
 
 void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera);
@@ -45,6 +47,25 @@ int main() {
     long t = 0l;
     long currentTime = timeNowMicros();
     long acc = 0l;
+
+    Actor me(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            10.0f);
+    P_State& my_phys = me.state_to_change();
+    Physics phys;
+    phys.integrate(my_phys, t, dt);
+    const L_Cuboid& my_cub = me.logical_cuboid();
+
+    Actor them(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            10.0f);
+    phys.integrate(them.state_to_change(), t, dt);
+    const L_Cuboid& their_cub = them.logical_cuboid();
+    bool areColliding = L_Cuboid::colliding(my_cub, their_cub);
+    if (areColliding) {
+        // resolve
+        std::cout << "Colliding\n";
+    }
 
     while (!glfwWindowShouldClose(window)) {
 
