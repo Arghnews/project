@@ -31,6 +31,11 @@ Derivative Physics::evaluate(P_State state,
     return output;
 }
 
+v3 Physics::torque(const P_State& state, float dt) {
+    // small torque rotating about x
+    return v3(1.0f,0.0f,0.0f) - state.ang_velocity * 0.1f;
+}
+
 v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     v3 net(zeroV);
     // force delta is half of forces on object * delta time
@@ -64,45 +69,3 @@ void Physics::integrate(P_State& state,
 	state.clear_forces(); // clear forces vector
     state.recalc(); // update secondary values
 }
-
-/*
-v3 Physics::world_force( Thing& state, float dt ) {
-    v3 force(zeroV);
-    // add object's forces on
-	v3 f(state.net_force() * dt);
-	force += f;
-
-    // air resistance
-    // proportional to square of velocity of object
-
-    bool air = true;
-	glm::vec3 airRes = glm::vec3(0.0f,0.0f,0.0f);
-    if (air) {
-		const float air_decel = -0.25f;
-        airRes.x += air_decel*state.momentum.x;
-        airRes.y += air_decel*state.momentum.y;
-        airRes.z += air_decel*state.momentum.z;
-		airRes *= (float)dt;
-    }
-	force += airRes;
-	//std::cout << "Force after air " << printVec(force) << "\n";
-    
-	bool decelF = false;
-    // this is a force to stop the movement really, so don't get the sliding forever
-	if (decelF) {
-		float minForce = 5.0f*std::fabs(state.mass);
-		float decel = 1.0f;
-		force.x += -signOf(state.velocity().x) *
-			std::min(minForce,decel*std::fabs(state.momentum.x));  
-		force.y += -signOf(state.velocity().y) *
-			std::min(minForce,decel*std::fabs(state.momentum.y));  
-		force.z += -signOf(state.velocity().z) *
-			std::min(minForce,decel*std::fabs(state.momentum.z));  
-	}
-    // gravity - in my program, z is up
-    // will implement later could also do friction, but not now
-	//std::cout << "Net force on object " << printVec(force) << "\n";
-    
-    return force;
-}
-*/

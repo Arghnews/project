@@ -5,15 +5,20 @@ Actor::Actor(
     std::string vertShader,
     std::string fragShader,
     v3 topCenter,
-    float mass
+    float mass,
+    float inertia
     ) :
     camera(),
     l_cuboid(vertexData, topCenter),
     g_cuboid(vertexData, vertShader, fragShader),
-    p_state(mass),
+    p_state(mass, inertia),
     changed_state(false)
     {
 
+}
+
+const P_State& Actor::get_state() const {
+    return p_state;
 }
 
 const L_Cuboid& Actor::logical_cuboid() {

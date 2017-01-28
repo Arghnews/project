@@ -15,19 +15,37 @@
  * Things like it's position, momentum, mass and orientation are here
 */
 
-P_State::P_State(float m, v3 pos) :
+P_State::P_State(float m, float inertia, v3 pos) :
     mass(m),
     inverse_mass(1.0f/m),
+    inertia(inertia),
+    inverse_inertia(1.0f/inertia),
     position(pos) {
     }
 
-void P_State::turn(const v3& v) {
-    orient = v * orient;
+m4 P_State::positionMatrix() {
+    return glm::translate(m4(), position);
+}
+
+m4 P_State::viewMatrix() {
+    const v3 facing = FORWARD * orient;
+    const v3 up_relative = UP * orient;
+    return glm::lookAt(position, position + facing, up_relative);
 }
 
 void P_State::recalc() {
+
     velocity = momentum * inverse_mass;
+
+    ang_velocity = ang_momentum * 
+        inverse_inertia;
+
     orient = glm::normalize(orient);
+
+    fq q(ang_velocity);
+    q.w = 0.0f;
+
+    spin = 0.5f * q * orient;
 }
 
 // forces are relative to objects facing direction
@@ -56,5 +74,5 @@ void P_State::clear_forces() {
 
 std::ostream& operator<<(std::ostream& stream, const P_State& state) {
     stream << "Mass:" << state.mass << ", pos:" << printV(state.position)
-    << ", velo:" << printV(state.velocity) << ", force:" << printV(state.force);
+    << ", velo:" << printV(state.velocity);
 }

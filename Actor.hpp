@@ -24,6 +24,7 @@ class Actor {
         P_State p_state;
         bool changed_state;
     public:
+        const P_State& get_state() const;
         const L_Cuboid& logical_cuboid();
         P_State& state_to_change();
         void add_force(const v3& force);
@@ -32,7 +33,8 @@ class Actor {
         std::string vertShader,
         std::string fragShader,
         v3 topCenter,
-        float mass);
+        float mass,
+        float inertia);
 };
 
 #endif

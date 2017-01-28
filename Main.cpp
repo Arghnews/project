@@ -48,6 +48,7 @@ int main() {
     long currentTime = timeNowMicros();
     long acc = 0l;
 
+    /*
     Actor me(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f);
@@ -55,6 +56,7 @@ int main() {
     Physics phys;
     phys.integrate(my_phys, t, dt);
     const L_Cuboid& my_cub = me.logical_cuboid();
+    m4 view = me.get_camera().viewMatrix(me.get_state().position);
 
     Actor them(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
@@ -66,6 +68,7 @@ int main() {
         // resolve
         std::cout << "Colliding\n";
     }
+    */
 
     while (!glfwWindowShouldClose(window)) {
 

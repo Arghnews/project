@@ -24,6 +24,7 @@ class Camera {
         void rotate(const v2& offset); // rotate by mouse input
 
         m4 viewMatrix(); // view matrix
+        m4 viewMatrx(const v3& pos); // view mat, with camera at pos in world
 };
 
 #endif
