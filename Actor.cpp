@@ -17,6 +17,14 @@ Actor::Actor(
 
 }
 
+m4 Actor::modelMatrix() const {
+    return p_state.modelMatrix();
+}
+
+m4 Actor::viewMatrix() const {
+    return p_state.viewMatrix();
+}
+
 const P_State& Actor::get_state() const {
     return p_state;
 }
@@ -34,12 +42,12 @@ P_State& Actor::state_to_change() {
     return p_state;
 }
 
-void Actor::add_force(const v3& force) {
-    p_state.add_force(force);
+void Actor::apply_force(const v3& force) {
+    p_state.apply_force(force);
 }
 
-void Actor::add_force_abs(const v3& force) {
-    p_state.add_force_abs(force);
+void Actor::apply_force_abs(const v3& force) {
+    p_state.apply_force_abs(force);
 }
 
 /*

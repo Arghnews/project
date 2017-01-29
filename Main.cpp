@@ -25,17 +25,13 @@
 #include "Physics.hpp"
 
 void gl_loop_start();
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor&);
 
 int main() {
 
     Window_Inputs inputs;
 
     GLFWwindow* window = inputs.init_window(1440, 1024);
-
-    Camera camera;
-
-    set_keyboard(inputs,window,camera);
 
     G_Cuboid cube(&vertices,"shaders/vertex.shader","shaders/fragment.shader");
 
@@ -44,20 +40,24 @@ int main() {
     const long tickrate = 100l;
     const long dt = (1e6l)/tickrate; // run at tickrate 100
 
+    auto timeNow = [] () -> long {
+        static const long program_start_time = timeNowMicros();
+        return timeNowMicros() - program_start_time;
+    };
     long t = 0l;
-    long currentTime = timeNowMicros();
+    long currentTime = timeNow();
     long acc = 0l;
 
-    /*
     Actor me(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f);
-    P_State& my_phys = me.state_to_change();
-    Physics phys;
-    phys.integrate(my_phys, t, dt);
-    const L_Cuboid& my_cub = me.logical_cuboid();
-    m4 view = me.get_camera().viewMatrix(me.get_state().position);
+            10.0f, 10.0f);
 
+    set_keyboard(inputs,window,me);
+
+    Physics phys;
+
+    /*
+    const L_Cuboid& my_cub = me.logical_cuboid();
     Actor them(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f);
@@ -72,7 +72,7 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
 
-        long newTime = timeNowMicros();
+        long newTime = timeNow();
         long frameTime = newTime - currentTime;
         currentTime = newTime;
         acc += frameTime;
@@ -81,11 +81,18 @@ int main() {
         inputs.processInput(); // polls input and executes action based on that
 
         const v2 mouseDelta = inputs.cursorDelta();
-        camera.rotate(mouseDelta);
+        //camera.rotate(mouseDelta);
 
         // simulate world
         while (acc >= dt) {
             //integrate(state, t, dt);
+            P_State& my_phys = me.state_to_change();
+            // feeds in essentially a time value of 1 every time
+            // since fixed time step
+            const float normalize = 1.0f / (float)dt;
+            const float t_normalized = t * normalize;
+            const float dt_normalized = dt * normalize;
+            phys.integrate(my_phys, t_normalized, dt_normalized);
             acc -= dt;
             t += dt;
         }
@@ -100,8 +107,9 @@ int main() {
 
         cube.useShader();
 
+        //m4 model = me.modelMatrix();
         m4 model;
-        m4 view = camera.viewMatrix();
+        m4 view = me.viewMatrix();
         float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
         m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
         GLuint viewLoc = glGetUniformLocation(cube.shaderProgram(), "view");
@@ -120,7 +128,7 @@ int main() {
         // Render end -- -- --
         
         // sleep if fps would be > fps_max
-        long spareFrameTime = 1e6l / fps_max - (timeNowMicros() - newTime);
+        long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers
@@ -136,7 +144,7 @@ void gl_loop_start() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera) {
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
@@ -146,12 +154,10 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Camera& camera) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
 
     // camera
-    inputs.setFunc2(GLFW_KEY_W,[&] () {camera.move(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_S,[&] () {camera.move(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_A,[&] () {camera.move(LEFT); });
-    inputs.setFunc2(GLFW_KEY_D,[&] () {camera.move(RIGHT); });
-    inputs.setFunc2(GLFW_KEY_UP,[&] () {camera.move(UP); });
-    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {camera.move(DOWN); });
-
-    inputs.setFunc(GLFW_KEY_LEFT_SHIFT,GLFW_PRESS,[&] () {camera.toggleSpeed(); });
+    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force(FORWARD); });
+    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
+    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
+    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
+    inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
+    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
 }

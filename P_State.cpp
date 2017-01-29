@@ -23,11 +23,17 @@ P_State::P_State(float m, float inertia, v3 pos) :
     position(pos) {
     }
 
-m4 P_State::positionMatrix() {
-    return glm::translate(m4(), position);
+m4 P_State::modelMatrix() const {
+    //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
+    m4 model;
+    m4 scale;
+    m4 rotation(glm::toMat4(orient));
+    m4 translation(glm::translate(m4(), position));
+    model = translation * rotation * scale;
+    return model;
 }
 
-m4 P_State::viewMatrix() {
+m4 P_State::viewMatrix() const {
     const v3 facing = FORWARD * orient;
     const v3 up_relative = UP * orient;
     return glm::lookAt(position, position + facing, up_relative);
@@ -49,13 +55,13 @@ void P_State::recalc() {
 }
 
 // forces are relative to objects facing direction
-void P_State::add_force(const v3& f) {
+void P_State::apply_force(const v3& f) {
     // order matters
     forces.push_back(f * orient);
 }
 
 // force is absolute, ie v(0,-1,0) is down
-void P_State::add_force_abs(const v3& f) {
+void P_State::apply_force_abs(const v3& f) {
     forces.push_back(f);
 }
 

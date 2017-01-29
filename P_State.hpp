@@ -37,14 +37,14 @@ class P_State {
         const float inertia;
         const float inverse_inertia;
 
-        void add_force(const v3& force); // relative to orient
-        void add_force_abs(const v3& force); // absolute, ie. down
+        void apply_force(const v3& force); // relative to orient
+        void apply_force_abs(const v3& force); // absolute, ie. down
         void clear_forces();
         void recalc();
         v3 net_force() const;
 
-        m4 positionMatrix();
-        m4 viewMatrix();
+        m4 modelMatrix() const;
+        m4 viewMatrix() const;
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 };

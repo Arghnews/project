@@ -18,15 +18,15 @@ class Physics {
 		Physics();
 	private:
         v3 simple_force_resolve(const P_State& state, float dt);
-        v3 torque(const P_State& state, float dt);
+        v3 simple_torque_resolve(const P_State& state, float dt);
 		Derivative evaluate(P_State, float t, float dt, const Derivative&);
 };
 
 struct Derivative {
     v3 dx; // dx/dt = velocity
     v3 dp; // dp/dt = force (change in momentum)
-    fq spin; // 
-    v3 torque;
+    v3 dL; // dL/dt = change in angular momentum
+    fq dq; // dq/dt = spin = change in orientation with respect to time
     Derivative () {
     }
 };
