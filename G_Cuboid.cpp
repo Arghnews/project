@@ -17,7 +17,7 @@ G_Cuboid::G_Cuboid(
 
 // for now since I don't care about colour I bind the
 // positional data as the colour data
-void G_Cuboid::bindBuffers() {
+void G_Cuboid::bindBuffers() const {
 
     const fv& vertices = *vertex_data;
 
@@ -37,15 +37,15 @@ void G_Cuboid::bindBuffers() {
     glBindVertexArray(0); // Unbind VAO
 }
 
-GLint G_Cuboid::shaderProgram() {
+GLint G_Cuboid::shaderProgram() const {
     return shader.Program;
 }
 
-void G_Cuboid::useShader() {
+void G_Cuboid::useShader() const {
     shader.use();
 }
 
-int G_Cuboid::drawSize() {
+int G_Cuboid::drawSize() const {
     return vertex_data->size();
 }
 

@@ -26,9 +26,11 @@ class Actor {
     public:
         const P_State& get_state() const;
         const L_Cuboid& logical_cuboid();
+        const G_Cuboid& graphical_cuboid() const;
         P_State& state_to_change();
         m4 viewMatrix() const;
         m4 modelMatrix() const;
+        void apply_torque(const v3& force);
         void apply_force(const v3& force);
         void apply_force_abs(const v3& force);
         Actor(const fv* vertexData,

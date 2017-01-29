@@ -37,9 +37,17 @@ const L_Cuboid& Actor::logical_cuboid() {
     return l_cuboid;
 }
 
+const G_Cuboid& Actor::graphical_cuboid() const {
+    return g_cuboid;
+}
+
 P_State& Actor::state_to_change() {
     changed_state = true;
     return p_state;
+}
+
+void Actor::apply_torque(const v3& force) {
+    p_state.apply_torque(force);
 }
 
 void Actor::apply_force(const v3& force) {

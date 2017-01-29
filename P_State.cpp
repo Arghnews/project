@@ -65,6 +65,24 @@ void P_State::apply_force_abs(const v3& f) {
     forces.push_back(f);
 }
 
+// force is absolute, ie v(0,-1,0) is down
+void P_State::apply_torque(const v3& f) {
+    torques.push_back(f);
+}
+
+v3 P_State::net_torque() const {
+    // sum of torques on object
+    v3 net(zeroV);
+    for (const auto& f: torques) {
+        net += f;
+    }
+    return net;
+}
+
+void P_State::clear_torques() {
+    torques.clear();
+}
+
 v3 P_State::net_force() const {
     // sum of forces on object
     v3 net(zeroV);

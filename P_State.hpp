@@ -10,12 +10,12 @@
 
 #include "Util.hpp"
 
-#include <iostream>
-#include <sstream>
+#include <iosfwd>
 
 class P_State {
     private:
         vv3 forces;
+        vv3 torques;
     public:
         P_State(float m, float inertia, v3 pos=v3());
         // primary
@@ -37,11 +37,14 @@ class P_State {
         const float inertia;
         const float inverse_inertia;
 
+        void apply_torque(const v3& f);
         void apply_force(const v3& force); // relative to orient
         void apply_force_abs(const v3& force); // absolute, ie. down
         void clear_forces();
+        void clear_torques();
         void recalc();
         v3 net_force() const;
+        v3 net_torque() const;
 
         m4 modelMatrix() const;
         m4 viewMatrix() const;

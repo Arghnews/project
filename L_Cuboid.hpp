@@ -9,7 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include <string>
-#include <iostream>
+#include <iosfwd>
 #include <sstream>
 #include <math.h>
 #include <utility>

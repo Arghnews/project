@@ -26,14 +26,13 @@
 
 void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor&);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& cube);
 
 int main() {
 
     Window_Inputs inputs;
 
     GLFWwindow* window = inputs.init_window(1440, 1024);
-
-    G_Cuboid cube(&vertices,"shaders/vertex.shader","shaders/fragment.shader");
 
     const long fps_max = 60l;
     
@@ -52,7 +51,11 @@ int main() {
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 10.0f);
 
-    set_keyboard(inputs,window,me);
+    Actor cube(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            10.0f, 10.0f);
+
+    set_keyboard(inputs,window,me,cube);
 
     Physics phys;
 
@@ -87,12 +90,14 @@ int main() {
         while (acc >= dt) {
             //integrate(state, t, dt);
             P_State& my_phys = me.state_to_change();
+            P_State& cube_phys = cube.state_to_change();
             // feeds in essentially a time value of 1 every time
             // since fixed time step
             const float normalize = 1.0f / (float)dt;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
             phys.integrate(my_phys, t_normalized, dt_normalized);
+            phys.integrate(cube_phys, t_normalized, dt_normalized);
             acc -= dt;
             t += dt;
         }
@@ -101,27 +106,29 @@ int main() {
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
+        //m4 model = me.modelMatrix();
+        m4 model = cube.modelMatrix();
+        m4 view = me.viewMatrix();
+
         gl_loop_start();
 
-        cube.bindBuffers();
+        const G_Cuboid& graphical_cube = cube.graphical_cuboid();
 
-        cube.useShader();
+        graphical_cube.bindBuffers();
+        graphical_cube.useShader();
 
-        //m4 model = me.modelMatrix();
-        m4 model;
-        m4 view = me.viewMatrix();
         float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
         m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-        GLuint viewLoc = glGetUniformLocation(cube.shaderProgram(), "view");
-        GLuint projectionLoc = glGetUniformLocation(cube.shaderProgram(), "projection");
+        GLuint viewLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "view");
+        GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glBindVertexArray(cube.VAO);
+        glBindVertexArray(graphical_cube.VAO);
 
-        GLuint modelLoc = glGetUniformLocation(cube.shaderProgram(), "model");
+        GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, cube.drawSize());
+        glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
 
         glBindVertexArray(0);
         glUseProgram(0);
@@ -144,7 +151,7 @@ void gl_loop_start() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me) {
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& cube) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
@@ -160,4 +167,6 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me) {
     inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
     inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
+
+    inputs.setFunc1(GLFW_KEY_R,[&] () {cube.apply_torque(v3(0.0f,1.0f,0.0f)); });
 }

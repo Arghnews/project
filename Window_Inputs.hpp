@@ -68,6 +68,11 @@ class Window_Inputs {
         }
 
         template <typename F>
+        void setFunc1(int key, F f) {
+            setFunc(key,GLFW_PRESS,f);
+        }
+
+        template <typename F>
         void setFunc2(int key, F f) {
             setFunc(key,GLFW_PRESS,f);
             setFunc(key,GLFW_REPEAT,f);

@@ -14,10 +14,10 @@ class G_Cuboid {
         G_Cuboid(const fv* vertexData, std::string vertPath, std::string fragPath);
         GLuint VAO;
         GLuint VBO;
-        void bindBuffers();
-        void useShader();
-        int drawSize();
-        GLint shaderProgram();
+        void bindBuffers() const;
+        void useShader() const;
+        int drawSize() const;
+        GLint shaderProgram() const;
         ~G_Cuboid();
 };
 #endif

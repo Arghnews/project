@@ -38,9 +38,11 @@ Derivative Physics::evaluate(P_State state,
 }
 
 v3 Physics::simple_torque_resolve(const P_State& state, float dt) {
-    // small torque rotating about x
-    //return v3(1.0f,0.0f,0.0f) - state.ang_velocity * 0.1f;
-    return v3(zeroV);
+    v3 net(zeroV);
+    net += state.net_torque() * dt * 0.5f;
+
+    net += -0.75f * state.ang_velocity;
+    return net;
 }
 
 v3 Physics::simple_force_resolve(const P_State& state, float dt) {
@@ -48,7 +50,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     // force delta is half of forces on object * delta time
     net += state.net_force() * dt * 0.5f;
     
-    net += -0.5f * state.velocity;
+    net += -0.75f * state.velocity;
     return net;
 }
 
@@ -84,5 +86,6 @@ void Physics::integrate(P_State& state,
     state.orient = 0.5f * q * state.orient;
 
 	state.clear_forces(); // clear forces vector
+	state.clear_torques(); // clear torques vector
     state.recalc(); // update secondary values
 }
