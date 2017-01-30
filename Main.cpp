@@ -192,9 +192,7 @@ int main() {
         m4 view = me.viewMatrix();
         const G_Cuboid& cam_graphical_cube = me.graphical_cuboid();
         float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
-        m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
         GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
-        GLuint projectionLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "projection");
 
         gl_loop_start();
 
@@ -204,6 +202,9 @@ int main() {
 
             graphical_cube.bindBuffers();
             graphical_cube.useShader();
+
+            m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+            GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
 
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
@@ -263,7 +264,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& 
 void select_cube(Window_Inputs& inputs, Actors& actors) {
     auto& actor = actors.selected();
     inputs.setFunc2(GLFW_KEY_R,[&] () {actor.apply_torque(v3(1.0f,0.0f,0.0f)); });
-    inputs.setFunc2(GLFW_KEY_R,[&] () {actor.apply_torque(v3(0.0f,1.0f,0.0f)); });
+    inputs.setFunc2(GLFW_KEY_Y,[&] () {actor.apply_torque(v3(0.0f,1.0f,0.0f)); });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {actor.apply_torque(v3(0.0f,0.0f,1.0f)); });
 
     inputs.setFunc2(GLFW_KEY_UP,[&] () {actor.apply_force(FORWARD); });
