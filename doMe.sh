@@ -27,6 +27,8 @@ main() {
     "Main.cpp"
     "AABB.cpp"
     "Octtree.cpp"
+    "Actors.cpp"
+    "World.cpp"
     )
 
 	#cppFiles=( 

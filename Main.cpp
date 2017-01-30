@@ -26,6 +26,8 @@
 #include "data.hpp"
 #include "Actor.hpp"
 #include "Physics.hpp"
+#include "Actors.hpp"
+#include "World.hpp"
 
 class MyIterator;
 class MyContainer;
@@ -34,74 +36,6 @@ class Actors;
 void gl_loop_start();
 void select_cube(Window_Inputs& inputs, Actors& actors);
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& actors);
-
-class Actors {
-    private:
-        std::map<Id, Actor*> actors;
-        Id selected_;
-    public:
-        // because I'm too lazy to implement an iterator wrapper
-        const std::map<Id, Actor*>& underlying() const {
-            return actors;
-        }
-
-        Actors() {}
-
-        void apply_force(const Id& id, const v3& force) {
-            actors[id]->apply_force(force);
-        }
-
-        void apply_torque(const Id& id, const v3& force) {
-            actors[id]->apply_torque(force);
-        }
-
-        void insert(const Id& id, Actor* a) {
-            actors.insert(std::make_pair(id,a));
-        }
-
-        const Id selected() const {
-            return selected_;
-        }
-
-        Actor& selectedActor() {
-            return *actors[selected_];
-        }
-
-        template <typename Iter, typename Cont>
-        bool is_last(Iter iter, const Cont& cont) {
-            return (iter != cont.end()) && (std::next(iter) == cont.end());
-        }
-
-        void next() {
-            if (actors.count(selected_) == 0) {
-                selected_ = actors.begin()->first;
-            }
-
-            if (actors.size() == 0) {
-                std::cout << "There are no actors to switch the next to\n";
-            } else if (actors.size() == 1) {
-                selected_ = actors.begin()->first;
-            } else {
-                auto it = actors.find(selected_);
-                if (is_last(it, actors)) {
-                    selected_ = actors.begin()->first;
-                } else {
-                    selected_ = (*std::next(it)).first;
-                }
-            }
-            std::cout << "Selected cube " << selected_ << "\n";
-        }
-
-        Actor& operator[](const Id& id) {
-            return *actors[id];
-        }
-
-        ~Actors() {
-            for (auto& a: actors) {
-                delete a.second;
-            }
-        }
-};
 
 int main() {
 
