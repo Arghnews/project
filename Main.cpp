@@ -49,7 +49,7 @@ int main() {
 
     Actor me(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f, 10.0f);
+            10.0f, 1000000.0f);
 
     Actor cube(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
@@ -84,7 +84,9 @@ int main() {
         inputs.processInput(); // polls input and executes action based on that
 
         const v2 mouseDelta = inputs.cursorDelta();
+        me.apply_torque(100000.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
         //camera.rotate(mouseDelta);
+        //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
 
         // simulate world
         while (acc >= dt) {
@@ -168,5 +170,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& c
     inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
 
+    inputs.setFunc2(GLFW_KEY_Y,[&] () {cube.apply_torque(v3(1.0f,0.0f,0.0f)); });
     inputs.setFunc2(GLFW_KEY_R,[&] () {cube.apply_torque(v3(0.0f,1.0f,0.0f)); });
+    inputs.setFunc2(GLFW_KEY_Z,[&] () {cube.apply_torque(v3(0.0f,0.0f,1.0f)); });
 }

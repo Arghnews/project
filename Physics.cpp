@@ -24,9 +24,7 @@ Derivative Physics::evaluate(P_State state,
 	state.position = state.position + d.dx*dt;
 	state.momentum = state.momentum + d.dp*dt;
     state.ang_momentum = state.ang_momentum + d.dL * dt;
-    fq q(state.ang_velocity * dt);
-    q.w = 0.0f;
-    state.orient = 0.5f * q * state.orient;
+    state.orient = 0.5f * fq(state.ang_velocity * dt) * state.orient;
     // new change in position becomes new velocity
     // new change in velo becomes new state change with respect to time
     Derivative output;
@@ -41,7 +39,7 @@ v3 Physics::simple_torque_resolve(const P_State& state, float dt) {
     v3 net(zeroV);
     net += state.net_torque() * dt * 0.5f;
 
-    net += -0.75f * state.ang_velocity;
+    net += -0.75f * state.ang_momentum;
     return net;
 }
 
@@ -50,7 +48,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     // force delta is half of forces on object * delta time
     net += state.net_force() * dt * 0.5f;
     
-    net += -0.75f * state.velocity;
+    net += -0.75f * state.momentum;
     return net;
 }
 
