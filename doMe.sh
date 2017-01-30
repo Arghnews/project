@@ -47,7 +47,7 @@ main() {
     verbose=false
     silent=false # if "true" will print
 
-    MMD="-M" # -M default, MM excludes sys headers
+    MMD="-MM" # -M default, MM excludes sys headers
     genDependencies="$compiler $compilerFlags $MMD"
 
     objectDir="objects"

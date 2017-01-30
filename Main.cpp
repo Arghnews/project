@@ -40,7 +40,6 @@ class Actors {
         std::map<Id, Actor*> actors;
         Id selected_;
     public:
-        
         // because I'm too lazy to implement an iterator wrapper
         const std::map<Id, Actor*>& underlying() const {
             return actors;
@@ -48,11 +47,23 @@ class Actors {
 
         Actors() {}
 
+        void apply_force(const Id& id, const v3& force) {
+            actors[id]->apply_force(force);
+        }
+
+        void apply_torque(const Id& id, const v3& force) {
+            actors[id]->apply_torque(force);
+        }
+
         void insert(const Id& id, Actor* a) {
             actors.insert(std::make_pair(id,a));
         }
 
-        Actor& selected() {
+        const Id selected() const {
+            return selected_;
+        }
+
+        Actor& selectedActor() {
             return *actors[selected_];
         }
 
@@ -196,7 +207,7 @@ int main() {
 
         gl_loop_start();
 
-        for (auto& a: actors.underlying()) {
+        for (const auto& a: actors.underlying()) {
             const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
             const Actor& actor = (*a.second);
 
@@ -262,13 +273,26 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& 
 }
 
 void select_cube(Window_Inputs& inputs, Actors& actors) {
-    auto& actor = actors.selected();
-    inputs.setFunc2(GLFW_KEY_R,[&] () {actor.apply_torque(v3(1.0f,0.0f,0.0f)); });
-    inputs.setFunc2(GLFW_KEY_Y,[&] () {actor.apply_torque(v3(0.0f,1.0f,0.0f)); });
-    inputs.setFunc2(GLFW_KEY_Z,[&] () {actor.apply_torque(v3(0.0f,0.0f,1.0f)); });
+    inputs.setFunc2(GLFW_KEY_R,[&] () {
+            actors.apply_torque(actors.selected(),LEFT);
+    });
+    inputs.setFunc2(GLFW_KEY_Y,[&] () {
+            actors.apply_torque(actors.selected(),UP);
+    });
+    inputs.setFunc2(GLFW_KEY_Z,[&] () {
+            actors.apply_torque(actors.selected(),FORWARD);
+    });
 
-    inputs.setFunc2(GLFW_KEY_UP,[&] () {actor.apply_force(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {actor.apply_force(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_LEFT,[&] () {actor.apply_force(LEFT); });
-    inputs.setFunc2(GLFW_KEY_RIGHT,[&] () {actor.apply_force(RIGHT); });
+    inputs.setFunc2(GLFW_KEY_UP,[&] () {
+            actors.apply_force(actors.selected(),FORWARD);
+    });
+    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
+            actors.apply_force(actors.selected(),BACKWARD);
+    });
+    inputs.setFunc2(GLFW_KEY_LEFT,[&] () {
+            actors.apply_force(actors.selected(),LEFT);
+    });
+    inputs.setFunc2(GLFW_KEY_RIGHT,[&] () {
+            actors.apply_force(actors.selected(),RIGHT);
+    });
 }
