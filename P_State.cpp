@@ -27,6 +27,8 @@ m4 P_State::modelMatrix() const {
     //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
     m4 model;
     m4 rotation(glm::toMat4(orient));
+    std::cout << "My orientation is " << printQ(orient) << "\n";
+    std::cout << "My euler " << printV(glm::eulerAngles(orient)) << "\n";
     m4 translation(glm::translate(m4(), position));
     model = translation * rotation;
     return model;
@@ -54,8 +56,9 @@ void P_State::recalc() {
 void P_State::apply_force(const v3& f) {
     // order matters
     std::cout << "Force in " << printV(f) << "\n";
-    std::cout << "Orient " << printQ(orient) << "\n";
-    auto q = f * orient;
+    std::cout << "Orient " << printV(glm::eulerAngles(orient)) << "\n";
+    //auto q = orient * f; // busted for camera
+    auto q = f * orient; // busted for cubes
     std::cout << "Force applied " << printV(q) << "\n";
     forces.push_back(q);
 }

@@ -43,7 +43,7 @@ class Window_Inputs {
     public:
         Window_Inputs();
 
-        GLFWwindow* init_window(int x=1024, int y=768);
+        GLFWwindow* init_window(int x=800, int y=600);
         GLFWwindow* getWindow();
         v2 windowSize();
 
