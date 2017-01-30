@@ -14,6 +14,9 @@
 #include <chrono>
 #include <thread>
 #include <algorithm>
+#include <string>
+#include <map>
+#include <iterator>
 
 #include "Util.hpp"
 #include "Shader.hpp"
@@ -24,9 +27,70 @@
 #include "Actor.hpp"
 #include "Physics.hpp"
 
+class MyIterator;
+class MyContainer;
+class Actors;
+
 void gl_loop_start();
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor&);
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& cube);
+void select_cube(Window_Inputs& inputs, Actors& actors);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& actors);
+
+class Actors {
+    private:
+        std::map<Id, Actor*> actors;
+        Id selected_;
+    public:
+        
+        // because I'm too lazy to implement an iterator wrapper
+        const std::map<Id, Actor*>& underlying() const {
+            return actors;
+        }
+
+        Actors() {}
+
+        void insert(const Id& id, Actor* a) {
+            actors.insert(std::make_pair(id,a));
+        }
+
+        Actor& selected() {
+            return *actors[selected_];
+        }
+
+        template <typename Iter, typename Cont>
+        bool is_last(Iter iter, const Cont& cont) {
+            return (iter != cont.end()) && (std::next(iter) == cont.end());
+        }
+
+        void next() {
+            if (actors.count(selected_) == 0) {
+                selected_ = actors.begin()->first;
+            }
+
+            if (actors.size() == 0) {
+                std::cout << "There are no actors to switch the next to\n";
+            } else if (actors.size() == 1) {
+                selected_ = actors.begin()->first;
+            } else {
+                auto it = actors.find(selected_);
+                if (is_last(it, actors)) {
+                    selected_ = actors.begin()->first;
+                } else {
+                    selected_ = (*std::next(it)).first;
+                }
+            }
+            std::cout << "Selected cube " << selected_ << "\n";
+        }
+
+        Actor& operator[](const Id& id) {
+            return *actors[id];
+        }
+
+        ~Actors() {
+            for (auto& a: actors) {
+                delete a.second;
+            }
+        }
+};
 
 int main() {
 
@@ -47,15 +111,27 @@ int main() {
     long currentTime = timeNow();
     long acc = 0l;
 
+    Actors actors;
+
     Actor me(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f, 1000000.0f);
+            1.0f, 1000000.0f);
 
-    Actor cube(&vertices, "shaders/vertex.shader",
+    Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f, 10.0f);
+            10.0f, 5.0f);
 
-    set_keyboard(inputs,window,me,cube);
+    Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            10.0f, 5.0f);
+
+    Id c1 = 0;
+    Id c2 = 1;
+
+    actors.insert(c1,cube1);
+    actors.insert(c2,cube2);
+
+    set_keyboard(inputs,window,me,actors);
 
     Physics phys;
 
@@ -90,16 +166,20 @@ int main() {
 
         // simulate world
         while (acc >= dt) {
-            //integrate(state, t, dt);
-            P_State& my_phys = me.state_to_change();
-            P_State& cube_phys = cube.state_to_change();
-            // feeds in essentially a time value of 1 every time
-            // since fixed time step
-            const float normalize = 1.0f / (float)dt;
+            static const float normalize = 1.0f / (float)dt;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
+
+            // for now doing me and other cube separately
+            P_State& my_phys = me.state_to_change();
             phys.integrate(my_phys, t_normalized, dt_normalized);
-            phys.integrate(cube_phys, t_normalized, dt_normalized);
+
+            for (auto& a: actors.underlying()) {
+                P_State& cube_phys = (*a.second).state_to_change();
+                phys.integrate(cube_phys, t_normalized, dt_normalized);
+            }
+            // feeds in essentially a time value of 1 every time
+            // since fixed time step
             acc -= dt;
             t += dt;
         }
@@ -109,32 +189,36 @@ int main() {
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
         //m4 model = me.modelMatrix();
-        m4 model = cube.modelMatrix();
         m4 view = me.viewMatrix();
+        const G_Cuboid& cam_graphical_cube = me.graphical_cuboid();
+        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
+        m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+        GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
+        GLuint projectionLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "projection");
 
         gl_loop_start();
 
-        const G_Cuboid& graphical_cube = cube.graphical_cuboid();
+        for (auto& a: actors.underlying()) {
+            const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
+            const Actor& actor = (*a.second);
 
-        graphical_cube.bindBuffers();
-        graphical_cube.useShader();
+            graphical_cube.bindBuffers();
+            graphical_cube.useShader();
 
-        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
-        m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-        GLuint viewLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "view");
-        GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glBindVertexArray(graphical_cube.VAO);
+            glBindVertexArray(graphical_cube.VAO);
 
-        GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
+            m4 model = actor.modelMatrix();
+            GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
 
-        glBindVertexArray(0);
-        glUseProgram(0);
-        // Render end -- -- --
+            glBindVertexArray(0);
+            glUseProgram(0);
+            // Render end -- -- --
+        }
         
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
@@ -153,7 +237,7 @@ void gl_loop_start() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& cube) {
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& actors) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
@@ -167,10 +251,23 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& c
     inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
     inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
     inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
-    inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
-    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
+    //inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
+    //inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
+    
+    inputs.setFunc1(GLFW_KEY_TAB,[&] () {
+        actors.next(); 
+        select_cube(inputs,actors);        
+    });
+}
 
-    inputs.setFunc2(GLFW_KEY_Y,[&] () {cube.apply_torque(v3(1.0f,0.0f,0.0f)); });
-    inputs.setFunc2(GLFW_KEY_R,[&] () {cube.apply_torque(v3(0.0f,1.0f,0.0f)); });
-    inputs.setFunc2(GLFW_KEY_Z,[&] () {cube.apply_torque(v3(0.0f,0.0f,1.0f)); });
+void select_cube(Window_Inputs& inputs, Actors& actors) {
+    auto& actor = actors.selected();
+    inputs.setFunc2(GLFW_KEY_R,[&] () {actor.apply_torque(v3(1.0f,0.0f,0.0f)); });
+    inputs.setFunc2(GLFW_KEY_R,[&] () {actor.apply_torque(v3(0.0f,1.0f,0.0f)); });
+    inputs.setFunc2(GLFW_KEY_Z,[&] () {actor.apply_torque(v3(0.0f,0.0f,1.0f)); });
+
+    inputs.setFunc2(GLFW_KEY_UP,[&] () {actor.apply_force(FORWARD); });
+    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {actor.apply_force(BACKWARD); });
+    inputs.setFunc2(GLFW_KEY_LEFT,[&] () {actor.apply_force(LEFT); });
+    inputs.setFunc2(GLFW_KEY_RIGHT,[&] () {actor.apply_force(RIGHT); });
 }
