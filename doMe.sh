@@ -25,6 +25,8 @@ main() {
     "Actor.cpp"
     "Window_Inputs.cpp"
     "Main.cpp"
+    "AABB.cpp"
+    "Octtree.cpp"
     )
 
 	#cppFiles=( 
