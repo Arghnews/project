@@ -48,10 +48,7 @@ void P_State::recalc() {
 
     orient = glm::normalize(orient);
 
-    fq q(ang_velocity);
-    q.w = 0.0f;
-
-    spin = 0.5f * q * orient;
+    spin = 0.5f * fq(ang_velocity) * orient;
 }
 
 // forces are relative to objects facing direction

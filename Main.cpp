@@ -168,5 +168,5 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actor& c
     inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
 
-    inputs.setFunc1(GLFW_KEY_R,[&] () {cube.apply_torque(v3(0.0f,1.0f,0.0f)); });
+    inputs.setFunc2(GLFW_KEY_R,[&] () {cube.apply_torque(v3(0.0f,1.0f,0.0f)); });
 }

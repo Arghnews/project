@@ -81,9 +81,7 @@ void Physics::integrate(P_State& state,
     state.position = state.position + dxdt * dt;
     state.momentum = state.momentum + dpdt * dt;
     state.ang_momentum = state.ang_momentum + dLdt * dt;
-    fq q(state.ang_velocity * dt);
-    q.w = 0.0f;
-    state.orient = 0.5f * q * state.orient;
+    state.orient = 0.5f * fq(state.ang_velocity * dt) * state.orient;
 
 	state.clear_forces(); // clear forces vector
 	state.clear_torques(); // clear torques vector
