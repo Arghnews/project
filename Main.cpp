@@ -217,6 +217,9 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
             actors.apply_torque(actors.selected(),FORWARD);
     });
 
+    inputs.setFunc2(GLFW_KEY_P,[&] () {
+            actors.apply_force(actors.selected(),FORWARD+LEFT);
+    });
     inputs.setFunc2(GLFW_KEY_UP,[&] () {
             actors.apply_force(actors.selected(),FORWARD);
     });

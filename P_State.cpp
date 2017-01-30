@@ -26,10 +26,9 @@ P_State::P_State(float m, float inertia, v3 pos) :
 m4 P_State::modelMatrix() const {
     //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
     m4 model;
-    m4 scale;
     m4 rotation(glm::toMat4(orient));
     m4 translation(glm::translate(m4(), position));
-    model = translation * rotation * scale;
+    model = translation * rotation;
     return model;
 }
 
@@ -54,7 +53,11 @@ void P_State::recalc() {
 // forces are relative to objects facing direction
 void P_State::apply_force(const v3& f) {
     // order matters
-    forces.push_back(f * orient);
+    std::cout << "Force in " << printV(f) << "\n";
+    std::cout << "Orient " << printQ(orient) << "\n";
+    auto q = f * orient;
+    std::cout << "Force applied " << printV(q) << "\n";
+    forces.push_back(q);
 }
 
 // force is absolute, ie v(0,-1,0) is down
