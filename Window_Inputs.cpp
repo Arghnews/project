@@ -128,6 +128,11 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     glfwGetFramebufferSize(window, &width, &height);
     glViewport(0, 0, width, height);
 
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    cursor_pos.x = xpos;
+    cursor_pos.y = ypos;
+
     // turn off v-sync
     // do sleeping myself
     glfwSwapInterval(0);

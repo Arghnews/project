@@ -37,9 +37,10 @@ class P_State {
         const float inertia;
         const float inverse_inertia;
 
-        void apply_torque(const v3& f);
         void apply_force(const v3& force); // relative to orient
         void apply_force_abs(const v3& force); // absolute, ie. down
+        void apply_force_camera(const v3& f);
+        void apply_torque(const v3& f);
         void clear_forces();
         void clear_torques();
         void recalc();

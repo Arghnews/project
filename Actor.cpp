@@ -50,6 +50,10 @@ void Actor::apply_torque(const v3& force) {
     p_state.apply_torque(force);
 }
 
+void Actor::apply_force_camera(const v3& force) {
+    p_state.apply_force_camera(force);
+}
+
 void Actor::apply_force(const v3& force) {
     p_state.apply_force(force);
 }

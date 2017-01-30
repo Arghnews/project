@@ -57,6 +57,16 @@ void P_State::apply_force(const v3& f) {
     // order matters
     std::cout << "Force in " << printV(f) << "\n";
     std::cout << "Orient " << printV(glm::eulerAngles(orient)) << "\n";
+    auto q = orient * f; // busted for camera
+    //auto q = f * orient; // busted for cubes
+    std::cout << "Force applied " << printV(q) << "\n";
+    forces.push_back(q);
+}
+
+void P_State::apply_force_camera(const v3& f) {
+    // order matters
+    std::cout << "Force in " << printV(f) << "\n";
+    std::cout << "Orient " << printV(glm::eulerAngles(orient)) << "\n";
     //auto q = orient * f; // busted for camera
     auto q = f * orient; // busted for cubes
     std::cout << "Force applied " << printV(q) << "\n";
