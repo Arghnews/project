@@ -51,10 +51,17 @@ void P_State::recalc() {
 }
 
 // forces are relative to objects facing direction
-void P_State::apply_force(const v3& f) {
+void P_State::apply_force(const v3& f, const v3& point) {
     // order matters
-    const v3 q = orient * f;
-    forces.push_back(q);
+    const v3 force = orient * f;
+    forces.push_back(force);
+    const v3 torque = glm::cross(force, point - position);
+    //std::cout << "Torque applied " << printV(torque) << "\n";
+    torques.push_back(torque);
+}
+
+void P_State::apply_force(const v3& f) {
+    apply_force(f, position);
 }
 
 // force is absolute, ie v(0,-1,0) is down

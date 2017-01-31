@@ -15,6 +15,7 @@ class Actors : std::map<Id, Actor*> {
         void check();
 
     public:
+
         // because I'm too lazy to implement an iterator wrapper
         const std::map<Id, Actor*>& underlying() const;
 
@@ -22,6 +23,7 @@ class Actors : std::map<Id, Actor*> {
         ~Actors();
 
         void apply_force(const Id& id, const v3& force);
+        void apply_force(const Id& id, const v3& force, const v3& point);
 
         void apply_torque(const Id& id, const v3& force);
 

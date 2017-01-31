@@ -38,6 +38,8 @@ class P_State {
         const float inverse_inertia;
 
         void apply_force(const v3& force); // relative to orient
+        void apply_force(const v3& force, const v3& point); // relative to orient
+        void apply_force_real(const v3& f, const v3& point); // at a point
         void apply_force_abs(const v3& force); // absolute, ie. down
         void apply_torque(const v3& f);
         void clear_forces();

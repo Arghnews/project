@@ -21,7 +21,6 @@
 #include "Util.hpp"
 #include "Shader.hpp"
 #include "Window_Inputs.hpp"
-#include "Camera.hpp"
 #include "G_Cuboid.hpp"
 #include "data.hpp"
 #include "Actor.hpp"
@@ -52,7 +51,7 @@ int main() {
     long currentTime = timeNow();
     long acc = 0l;
 
-    Actors actors;
+    World world;
 
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
@@ -66,27 +65,11 @@ int main() {
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 5.0f);
 
-    actors.insert(me);
-    actors.insert(cube1);
-    actors.insert(cube2);
+    world.actors().insert(me);
+    world.actors().insert(cube1);
+    world.actors().insert(cube2);
 
-    set_keyboard(inputs,window,actors);
-
-    Physics phys;
-
-    /*
-    const L_Cuboid& my_cub = me.logical_cuboid();
-    Actor them(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f);
-    phys.integrate(them.state_to_change(), t, dt);
-    const L_Cuboid& their_cub = them.logical_cuboid();
-    bool areColliding = L_Cuboid::colliding(my_cub, their_cub);
-    if (areColliding) {
-        // resolve
-        std::cout << "Colliding\n";
-    }
-    */
+    set_keyboard(inputs,window,world.actors());
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -101,8 +84,7 @@ int main() {
             inputs.processInput(); // polls input and executes action based on that
 
             const v2 mouseDelta = inputs.cursorDelta();
-            actors.apply_torque(actors.selected(),v3(glm::radians(mouseDelta.y), 0.0f, 0.0f));
-            actors.apply_torque(actors.selected(),v3(0.0f, glm::radians(mouseDelta.x), 0.0f));
+            world.apply_torque(world.actors().selected(),v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
             //camera.rotate(mouseDelta);
             //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
 
@@ -110,60 +92,22 @@ int main() {
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
 
-            // for now doing me and other cube separately
-            //P_State& my_phys = me->state_to_change();
-            //phys.integrate(my_phys, t_normalized, dt_normalized);
+            world.simulate(t_normalized,dt_normalized);
 
-            for (auto& a: actors.underlying()) {
-                P_State& cube_phys = (*a.second).state_to_change();
-                phys.integrate(cube_phys, t_normalized, dt_normalized);
-            }
             // feeds in essentially a time value of 1 every time
             // since fixed time step
             acc -= dt;
             t += dt;
+
+            //L_Cuboid::colliding(
         }
 
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
-        // Vclip = Mprojection * Mview * Mmodel * Vlocal
-        //m4 model = me.modelMatrix();
-        const Actor& selectedActor = actors.selectedActor();
-        const m4 view = selectedActor.viewMatrix();
-        const G_Cuboid& cam_graphical_cube = selectedActor.graphical_cuboid();
-        const float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
-        const GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
-
         gl_loop_start();
 
-        for (const auto& a: actors.underlying()) {
-            const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
-            const Actor& actor = (*a.second);
-
-            if (!actor.invis()) {
-
-                graphical_cube.bindBuffers();
-                graphical_cube.useShader();
-
-                m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-                GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
-
-                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-                glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-                glBindVertexArray(graphical_cube.VAO);
-
-                m4 model = actor.modelMatrix();
-                GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
-                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
-
-                glBindVertexArray(0);
-                glUseProgram(0);
-                // Render end -- -- --
-            }
-        }
+        world.render();
         
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
@@ -199,14 +143,6 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors) {
 
 void select_cube(Window_Inputs& inputs, Actors& actors) {
     // camera
-    /*
-    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
-    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
-    //inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
-    //inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
-    */
 
     inputs.setFunc2(GLFW_KEY_R,[&] () {
             actors.apply_torque(actors.selected(),LEFT);
@@ -219,7 +155,10 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     });
 
     inputs.setFunc2(GLFW_KEY_P,[&] () {
-            actors.apply_force(actors.selected(),FORWARD+LEFT);
+            const v3 pos = actors.selectedActor().get_state().position;
+            const fq orient = actors.selectedActor().get_state().orient;
+            const v3 f = (orient * v3(0.5f,0.0f,0.0f)) + pos;
+            actors.apply_force(actors.selected(),FORWARD,f);
     });
     inputs.setFunc2(GLFW_KEY_W,[&] () {
             actors.apply_force(actors.selected(),FORWARD);

@@ -35,6 +35,7 @@ class Actor {
         m4 modelMatrix() const;
         void apply_torque(const v3& force);
         void apply_force(const v3& force);
+        void apply_force(const v3& force, const v3& point);
         void apply_force_abs(const v3& force);
         Actor(const fv* vertexData,
         std::string vertShader,

@@ -62,6 +62,10 @@ void Actor::apply_force(const v3& force) {
     p_state.apply_force(force);
 }
 
+void Actor::apply_force(const v3& force, const v3& point) {
+    p_state.apply_force(force,point);
+}
+
 void Actor::apply_force_abs(const v3& force) {
     p_state.apply_force_abs(force);
 }
