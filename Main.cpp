@@ -104,7 +104,7 @@ int main() {
         // process inputs, change world
         inputs.processInput(); // polls input and executes action based on that
 
-        const v2 mouseDelta = inputs.cursorDelta();
+        const v2 mouseDelta = -1.0f * inputs.cursorDelta();
         me.apply_torque(1.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
         //camera.rotate(mouseDelta);
         //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
@@ -193,10 +193,10 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& 
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
 
     // camera
-    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force_camera(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force_camera(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force_camera(LEFT); });
-    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force_camera(RIGHT); });
+    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force(FORWARD); });
+    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
+    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
+    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
     //inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
     //inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
     

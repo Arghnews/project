@@ -35,8 +35,8 @@ m4 P_State::modelMatrix() const {
 }
 
 m4 P_State::viewMatrix() const {
-    const v3 facing = FORWARD * orient;
-    const v3 up_relative = UP * orient;
+    const v3 facing = orient * FORWARD;
+    const v3 up_relative = orient * UP;
     return glm::lookAt(position, position + facing, up_relative);
 }
 
@@ -57,18 +57,8 @@ void P_State::apply_force(const v3& f) {
     // order matters
     std::cout << "Force in " << printV(f) << "\n";
     std::cout << "Orient " << printV(glm::eulerAngles(orient)) << "\n";
-    auto q = orient * f; // busted for camera
-    //auto q = f * orient; // busted for cubes
-    std::cout << "Force applied " << printV(q) << "\n";
-    forces.push_back(q);
-}
+    v3 q = orient * f;
 
-void P_State::apply_force_camera(const v3& f) {
-    // order matters
-    std::cout << "Force in " << printV(f) << "\n";
-    std::cout << "Orient " << printV(glm::eulerAngles(orient)) << "\n";
-    //auto q = orient * f; // busted for camera
-    auto q = f * orient; // busted for cubes
     std::cout << "Force applied " << printV(q) << "\n";
     forces.push_back(q);
 }
