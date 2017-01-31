@@ -78,7 +78,9 @@ void World::collisions() {
     for (const auto& p: collidingPairs) {
         const Id& id1 = p.first;
         const Id& id2 = p.second;
-        std::cout << "COLLIDING " << id1 << " " << id2 << "\n";
+        Actor& a1 = actors_[id1];
+        Actor& a2 = actors_[id2];
+        // resolve collision
     }
 }
 

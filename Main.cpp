@@ -28,6 +28,16 @@
 #include "Actors.hpp"
 #include "World.hpp"
 
+/* TO DO
+ - Scaling of shapes
+ - Collisions resolve
+ - Collision where they hit
+ - Gravity
+ - Floor
+ - Perhaps camera?
+ - Movement caching
+*/
+
 void gl_loop_start();
 void select_cube(Window_Inputs& inputs, Actors& actors);
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
