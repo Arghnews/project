@@ -39,7 +39,7 @@ const P_State& Actor::get_state() const {
 
 const L_Cuboid& Actor::logical_cuboid() {
     if (changed_state) {
-        l_cuboid.recalc();
+        l_cuboid.recalc(p_state.position,p_state.orient);
         changed_state = false;
     }
     return l_cuboid;

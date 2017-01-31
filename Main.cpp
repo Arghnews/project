@@ -61,13 +61,15 @@ int main() {
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 5.0f);
 
+    /*
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 5.0f);
+    world.insert(cube2);
+            */
 
-    world.actors().insert(me);
-    world.actors().insert(cube1);
-    world.actors().insert(cube2);
+    world.insert(me);
+    world.insert(cube1);
 
     set_keyboard(inputs,window,world.actors());
 
@@ -85,21 +87,18 @@ int main() {
 
             const v2 mouseDelta = inputs.cursorDelta();
             world.apply_torque(world.actors().selected(),v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
-            //camera.rotate(mouseDelta);
-            //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
 
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
 
             world.simulate(t_normalized,dt_normalized);
+            world.collisions();
 
             // feeds in essentially a time value of 1 every time
             // since fixed time step
             acc -= dt;
             t += dt;
-
-            //L_Cuboid::colliding(
         }
 
         // Render -- -- --

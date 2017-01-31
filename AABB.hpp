@@ -2,7 +2,6 @@
 #define MY_AABB
 
 #include "Util.hpp"
-#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 struct AABB {

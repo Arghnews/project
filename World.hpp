@@ -18,15 +18,18 @@ class World {
     private:
         Actors actors_;
         Physics phys_;
+        Octtree tree_;
     public:
-        World(v2 windowSize=v2(1024.0f,768.0f));
+        World(float worldSize=500.0f,v2 windowSize=v2(1024.0f,768.0f));
         v2 windowSize;
         Actors& actors();
+        void insert(Actor* a);
         void simulate(const float& t, const float& dt);
         void apply_force(const Id& id, const v3& force);
         void apply_force(const Id& id, const v3& force, const v3& point);
         void apply_torque(const Id& id, const v3& force);
         void render();
+        void collisions();
 };
 
 #endif

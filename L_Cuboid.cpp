@@ -40,7 +40,7 @@ vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
 
 bool L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     vv3 allAxes = getAxes(s1.uniqEdges, s2.uniqEdges);
-    assert(allAxes.size() <= 15 && "Should get <= 15 axes");
+
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);
     };
@@ -75,7 +75,8 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 
 // builds a cuboid that matches the graphical coordinates
 L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter) :
-    originalTopCenter(topCenter) {
+    originalTopCenter(topCenter),
+    furthestVertex(0.0f) {
     const fv& points = *points_in;
     // first calc the faces
     const int size = points.size(); // 3d
@@ -93,9 +94,9 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter) :
     }
 
     // all the unique points in the faces are the verts, size 8
-    vertices = unique(faces);
+    originalVertices_ = unique(faces);
 
-    recalc();
+    recalc(v3(),fq());
 
     for (auto& v: vertices) {
         furthestVertex = std::max(furthestVertex, glm::length(v));
@@ -135,7 +136,7 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
 
 // should be done after cuboid is moved/changed
 void L_Cuboid::recalc(const v3& pos, const fq& ori) {
-    const vv3 verts24 = calcVertices(vertices,pos,ori);
+    const vv3 verts24 = calcVertices(originalVertices_,pos,ori);
     vertices = unique(verts24);
     edges = calcEdges(verts24);
     uniqEdges = unique(edges,true);

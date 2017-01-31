@@ -27,9 +27,9 @@ class Actors : std::map<Id, Actor*> {
 
         void apply_torque(const Id& id, const v3& force);
 
-        void insert(Actor* a);
+        Id insert(Actor* a);
 
-        void insert(const Id& id, Actor* a);
+        Id insert(const Id& id, Actor* a);
 
         const Id selected();
 

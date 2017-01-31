@@ -26,12 +26,13 @@ void Actors::apply_torque(const Id& id, const v3& force) {
     actors[id]->apply_torque(force);
 }
 
-void Actors::insert(Actor* a) {
-    insert(actors.size(), a);
+Id Actors::insert(Actor* a) {
+    return insert(actors.size(), a);
 }
 
-void Actors::insert(const Id& id, Actor* a) {
+Id Actors::insert(const Id& id, Actor* a) {
     actors.insert(std::make_pair(id,a));
+    return id;
 }
 
 void Actors::check() {
