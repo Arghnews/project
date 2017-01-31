@@ -24,7 +24,7 @@ Derivative Physics::evaluate(P_State state,
 	state.position = state.position + d.dx*dt;
 	state.momentum = state.momentum + d.dp*dt;
     state.ang_momentum = state.ang_momentum + d.dL * dt;
-    state.orient = 0.5f * fq(state.ang_velocity * dt) * state.orient;
+    newOrient(state, dt);
     // new change in position becomes new velocity
     // new change in velo becomes new state change with respect to time
     Derivative output;
@@ -79,9 +79,18 @@ void Physics::integrate(P_State& state,
     state.position = state.position + dxdt * dt;
     state.momentum = state.momentum + dpdt * dt;
     state.ang_momentum = state.ang_momentum + dLdt * dt;
-    state.orient = 0.5f * fq(state.ang_velocity * dt) * state.orient;
+    
+    //state.orient = 0.5f * fq(state.ang_velocity * dt) * state.orient;
+    newOrient(state, dt);
 
 	state.clear_forces(); // clear forces vector
 	state.clear_torques(); // clear torques vector
     state.recalc(); // update secondary values
+}
+
+void Physics::newOrient(P_State& state, const float& dt) {
+    const v3 v = state.ang_velocity * dt;
+    fq q = fq(v);
+    //fq q(1.0f, v.x, v.y, v.z);
+    state.orient = 0.5f * state.orient * q;
 }

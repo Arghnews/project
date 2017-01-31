@@ -23,7 +23,10 @@ class Actor {
         G_Cuboid g_cuboid;
         P_State p_state;
         bool changed_state;
+        bool invisible_;
     public:
+        void invis(const bool& b);
+        const bool invis() const;
         const P_State& get_state() const;
         const L_Cuboid& logical_cuboid();
         const G_Cuboid& graphical_cuboid() const;

@@ -12,9 +12,17 @@ Actor::Actor(
     l_cuboid(vertexData, topCenter),
     g_cuboid(vertexData, vertShader, fragShader),
     p_state(mass, inertia),
-    changed_state(false)
+    changed_state(false),
+    invisible_(false)
     {
+    }
 
+void Actor::invis(const bool& b) {
+    invisible_ = b;
+}
+
+const bool Actor::invis() const {
+    return invisible_;
 }
 
 m4 Actor::modelMatrix() const {

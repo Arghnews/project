@@ -29,13 +29,9 @@
 #include "Actors.hpp"
 #include "World.hpp"
 
-class MyIterator;
-class MyContainer;
-class Actors;
-
 void gl_loop_start();
 void select_cube(Window_Inputs& inputs, Actors& actors);
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& actors);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 
 int main() {
 
@@ -58,7 +54,7 @@ int main() {
 
     Actors actors;
 
-    Actor me(&vertices, "shaders/vertex.shader",
+    Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 5.0f);
 
@@ -70,13 +66,11 @@ int main() {
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
             10.0f, 5.0f);
 
-    Id c1 = 0;
-    Id c2 = 1;
+    actors.insert(me);
+    actors.insert(cube1);
+    actors.insert(cube2);
 
-    actors.insert(c1,cube1);
-    actors.insert(c2,cube2);
-
-    set_keyboard(inputs,window,me,actors);
+    set_keyboard(inputs,window,actors);
 
     Physics phys;
 
@@ -101,23 +95,24 @@ int main() {
         currentTime = newTime;
         acc += frameTime;
 
-        // process inputs, change world
-        inputs.processInput(); // polls input and executes action based on that
-
-        const v2 mouseDelta = -1.0f * inputs.cursorDelta();
-        me.apply_torque(1.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
-        //camera.rotate(mouseDelta);
-        //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
-
         // simulate world
         while (acc >= dt) {
-            static const float normalize = 1.0f / (float)dt;
+            // process inputs, change world
+            inputs.processInput(); // polls input and executes action based on that
+
+            const v2 mouseDelta = inputs.cursorDelta();
+            actors.apply_torque(actors.selected(),v3(glm::radians(mouseDelta.y), 0.0f, 0.0f));
+            actors.apply_torque(actors.selected(),v3(0.0f, glm::radians(mouseDelta.x), 0.0f));
+            //camera.rotate(mouseDelta);
+            //orient = fq(0.05f * v3(glm::radians(offset.y), glm::radians(offset.x), 0.0f)) * orient;
+
+            static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
 
             // for now doing me and other cube separately
-            P_State& my_phys = me.state_to_change();
-            phys.integrate(my_phys, t_normalized, dt_normalized);
+            //P_State& my_phys = me->state_to_change();
+            //phys.integrate(my_phys, t_normalized, dt_normalized);
 
             for (auto& a: actors.underlying()) {
                 P_State& cube_phys = (*a.second).state_to_change();
@@ -134,10 +129,11 @@ int main() {
         //          model matrix   view matrix  projection matrix   viewport transform
         // Vclip = Mprojection * Mview * Mmodel * Vlocal
         //m4 model = me.modelMatrix();
-        m4 view = me.viewMatrix();
-        const G_Cuboid& cam_graphical_cube = me.graphical_cuboid();
-        float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
-        GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
+        const Actor& selectedActor = actors.selectedActor();
+        const m4 view = selectedActor.viewMatrix();
+        const G_Cuboid& cam_graphical_cube = selectedActor.graphical_cuboid();
+        const float aspectRatio = inputs.windowSize().x / inputs.windowSize().y;
+        const GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
 
         gl_loop_start();
 
@@ -145,25 +141,28 @@ int main() {
             const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
             const Actor& actor = (*a.second);
 
-            graphical_cube.bindBuffers();
-            graphical_cube.useShader();
+            if (!actor.invis()) {
 
-            m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-            GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
+                graphical_cube.bindBuffers();
+                graphical_cube.useShader();
 
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+                m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+                GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
 
-            glBindVertexArray(graphical_cube.VAO);
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+                glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-            m4 model = actor.modelMatrix();
-            GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
+                glBindVertexArray(graphical_cube.VAO);
 
-            glBindVertexArray(0);
-            glUseProgram(0);
-            // Render end -- -- --
+                m4 model = actor.modelMatrix();
+                GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
+                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
+
+                glBindVertexArray(0);
+                glUseProgram(0);
+                // Render end -- -- --
+            }
         }
         
         // sleep if fps would be > fps_max
@@ -183,7 +182,7 @@ void gl_loop_start() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& actors) {
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
@@ -192,14 +191,6 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& 
     // must be capture by value here
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
 
-    // camera
-    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force(FORWARD); });
-    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
-    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
-    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
-    //inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
-    //inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
-    
     inputs.setFunc1(GLFW_KEY_TAB,[&] () {
         actors.next(); 
         select_cube(inputs,actors);        
@@ -207,6 +198,16 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actor& me, Actors& 
 }
 
 void select_cube(Window_Inputs& inputs, Actors& actors) {
+    // camera
+    /*
+    inputs.setFunc2(GLFW_KEY_W,[&] () {me.apply_force(FORWARD); });
+    inputs.setFunc2(GLFW_KEY_S,[&] () {me.apply_force(BACKWARD); });
+    inputs.setFunc2(GLFW_KEY_A,[&] () {me.apply_force(LEFT); });
+    inputs.setFunc2(GLFW_KEY_D,[&] () {me.apply_force(RIGHT); });
+    //inputs.setFunc2(GLFW_KEY_UP,[&] () {me.apply_force(UP); });
+    //inputs.setFunc2(GLFW_KEY_DOWN,[&] () {me.apply_force(DOWN); });
+    */
+
     inputs.setFunc2(GLFW_KEY_R,[&] () {
             actors.apply_torque(actors.selected(),LEFT);
     });
@@ -220,16 +221,16 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     inputs.setFunc2(GLFW_KEY_P,[&] () {
             actors.apply_force(actors.selected(),FORWARD+LEFT);
     });
-    inputs.setFunc2(GLFW_KEY_UP,[&] () {
+    inputs.setFunc2(GLFW_KEY_W,[&] () {
             actors.apply_force(actors.selected(),FORWARD);
     });
-    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
+    inputs.setFunc2(GLFW_KEY_S,[&] () {
             actors.apply_force(actors.selected(),BACKWARD);
     });
-    inputs.setFunc2(GLFW_KEY_LEFT,[&] () {
+    inputs.setFunc2(GLFW_KEY_A,[&] () {
             actors.apply_force(actors.selected(),LEFT);
     });
-    inputs.setFunc2(GLFW_KEY_RIGHT,[&] () {
+    inputs.setFunc2(GLFW_KEY_D,[&] () {
             actors.apply_force(actors.selected(),RIGHT);
     });
 }

@@ -12,6 +12,8 @@ class Actors : std::map<Id, Actor*> {
     private:
         std::map<Id, Actor*> actors;
         Id selected_;
+        void check();
+
     public:
         // because I'm too lazy to implement an iterator wrapper
         const std::map<Id, Actor*>& underlying() const;
@@ -23,9 +25,11 @@ class Actors : std::map<Id, Actor*> {
 
         void apply_torque(const Id& id, const v3& force);
 
+        void insert(Actor* a);
+
         void insert(const Id& id, Actor* a);
 
-        const Id selected() const;
+        const Id selected();
 
         Actor& selectedActor();
 

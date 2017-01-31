@@ -27,6 +27,8 @@ m4 P_State::modelMatrix() const {
     //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
     m4 model;
     m4 rotation(glm::toMat4(orient));
+    std::cout << "My orientation is " << printQ(orient) << "\n";
+    std::cout << "My euler " << printV(glm::eulerAngles(orient)) << "\n";
     m4 translation(glm::translate(m4(), position));
     model = translation * rotation;
     return model;
@@ -53,7 +55,8 @@ void P_State::recalc() {
 // forces are relative to objects facing direction
 void P_State::apply_force(const v3& f) {
     // order matters
-    const v3 q = orient * f;
+    v3 q = orient * f;
+
     forces.push_back(q);
 }
 
@@ -64,9 +67,7 @@ void P_State::apply_force_abs(const v3& f) {
 
 // force is absolute, ie v(0,-1,0) is down
 void P_State::apply_torque(const v3& f) {
-    //const v3 q = orient * f;
-    const v3 q = f;
-    torques.push_back(q);
+    torques.push_back(f);
 }
 
 v3 P_State::net_torque() const {

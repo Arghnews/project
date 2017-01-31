@@ -22,36 +22,43 @@ void Actors::apply_torque(const Id& id, const v3& force) {
     actors[id]->apply_torque(force);
 }
 
+void Actors::insert(Actor* a) {
+    insert(actors.size(), a);
+}
+
 void Actors::insert(const Id& id, Actor* a) {
     actors.insert(std::make_pair(id,a));
 }
 
-const Id Actors::selected() const {
+void Actors::check() {
+    if (actors.count(selected_) == 0) {
+        if (actors.size() == 0) {
+            std::cout << "There are no actors to switch the next to\n";
+        }
+        selected_ = actors.begin()->first;
+    }
+}
+
+const Id Actors::selected() {
+    check();
     return selected_;
 }
 
 Actor& Actors::selectedActor() {
-    return *actors[selected_];
+    return *actors[selected()];
 }
 
 void Actors::next() {
-    if (actors.count(selected_) == 0) {
-        selected_ = actors.begin()->first;
-    }
-
-    if (actors.size() == 0) {
-        std::cout << "There are no actors to switch the next to\n";
-    } else if (actors.size() == 1) {
+    check();
+    actors[selected_]->invis(false);
+    auto it = actors.find(selected_);
+    if (is_last(it, actors)) {
         selected_ = actors.begin()->first;
     } else {
-        auto it = actors.find(selected_);
-        if (is_last(it, actors)) {
-            selected_ = actors.begin()->first;
-        } else {
-            selected_ = (*std::next(it)).first;
-        }
+        selected_ = (*std::next(it)).first;
     }
     std::cout << "Selected cube " << selected_ << "\n";
+    actors[selected_]->invis(true);
 }
 
 Actor& Actors::operator[](const Id& id) {

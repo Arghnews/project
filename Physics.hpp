@@ -17,6 +17,7 @@ class Physics {
 		void integrate(P_State&, float t, float dt);
 		Physics();
 	private:
+        void newOrient(P_State& state, const float& dt);
         v3 simple_force_resolve(const P_State& state, float dt);
         v3 simple_torque_resolve(const P_State& state, float dt);
 		Derivative evaluate(P_State, float t, float dt, const Derivative&);

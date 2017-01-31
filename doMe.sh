@@ -12,8 +12,7 @@ main() {
     # Also situations where files aren't in same folder as make etc.
     # Everything assumed in the working dir atm
 
-	executable="exec"
-
+	executable="game.exec"
 
     cppFiles=(
     "Physics.cpp"

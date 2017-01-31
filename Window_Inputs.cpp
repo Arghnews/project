@@ -149,7 +149,7 @@ v2 Window_Inputs::cursorDelta() {
     }
 
     const v2 latestPos = cursor_inputs.back(); 
-    const v2 delta = latestPos - cursor_pos;
+    const v2 delta = cursor_pos - latestPos;
     cursor_pos = latestPos;
     cursor_inputs.clear();
     return delta;
