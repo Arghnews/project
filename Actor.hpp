@@ -25,6 +25,7 @@ class Actor {
         bool changed_state;
         bool invisible_;
     public:
+        bool selectable;
         const v3 scale;
         void invis(const bool& b);
         const bool invis() const;
@@ -44,7 +45,8 @@ class Actor {
         v3 topCenter,
         v3 scale,
         float mass,
-        float inertia);
+        float inertia,
+        bool selectable);
 };
 
 #endif

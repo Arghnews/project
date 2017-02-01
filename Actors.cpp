@@ -53,15 +53,21 @@ Actor& Actors::selectedActor() {
     return *actors[selected()];
 }
 
+// gets next selectable actor
 void Actors::next() {
     check();
-    actors[selected_]->invis(false);
-    auto it = actors.find(selected_);
-    if (is_last(it, actors)) {
-        selected_ = actors.begin()->first;
-    } else {
-        selected_ = (*std::next(it)).first;
+    const int num_actors = actors.size();
+    int i=0;
+    do  {
+        actors[selected_]->invis(false);
+        auto it = actors.find(selected_);
+        if (is_last(it, actors)) {
+            selected_ = actors.begin()->first;
+        } else {
+            selected_ = (*std::next(it)).first;
+        }
     }
+    while (i < num_actors && selectedActor().selectable == false);
     std::cout << "Selected cube " << selected_ << "\n";
     actors[selected_]->invis(true);
 }

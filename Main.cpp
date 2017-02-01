@@ -29,10 +29,10 @@
 #include "World.hpp"
 
 /* TO DO
+ - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
  - Collisions resolve
  - Collision where they hit
  - Gravity
- - Floor
  - Perhaps camera?
  - Movement caching
 */
@@ -64,11 +64,15 @@ int main() {
 
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
-            10.0f, 5.0f);
+            10.0f, 5.0f, true);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
-            10.0f, 5.0f);
+            10.0f, 5.0f, true);
+
+    Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(100.0f,0.1f,100.0f),
+            10.0f, 5.0f, false);
 
     /*
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
@@ -79,6 +83,7 @@ int main() {
 
     world.insert(me);
     world.insert(cube1);
+    world.insert(the_floor);
 
     set_keyboard(inputs,window,world.actors());
 

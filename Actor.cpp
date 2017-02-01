@@ -7,14 +7,16 @@ Actor::Actor(
     v3 topCenter,
     v3 scale,
     float mass,
-    float inertia
+    float inertia,
+    bool selectable
     ) :
     camera(),
     l_cuboid(vertexData, topCenter, scale),
     g_cuboid(vertexData, vertShader, fragShader),
     p_state(mass, inertia),
     changed_state(false),
-    invisible_(false)
+    invisible_(false),
+    selectable(selectable)
     {
     }
 
