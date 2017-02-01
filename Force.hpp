@@ -3,17 +3,23 @@
 
 #include <glm/glm.hpp>
 
+#include "Util.hpp"
+
 struct Force {
+    enum class Type { Force, Torque };
     v3 force;
-    bool relative;
-    v3 torque;
-    Force(const v3& force, const bool& relative) :
-        Force(force,relative,zeroV) {
+    Type t;
+    bool relative; // motion all relative to actor or absolute
+    bool affected; // ie. affected by air_res
+    Force(const v3& force, Type t) :
+        Force(force,t,true,true) {
     }
-    Force(const v3& force, const bool& relative, const v3& torque) :
+    Force(const v3& force, Type t, const bool& relative, const bool& affected) :
         force(force),
+        t(t),
         relative(relative),
-        torque(torque) {
+        affected(affected)
+        {
         }
 };
 

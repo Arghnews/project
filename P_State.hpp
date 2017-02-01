@@ -15,7 +15,7 @@
 
 class P_State {
     private:
-        vv3 forces;
+        Forces forces;
         vv3 torques;
     public:
         P_State(float m, float inertia, v3 pos);
@@ -42,8 +42,7 @@ class P_State {
         void clear_forces();
         void clear_torques();
         void recalc();
-        v3 net_force() const;
-        v3 net_torque() const;
+        const Forces& net_forces() const;
 
         m4 modelMatrix(const v3& scale) const;
         m4 viewMatrix() const;

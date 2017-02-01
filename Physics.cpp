@@ -37,19 +37,68 @@ Derivative Physics::evaluate(P_State state,
 }
 
 v3 Physics::simple_torque_resolve(const P_State& state, float dt) {
-    v3 net(zeroV);
-    net += state.net_torque() * dt * 0.5f;
+    v3 net_affected(zeroV);
+    v3 net_unaffected(zeroV);
 
-    net += -0.75f * state.ang_momentum;
+    // force delta is half of forces on object * delta time
+    //net += state.net_force() * dt * 0.5f;
+    for (const auto& f: state.net_forces()) {
+        if (f.t == Force::Type::Torque) {
+            v3 add(f.force);
+            if (f.relative) {
+                add = glm::normalize(state.orient) * add;
+            }
+            if (f.affected) {
+                net_affected += add;
+            } else {
+                net_unaffected += add;
+            }
+        }
+    }
+
+    net_affected *= 0.5f;
+    net_affected += -0.8f * state.ang_momentum;
+    net_affected *= dt;
+
+    net_unaffected *= 0.5f * dt;
+
+    const v3 net = net_affected + net_unaffected;
+
     return net;
 }
 
 v3 Physics::simple_force_resolve(const P_State& state, float dt) {
-    v3 net(zeroV);
+    v3 net_affected(zeroV);
+    v3 net_unaffected(zeroV);
+
+    //net += state.net_force() * dt * 0.5f;
+    //net += -0.75f * state.momentum;
+
     // force delta is half of forces on object * delta time
-    net += state.net_force() * dt * 0.5f;
-    
-    net += -0.04f * state.momentum * dt;
+    //net += state.net_force() * dt * 0.5f;
+    for (const auto& f: state.net_forces()) {
+        if (f.t == Force::Type::Force) {
+            v3 add(f.force);
+            if (f.relative) {
+                add = state.orient * add;
+            }
+            if (f.affected) {
+                net_affected += add;
+            } else {
+                net_unaffected += add;
+            }
+        }
+    }
+
+    net_affected *= 0.5f;
+    net_affected += -0.05f * state.momentum;
+    net_affected *= dt;
+    //net += -0.75f * state.momentum;
+
+    net_unaffected *= dt * 0.5f;
+
+    const v3 net = net_affected + net_unaffected;
+
     return net;
 }
 
@@ -85,7 +134,6 @@ void Physics::integrate(P_State& state,
     newOrient(state, dt);
 
 	state.clear_forces(); // clear forces vector
-	state.clear_torques(); // clear torques vector
     state.recalc(); // update secondary values
 }
 
@@ -93,5 +141,5 @@ void Physics::newOrient(P_State& state, const float& dt) {
     const v3 v = state.ang_velocity * dt;
     fq q = fq(v);
     //fq q(1.0f, v.x, v.y, v.z);
-    state.orient = 0.5f * state.orient * q;
+    state.orient = glm::normalize(0.5f * state.orient * q);
 }

@@ -30,6 +30,9 @@ typedef std::vector<v3> vv3;
 typedef std::pair<v3, Id> v3Id;
 typedef std::vector<v3Id> vv3Id;
 
+struct Force;
+typedef std::vector<Force> Forces;
+
 static const v3 FORWARD(0.0f,0.0f,-1.0f);
 static const v3 BACKWARD(0.0f,0.0f,1.0f);
 static const v3 LEFT(-1.0f,0.0f,0.0f);

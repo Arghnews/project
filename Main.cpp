@@ -30,6 +30,8 @@
 #include "Force.hpp"
 
 /* TO DO
+ - Try actually set velocities/orients
+ - Velocities before and after in conserve of momentum are too similiar
  - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
  - Collisions resolve
  - Collision where they hit
@@ -63,7 +65,7 @@ int main() {
 
     const float areaSize = 500.0f;
 
-    const float restitution = 0.5f;
+    const float restitution = 0.85f;
     World world(areaSize, inputs.windowSize() * 0.6f, restitution);
 
     /*
@@ -85,7 +87,7 @@ int main() {
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
-            3.0f * oneV, 100000.0f, 5.0f, true);
+            3.0f * oneV, 10.0f, 5.0f, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
@@ -119,7 +121,7 @@ int main() {
             inputs.processInput(); // polls input and executes action based on that
 
             const v2 mouseDelta = inputs.cursorDelta();
-            world.apply_force(world.actors().selected(),Force(zeroV,true,v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f)));
+            world.apply_force(world.actors().selected(),Force(v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f),Force::Type::Torque,false,false));
 
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
@@ -177,13 +179,13 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     // camera
 
     inputs.setFunc2(GLFW_KEY_R,[&] () {
-            actors.apply_force(actors.selected(),Force(zeroV,false,LEFT));
+            actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque));
     });
     inputs.setFunc2(GLFW_KEY_Y,[&] () {
-            actors.apply_force(actors.selected(),Force(zeroV,false,UP));
+            actors.apply_force(actors.selected(),Force(UP,Force::Type::Torque));
     });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
-            actors.apply_force(actors.selected(),Force(zeroV,false,FORWARD));
+            actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Torque));
     });
 
     inputs.setFunc2(GLFW_KEY_P,[&] () {
@@ -195,15 +197,15 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
             */
     });
     inputs.setFunc2(GLFW_KEY_W,[&] () {
-            actors.apply_force(actors.selected(),Force(FORWARD,true));
+            actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_S,[&] () {
-            actors.apply_force(actors.selected(),Force(BACKWARD,true));
+            actors.apply_force(actors.selected(),Force(BACKWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_A,[&] () {
-            actors.apply_force(actors.selected(),Force(LEFT,true));
+            actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_D,[&] () {
-            actors.apply_force(actors.selected(),Force(RIGHT,true));
+            actors.apply_force(actors.selected(),Force(RIGHT,Force::Type::Force));
     });
 }

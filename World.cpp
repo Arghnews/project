@@ -77,7 +77,6 @@ void World::collisions() {
         }
     }
 
-    
     for (const auto& p: collidingPairs) {
         const Id& id1 = p.first;
         const Id& id2 = p.second;
@@ -94,7 +93,7 @@ void World::collisions() {
         std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
-        std::cout << "Start_velocity of " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
+        std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
 
         const v3 du_e = (u2 - u1) * restitution;
         const v3 b = m1*u1 + m2*u2;
@@ -108,8 +107,8 @@ void World::collisions() {
         const v3 f2 = m2 * (v2 - u2) * factor;
         std::cout << "Force on " << id1 << " " << printV(f1) << "\n";
         std::cout << "Force on " << id2 << " " << printV(f2) << "\n";
-        actors_.apply_force(id1, Force(f1,false,zeroV));
-        actors_.apply_force(id2, Force(f2,false,zeroV));
+        actors_.apply_force(id1, Force(f1,Force::Type::Force,false,false));
+        actors_.apply_force(id2, Force(f2,Force::Type::Force,false,false));
     }
 }
 

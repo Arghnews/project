@@ -53,39 +53,11 @@ void P_State::recalc() {
 }
 
 void P_State::apply_force(const Force& f) {
-    v3 force = f.force;
-    if (f.relative) {
-        force = orient * force;
-    }
-    if (force != zeroV) {
-        forces.push_back(force);
-    }
-    //const v3 torque = glm::cross(force, point - position);
-    if (f.torque != zeroV) {
-        torques.push_back(f.torque);
-    }
+    forces.push_back(f);
 }
 
-v3 P_State::net_torque() const {
-    // sum of torques on object
-    v3 net(zeroV);
-    for (const auto& f: torques) {
-        net += f;
-    }
-    return net;
-}
-
-void P_State::clear_torques() {
-    torques.clear();
-}
-
-v3 P_State::net_force() const {
-    // sum of forces on object
-    v3 net(zeroV);
-    for (const auto& f: forces) {
-        net += f;
-    }
-    return net;
+const Forces& P_State::net_forces() const {
+    return forces;
 }
 
 void P_State::clear_forces() {
