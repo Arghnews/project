@@ -64,27 +64,31 @@ int main() {
 
     World world(areaSize, inputs.windowSize() * 0.6f, 0.5f);
 
+    /*
+    const fv* vertexData,
+    std::string vertShader,
+    std::string fragShader,
+    v3 topCenter,
+    v3 scale,
+    v3 startPos,
+    float mass,
+    float inertia,
+    bool selectable
+    */
+
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
-            10.0f, 5.0f, true);
+            5.0f * oneV, 10.0f, 5.0f, true);
+    world.insert(me);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
-            10.0f, 5.0f, true);
+            3.0f * oneV, 10.0f, 5.0f, true);
+    world.insert(cube1);
 
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,0.1f,areaSize/2.0f),
-            10.0f, 5.0f, false);
-
-    /*
-    Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
-            10.0f, 5.0f);
-    world.insert(cube2);
-            */
-
-    world.insert(me);
-    world.insert(cube1);
+            zeroV, 10.0f, 5.0f, false);
     world.insert(the_floor);
 
     set_keyboard(inputs,window,world.actors());

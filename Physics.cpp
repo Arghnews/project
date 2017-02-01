@@ -49,6 +49,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     net += state.net_force() * dt * 0.5f;
     
     net += -0.75f * state.momentum;
+    std::cout << "dt:" << dt << " Net force on object " << printV(net) << "\n";
     return net;
 }
 

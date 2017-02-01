@@ -17,7 +17,7 @@ class P_State {
         vv3 forces;
         vv3 torques;
     public:
-        P_State(float m, float inertia, v3 pos=v3());
+        P_State(float m, float inertia, v3 pos);
         // primary
         v3 position;
         v3 momentum;

@@ -6,14 +6,15 @@ Actor::Actor(
     std::string fragShader,
     v3 topCenter,
     v3 scale,
+    v3 startPos,
     float mass,
     float inertia,
     bool selectable
     ) :
     camera(),
-    l_cuboid(vertexData, topCenter, scale),
+    l_cuboid(vertexData, topCenter, scale, startPos),
     g_cuboid(vertexData, vertShader, fragShader),
-    p_state(mass, inertia),
+    p_state(mass, inertia, startPos),
     changed_state(false),
     invisible_(false),
     selectable(selectable)

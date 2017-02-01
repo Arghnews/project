@@ -32,7 +32,7 @@ Actors& World::actors() {
 
 void World::insert(Actor* a) {
     const Id id = actors_.insert(a);
-    tree_.insert(zeroV,id);
+    tree_.insert(a->get_state().position,id);
 }
 
 void World::simulate(const float& t, const float& dt) {
@@ -79,8 +79,8 @@ void World::collisions() {
     for (const auto& p: collidingPairs) {
         const Id& id1 = p.first;
         const Id& id2 = p.second;
-        const Actor& a1 = actors_[id1];
-        const Actor& a2 = actors_[id2];
+        Actor& a1 = actors_[id1];
+        Actor& a2 = actors_[id2];
         const P_State& p1 = a1.get_state();
         const P_State& p2 = a2.get_state();
 
@@ -90,7 +90,8 @@ void World::collisions() {
         const float m1 = p1.mass;
         const float m2 = p2.mass;
         const v3 mom_before = p1.momentum + p2.momentum;
-        std::cout << "mom before " << printV(mom_before) << "\n";
+        std::cout << "Mass/velo of " << id1 << " " << m1 << "," << printV(p1.velocity) << "\n";
+        std::cout << "Mass/velo of " << id2 << " " << m2 << "," << printV(p2.velocity) << "\n";
         const v3 u_delta = p2.velocity - p1.velocity;
         const v3 ud_e = u_delta * restitution;
         const v3 v2 = (mom_before + m1 * ud_e) / (m1 + m2);
@@ -101,8 +102,6 @@ void World::collisions() {
         const v3 mom_2 = m2 * v2;
         const v3 mom_1_delta = mom_1 - p1.momentum;
         const v3 mom_2_delta = mom_2 - p2.momentum;
-        std::cout << "Force on " << id1 << " " << printV(mom_1_delta) << "\n";
-        std::cout << "Force on " << id2 << " " << printV(mom_2_delta) << "\n";
         actors_.apply_force_abs(id1, mom_1_delta);
         actors_.apply_force_abs(id2, mom_2_delta);
     }

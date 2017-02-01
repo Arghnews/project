@@ -44,6 +44,7 @@ class Actor {
         std::string fragShader,
         v3 topCenter,
         v3 scale,
+        v3 startPos,
         float mass,
         float inertia,
         bool selectable);

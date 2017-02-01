@@ -74,7 +74,7 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 
 
 // builds a cuboid that matches the graphical coordinates
-L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale) :
+L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPos) :
     originalTopCenter(topCenter),
     scale(scale),
     furthestVertex(0.0f) {
@@ -97,7 +97,7 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale) :
     // all the unique points in the faces are the verts, size 8
     originalVertices_ = unique(faces);
 
-    recalc(v3(),fq());
+    recalc(startPos,fq());
 
     for (auto& v: vertices) {
         furthestVertex = std::max(furthestVertex, glm::length(v));

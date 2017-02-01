@@ -6,8 +6,8 @@ inoremap <Right> <Nop>
 inoremap <Left> <Nop>
 inoremap <Down> <Nop>
 inoremap <Up> <Nop>
-nnoremap <silent> y :CCTreeWindowSaveCopy
 nnoremap <silent> w :CCTreeWindowToggle
+nnoremap <silent> y :CCTreeWindowSaveCopy
 noremap K <k>
 nmap gx <Plug>NetrwBrowseX
 nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)
@@ -41,16 +41,16 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +104 Main.cpp
-badd +33 Actor.cpp
-badd +1 Actor.hpp
-badd +94 L_Cuboid.cpp
+badd +86 Main.cpp
+badd +73 Actor.cpp
+badd +27 Actor.hpp
+badd +140 L_Cuboid.cpp
 badd +1 L_Cuboid.hpp
-badd +46 G_Cuboid.cpp
+badd +16 G_Cuboid.cpp
 badd +1 G_Cuboid.hpp
-badd +92 Physics.cpp
+badd +42 Physics.cpp
 badd +1 Physics.hpp
-badd +67 P_State.cpp
+badd +69 P_State.cpp
 badd +40 P_State.hpp
 badd +1 data.hpp
 badd +85 Window_Inputs.cpp
@@ -58,14 +58,14 @@ badd +1 Window_Inputs.hpp
 badd +1 doMe.sh
 badd +1 Util.hpp
 badd +1 graphics_cw_zip/arm.cpp
-badd +1 Octtree.cpp
+badd +5 Octtree.cpp
 badd +1 Octtree.hpp
-badd +1 AABB.cpp
+badd +11 AABB.cpp
 badd +1 AABB.hpp
 badd +1 Actors.cpp
-badd +33 Actors.hpp
+badd +26 Actors.hpp
 badd +1 World.cpp
-badd +1 World.hpp
+badd +24 World.hpp
 badd +1 Camera.cpp
 args Main.cpp
 edit data.hpp
@@ -300,12 +300,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 94 - ((30 * winheight(0) + 34) / 68)
+let s:l = 87 - ((40 * winheight(0) + 34) / 68)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-94
-normal! 031|
+87
+normal! 05|
 tabedit World.hpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -425,11 +425,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 35 - ((27 * winheight(0) + 14) / 28)
+let s:l = 19 - ((13 * winheight(0) + 14) / 28)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-35
+19
 normal! 0
 wincmd w
 argglobal
@@ -540,14 +540,13 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 44 - ((18 * winheight(0) + 19) / 38)
+let s:l = 35 - ((20 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-44
-normal! 04|
+35
+normal! 032|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 28 + 35) / 70)
 exe '2resize ' . ((&lines * 38 + 35) / 70)
 tabedit graphics_cw_zip/arm.cpp
@@ -669,7 +668,6 @@ exe s:l
 normal! zt
 546
 normal! 06|
-2wincmd w
 tabedit Octtree.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -911,7 +909,6 @@ normal! zt
 26
 normal! 016|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit AABB.cpp
@@ -1155,7 +1152,6 @@ normal! zt
 5
 normal! 0
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 33 + 35) / 70)
 exe '2resize ' . ((&lines * 33 + 35) / 70)
 tabedit Actors.hpp
@@ -1282,7 +1278,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 32
-normal! 010|
+normal! 0
 wincmd w
 argglobal
 edit Actors.cpp
@@ -1392,14 +1388,13 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 35 - ((27 * winheight(0) + 21) / 43)
+let s:l = 38 - ((37 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-35
-normal! 014|
+38
+normal! 05|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 23 + 35) / 70)
 exe '2resize ' . ((&lines * 43 + 35) / 70)
 tabedit Actor.cpp
@@ -1521,12 +1516,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 42 - ((21 * winheight(0) + 22) / 44)
+let s:l = 4 - ((3 * winheight(0) + 22) / 44)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-42
-normal! 049|
+4
+normal! 0
 wincmd w
 argglobal
 edit Actor.hpp
@@ -1636,14 +1631,13 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 27 - ((7 * winheight(0) + 11) / 22)
+let s:l = 34 - ((7 * winheight(0) + 11) / 22)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-27
-normal! 011|
+34
+normal! 020|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 44 + 35) / 70)
 exe '2resize ' . ((&lines * 22 + 35) / 70)
 tabedit Physics.cpp
@@ -1656,8 +1650,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 33 + 35) / 70)
-exe '2resize ' . ((&lines * 33 + 35) / 70)
+exe '1resize ' . ((&lines * 38 + 35) / 70)
+exe '2resize ' . ((&lines * 28 + 35) / 70)
 argglobal
 nnoremap <buffer> <silent> - :CCTreeRecurseDepthMinus
 nnoremap <buffer> <silent> = :CCTreeRecurseDepthPlus
@@ -1765,12 +1759,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 41 - ((23 * winheight(0) + 16) / 33)
+let s:l = 42 - ((18 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-41
-normal! 0
+42
+normal! 05|
 wincmd w
 argglobal
 edit Physics.hpp
@@ -1880,16 +1874,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 1 - ((0 * winheight(0) + 16) / 33)
+let s:l = 1 - ((0 * winheight(0) + 14) / 28)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 1
 normal! 0
 wincmd w
-2wincmd w
-exe '1resize ' . ((&lines * 33 + 35) / 70)
-exe '2resize ' . ((&lines * 33 + 35) / 70)
+exe '1resize ' . ((&lines * 38 + 35) / 70)
+exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit P_State.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -2009,12 +2002,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 62 - ((19 * winheight(0) + 19) / 38)
+let s:l = 23 - ((22 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-62
-normal! 0
+23
+normal! 012|
 wincmd w
 argglobal
 edit P_State.hpp
@@ -2124,14 +2117,13 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 40 - ((13 * winheight(0) + 14) / 28)
+let s:l = 20 - ((7 * winheight(0) + 14) / 28)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-40
-normal! 09|
+20
+normal! 047|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit L_Cuboid.cpp
@@ -2253,12 +2245,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 10 - ((9 * winheight(0) + 19) / 38)
+let s:l = 100 - ((25 * winheight(0) + 19) / 38)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-10
-normal! 0
+100
+normal! 019|
 wincmd w
 argglobal
 edit L_Cuboid.hpp
@@ -2368,14 +2360,13 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 32 - ((16 * winheight(0) + 14) / 28)
+let s:l = 37 - ((21 * winheight(0) + 14) / 28)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-32
-normal! 014|
+37
+normal! 070|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit G_Cuboid.cpp
@@ -2619,7 +2610,6 @@ normal! zt
 1
 normal! 09|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit Camera.cpp
@@ -2741,7 +2731,6 @@ exe s:l
 normal! zt
 39
 normal! 0
-2wincmd w
 tabedit Window_Inputs.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -2983,7 +2972,6 @@ normal! zt
 46
 normal! 09|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit Util.hpp
@@ -3105,7 +3093,6 @@ exe s:l
 normal! zt
 31
 normal! 032|
-2wincmd w
 tabedit doMe.sh
 set splitbelow splitright
 set nosplitbelow
@@ -3222,9 +3209,8 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 31
-normal! 01|
-2wincmd w
-tabnext 3
+normal! 0
+tabnext 9
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
 endif
