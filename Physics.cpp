@@ -10,6 +10,7 @@
 #include "Util.hpp"
 #include "Physics.hpp"
 #include "P_State.hpp"
+#include "Force.hpp"
 
 Physics::Physics() {
 }
@@ -48,8 +49,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     // force delta is half of forces on object * delta time
     net += state.net_force() * dt * 0.5f;
     
-    net += -0.75f * state.momentum;
-    std::cout << "dt:" << dt << " Net force on object " << printV(net) << "\n";
+    net += -0.04f * state.momentum * dt;
     return net;
 }
 

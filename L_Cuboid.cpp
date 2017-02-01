@@ -109,8 +109,8 @@ vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori, co
     vv3 world_vertices(verticesSize);
     for (int i=0; i<verticesSize; ++i) {
         v3 vertex = vertices[i];
-        vertex *= scale; // order of these lines matters
         vertex = ori * vertex;
+        vertex *= scale; // order of these lines matters
         vertex += pos;
         world_vertices[i] = vertex;
     }

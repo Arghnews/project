@@ -12,6 +12,7 @@
 #include "Physics.hpp"
 #include "Octtree.hpp"
 #include "AABB.hpp"
+#include "Force.hpp"
 #include "Util.hpp"
 
 class World {
@@ -26,9 +27,7 @@ class World {
         Actors& actors();
         void insert(Actor* a);
         void simulate(const float& t, const float& dt);
-        void apply_force(const Id& id, const v3& force);
-        void apply_force(const Id& id, const v3& force, const v3& point);
-        void apply_torque(const Id& id, const v3& force);
+        void apply_force(const Id& id, const Force& force);
         void render();
         void collisions();
 };

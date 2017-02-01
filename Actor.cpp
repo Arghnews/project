@@ -58,20 +58,8 @@ P_State& Actor::state_to_change() {
     return p_state;
 }
 
-void Actor::apply_torque(const v3& force) {
-    p_state.apply_torque(force);
-}
-
-void Actor::apply_force(const v3& force) {
+void Actor::apply_force(const Force& force) {
     p_state.apply_force(force);
-}
-
-void Actor::apply_force(const v3& force, const v3& point) {
-    p_state.apply_force(force,point);
-}
-
-void Actor::apply_force_abs(const v3& force) {
-    p_state.apply_force_abs(force);
 }
 
 /*

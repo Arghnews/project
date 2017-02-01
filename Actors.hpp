@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include "Util.hpp"
+#include "Force.hpp"
 #include "Actor.hpp"
 
 #include <iterator>
@@ -22,11 +23,7 @@ class Actors : std::map<Id, Actor*> {
         Actors();
         ~Actors();
 
-        void apply_force(const Id& id, const v3& force);
-        void apply_force_abs(const Id& id, const v3& force);
-        void apply_force(const Id& id, const v3& force, const v3& point);
-
-        void apply_torque(const Id& id, const v3& force);
+        void apply_force(const Id& id, const Force& force);
 
         Id insert(Actor* a);
 

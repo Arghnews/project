@@ -2,6 +2,7 @@
 
 #include "Actors.hpp"
 #include "Util.hpp"
+#include "Force.hpp"
 #include "Actor.hpp"
 
 #include <iterator>
@@ -14,20 +15,8 @@ const std::map<Id, Actor*>& Actors::underlying() const {
 
 Actors::Actors() {}
 
-void Actors::apply_force(const Id& id, const v3& force) {
+void Actors::apply_force(const Id& id, const Force& force) {
     actors[id]->apply_force(force);
-}
-
-void Actors::apply_force_abs(const Id& id, const v3& force) {
-    actors[id]->apply_force_abs(force);
-}
-
-void Actors::apply_force(const Id& id, const v3& force, const v3& point) {
-    actors[id]->apply_force(force,point);
-}
-
-void Actors::apply_torque(const Id& id, const v3& force) {
-    actors[id]->apply_torque(force);
 }
 
 Id Actors::insert(Actor* a) {

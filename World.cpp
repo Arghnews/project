@@ -16,6 +16,7 @@
 #include "Physics.hpp"
 #include "Octtree.hpp"
 #include "AABB.hpp"
+#include "Force.hpp"
 #include "Util.hpp"
 
 #include "World.hpp"
@@ -75,6 +76,7 @@ void World::collisions() {
             }
         }
     }
+
     
     for (const auto& p: collidingPairs) {
         const Id& id1 = p.first;
@@ -89,34 +91,30 @@ void World::collisions() {
 
         const float m1 = p1.mass;
         const float m2 = p2.mass;
-        const v3 mom_before = p1.momentum + p2.momentum;
-        std::cout << "Mass/velo of " << id1 << " " << m1 << "," << printV(p1.velocity) << "\n";
-        std::cout << "Mass/velo of " << id2 << " " << m2 << "," << printV(p2.velocity) << "\n";
-        const v3 u_delta = p2.velocity - p1.velocity;
-        const v3 ud_e = u_delta * restitution;
-        const v3 v2 = (mom_before + m1 * ud_e) / (m1 + m2);
-        // don't change order of these 2 lines
-        const v3 v1 = (mom_before - (m2 * v2)) / m1;
+        std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
+        const v3 u1 = p1.velocity;
+        const v3 u2 = p2.velocity;
+        std::cout << "Start_velocity of " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
 
-        const v3 mom_1 = m1 * v1;
-        const v3 mom_2 = m2 * v2;
-        const v3 mom_1_delta = mom_1 - p1.momentum;
-        const v3 mom_2_delta = mom_2 - p2.momentum;
-        actors_.apply_force_abs(id1, mom_1_delta);
-        actors_.apply_force_abs(id2, mom_2_delta);
+        const v3 du_e = (u2 - u1) * restitution;
+        const v3 b = m1*u1 + m2*u2;
+
+        const v3 v2 = (b + m1*du_e) / (m1+m2);
+        const v3 v1 = (b - m2*v2) / m1;
+        std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
+
+        const float factor = 1.0f;
+        const v3 f1 = m1 * (v1 - u1) * factor;
+        const v3 f2 = m2 * (v2 - u2) * factor;
+        std::cout << "Force on " << id1 << " " << printV(f1) << "\n";
+        std::cout << "Force on " << id2 << " " << printV(f2) << "\n";
+        actors_.apply_force(id1, Force(f1,false,zeroV));
+        actors_.apply_force(id2, Force(f2,false,zeroV));
     }
 }
 
-void World::apply_force(const Id& id, const v3& force) {
-    actors_[id].apply_force(force);
-}
-
-void World::apply_force(const Id& id, const v3& force, const v3& point) {
-    actors_[id].apply_force(force,point);
-}
-
-void World::apply_torque(const Id& id, const v3& force) {
-    actors_[id].apply_torque(force);
+void World::apply_force(const Id& id, const Force& force) {
+    actors_.apply_force(id,force);
 }
 
 void World::render() {

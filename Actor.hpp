@@ -13,6 +13,7 @@
 #include "G_Cuboid.hpp"
 #include "L_Cuboid.hpp"
 #include "Camera.hpp"
+#include "Force.hpp"
 
 #include <string>
 
@@ -35,10 +36,7 @@ class Actor {
         P_State& state_to_change();
         m4 viewMatrix() const;
         m4 modelMatrix() const;
-        void apply_torque(const v3& force);
-        void apply_force(const v3& force);
-        void apply_force(const v3& force, const v3& point);
-        void apply_force_abs(const v3& force);
+        void apply_force(const Force& force);
         Actor(const fv* vertexData,
         std::string vertShader,
         std::string fragShader,

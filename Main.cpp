@@ -27,6 +27,7 @@
 #include "Physics.hpp"
 #include "Actors.hpp"
 #include "World.hpp"
+#include "Force.hpp"
 
 /* TO DO
  - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
@@ -38,8 +39,8 @@
 */
 
 void gl_loop_start();
-void select_cube(Window_Inputs& inputs, Actors& actors);
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
+void select_cube(Window_Inputs& inputs, Actors& actors);
 
 int main() {
 
@@ -62,7 +63,8 @@ int main() {
 
     const float areaSize = 500.0f;
 
-    World world(areaSize, inputs.windowSize() * 0.6f, 0.5f);
+    const float restitution = 0.5f;
+    World world(areaSize, inputs.windowSize() * 0.6f, restitution);
 
     /*
     const fv* vertexData,
@@ -83,13 +85,24 @@ int main() {
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
-            3.0f * oneV, 10.0f, 5.0f, true);
+            3.0f * oneV, 100000.0f, 5.0f, true);
     world.insert(cube1);
 
+    Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
+            v3(0.0f,-3.0f,0.0f), 10.0f, 5.0f, true);
+    world.insert(cube2);
+
+    Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
+            v3(5.0f,-3.0f,0.0f), 10.0f, 5.0f, true);
+    world.insert(cube3);
+    /*
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,0.1f,areaSize/2.0f),
             zeroV, 10.0f, 5.0f, false);
     world.insert(the_floor);
+    */
 
     set_keyboard(inputs,window,world.actors());
 
@@ -106,12 +119,12 @@ int main() {
             inputs.processInput(); // polls input and executes action based on that
 
             const v2 mouseDelta = inputs.cursorDelta();
-            world.apply_torque(world.actors().selected(),v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f));
+            world.apply_force(world.actors().selected(),Force(zeroV,true,v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f)));
 
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
-
+            std::cout << dt_normalized << "\n";
             world.simulate(t_normalized,dt_normalized);
             world.collisions();
 
@@ -164,31 +177,33 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     // camera
 
     inputs.setFunc2(GLFW_KEY_R,[&] () {
-            actors.apply_torque(actors.selected(),LEFT);
+            actors.apply_force(actors.selected(),Force(zeroV,false,LEFT));
     });
     inputs.setFunc2(GLFW_KEY_Y,[&] () {
-            actors.apply_torque(actors.selected(),UP);
+            actors.apply_force(actors.selected(),Force(zeroV,false,UP));
     });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
-            actors.apply_torque(actors.selected(),FORWARD);
+            actors.apply_force(actors.selected(),Force(zeroV,false,FORWARD));
     });
 
     inputs.setFunc2(GLFW_KEY_P,[&] () {
+            /*
             const v3 pos = actors.selectedActor().get_state().position;
             const fq orient = actors.selectedActor().get_state().orient;
             const v3 f = (orient * v3(0.5f,0.0f,0.0f)) + pos;
             actors.apply_force(actors.selected(),FORWARD,f);
+            */
     });
     inputs.setFunc2(GLFW_KEY_W,[&] () {
-            actors.apply_force(actors.selected(),FORWARD);
+            actors.apply_force(actors.selected(),Force(FORWARD,true));
     });
     inputs.setFunc2(GLFW_KEY_S,[&] () {
-            actors.apply_force(actors.selected(),BACKWARD);
+            actors.apply_force(actors.selected(),Force(BACKWARD,true));
     });
     inputs.setFunc2(GLFW_KEY_A,[&] () {
-            actors.apply_force(actors.selected(),LEFT);
+            actors.apply_force(actors.selected(),Force(LEFT,true));
     });
     inputs.setFunc2(GLFW_KEY_D,[&] () {
-            actors.apply_force(actors.selected(),RIGHT);
+            actors.apply_force(actors.selected(),Force(RIGHT,true));
     });
 }

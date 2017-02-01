@@ -8,6 +8,7 @@
 #include <glm/gtx/quaternion.hpp>
 
 #include "Util.hpp"
+#include "Force.hpp"
 #include "P_State.hpp"
 
 struct Derivative;

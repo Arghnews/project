@@ -7,6 +7,7 @@
 
 #include "Util.hpp"
 #include "P_State.hpp"
+#include "Force.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -51,30 +52,18 @@ void P_State::recalc() {
     spin = 0.5f * fq(ang_velocity) * orient;
 }
 
-// forces are relative to objects facing direction
-void P_State::apply_force(const v3& f, const v3& point) {
-    // order matters
-    const v3 force = orient * f;
-    forces.push_back(force);
-    const v3 torque = glm::cross(force, point - position);
-    //std::cout << "Torque applied " << printV(torque) << "\n";
-    torques.push_back(torque);
-}
-
-void P_State::apply_force(const v3& f) {
-    apply_force(f, position);
-}
-
-// force is absolute, ie v(0,-1,0) is down
-void P_State::apply_force_abs(const v3& f) {
-    forces.push_back(f);
-}
-
-// force is absolute, ie v(0,-1,0) is down
-void P_State::apply_torque(const v3& f) {
-    //const v3 q = orient * f;
-    const v3 q = f;
-    torques.push_back(q);
+void P_State::apply_force(const Force& f) {
+    v3 force = f.force;
+    if (f.relative) {
+        force = orient * force;
+    }
+    if (force != zeroV) {
+        forces.push_back(force);
+    }
+    //const v3 torque = glm::cross(force, point - position);
+    if (f.torque != zeroV) {
+        torques.push_back(f.torque);
+    }
 }
 
 v3 P_State::net_torque() const {
