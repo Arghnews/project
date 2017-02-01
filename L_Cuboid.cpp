@@ -74,8 +74,9 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 
 
 // builds a cuboid that matches the graphical coordinates
-L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter) :
+L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale) :
     originalTopCenter(topCenter),
+    scale(scale),
     furthestVertex(0.0f) {
     const fv& points = *points_in;
     // first calc the faces
@@ -103,12 +104,12 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter) :
     }
 }
 
-vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori) {
+vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori, const v3& scale) {
     const int verticesSize = vertices.size();
     vv3 world_vertices(verticesSize);
     for (int i=0; i<verticesSize; ++i) {
         v3 vertex = vertices[i];
-        //vertex *= scale; // order of these lines matters
+        vertex *= scale; // order of these lines matters
         vertex = ori * vertex;
         vertex += pos;
         world_vertices[i] = vertex;
@@ -136,7 +137,7 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
 
 // should be done after cuboid is moved/changed
 void L_Cuboid::recalc(const v3& pos, const fq& ori) {
-    const vv3 verts24 = calcVertices(originalVertices_,pos,ori);
+    const vv3 verts24 = calcVertices(originalVertices_,pos,ori,scale);
     vertices = unique(verts24);
     edges = calcEdges(verts24);
     uniqEdges = unique(edges,true);

@@ -5,11 +5,12 @@ Actor::Actor(
     std::string vertShader,
     std::string fragShader,
     v3 topCenter,
+    v3 scale,
     float mass,
     float inertia
     ) :
     camera(),
-    l_cuboid(vertexData, topCenter),
+    l_cuboid(vertexData, topCenter, scale),
     g_cuboid(vertexData, vertShader, fragShader),
     p_state(mass, inertia),
     changed_state(false),
@@ -26,7 +27,7 @@ const bool Actor::invis() const {
 }
 
 m4 Actor::modelMatrix() const {
-    return p_state.modelMatrix();
+    return p_state.modelMatrix(l_cuboid.scale);
 }
 
 m4 Actor::viewMatrix() const {

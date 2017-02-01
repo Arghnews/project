@@ -23,12 +23,12 @@ P_State::P_State(float m, float inertia, v3 pos) :
     position(pos) {
     }
 
-m4 P_State::modelMatrix() const {
+m4 P_State::modelMatrix(const v3& scale) const {
     //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;
     m4 model;
     m4 rotation(glm::toMat4(orient));
     m4 translation(glm::translate(m4(), position));
-    model = translation * rotation;
+    model = translation * rotation * glm::scale(scale);
     return model;
 }
 

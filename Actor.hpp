@@ -25,6 +25,7 @@ class Actor {
         bool changed_state;
         bool invisible_;
     public:
+        const v3 scale;
         void invis(const bool& b);
         const bool invis() const;
         const P_State& get_state() const;
@@ -41,6 +42,7 @@ class Actor {
         std::string vertShader,
         std::string fragShader,
         v3 topCenter,
+        v3 scale,
         float mass,
         float inertia);
 };

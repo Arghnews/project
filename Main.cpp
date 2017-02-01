@@ -29,7 +29,6 @@
 #include "World.hpp"
 
 /* TO DO
- - Scaling of shapes
  - Collisions resolve
  - Collision where they hit
  - Gravity
@@ -64,11 +63,11 @@ int main() {
     World world;
 
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
             10.0f, 5.0f);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
             10.0f, 5.0f);
 
     /*

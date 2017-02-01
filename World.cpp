@@ -80,6 +80,7 @@ void World::collisions() {
         const Id& id2 = p.second;
         Actor& a1 = actors_[id1];
         Actor& a2 = actors_[id2];
+        std::cout << id1 << " and " << id2 << " colliding\n";
         // resolve collision
     }
 }

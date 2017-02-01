@@ -48,7 +48,7 @@ class P_State {
         v3 net_force() const;
         v3 net_torque() const;
 
-        m4 modelMatrix() const;
+        m4 modelMatrix(const v3& scale) const;
         m4 viewMatrix() const;
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
