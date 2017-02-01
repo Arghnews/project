@@ -19,8 +19,9 @@ class World {
         Actors actors_;
         Physics phys_;
         Octtree tree_;
+        float restitution;
     public:
-        World(float worldSize=500.0f,v2 windowSize=v2(1024.0f,768.0f));
+        World(float worldSize,v2 windowSize, float restitution);
         v2 windowSize;
         Actors& actors();
         void insert(Actor* a);

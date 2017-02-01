@@ -60,7 +60,9 @@ int main() {
     long currentTime = timeNow();
     long acc = 0l;
 
-    World world;
+    const float areaSize = 500.0f;
+
+    World world(areaSize, inputs.windowSize() * 0.6f, 0.5f);
 
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
@@ -71,7 +73,7 @@ int main() {
             10.0f, 5.0f, true);
 
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(100.0f,0.1f,100.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,0.1f,areaSize/2.0f),
             10.0f, 5.0f, false);
 
     /*

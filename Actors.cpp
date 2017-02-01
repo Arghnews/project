@@ -18,6 +18,10 @@ void Actors::apply_force(const Id& id, const v3& force) {
     actors[id]->apply_force(force);
 }
 
+void Actors::apply_force_abs(const Id& id, const v3& force) {
+    actors[id]->apply_force_abs(force);
+}
+
 void Actors::apply_force(const Id& id, const v3& force, const v3& point) {
     actors[id]->apply_force(force,point);
 }
