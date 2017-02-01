@@ -35,7 +35,8 @@ m4 P_State::modelMatrix() const {
 m4 P_State::viewMatrix() const {
     const v3 facing = orient * FORWARD;
     const v3 up_relative = orient * UP;
-    return glm::lookAt(position+v3(0.0f,2.0f,3.0f), position + facing, up_relative);
+    const v3 behindMe = orient * v3(0.0f,2.0f,3.0f);
+    return glm::lookAt(position+behindMe, position + facing, up_relative);
 }
 
 void P_State::recalc() {
