@@ -13,6 +13,7 @@
 
 #include "Util.hpp"
 #include "L_Cuboid.hpp"
+#include "MTV.hpp"
 
 /* Now this L_Cuboid effectively only caches the state of the cuboid
  * In world space. You must manually call recalc when it has moved
@@ -38,20 +39,52 @@ vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
     return axes;
 }
 
-bool L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
+MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
+    float the_overlap = 1e8f;
+    v3 smallestAxis;
+
     vv3 allAxes = getAxes(s1.uniqEdges, s2.uniqEdges);
 
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);
     };
     for (const auto& axis: allAxes) {
-        Projection projection1 = project(axis, s1.vertices);
-        Projection projection2 = project(axis, s2.vertices);
-        if (!overlap(projection1,projection2)) {
-            return false;
+        Projection p1 = project(axis, s1.vertices);
+        Projection p2 = project(axis, s2.vertices);
+        if (!overlap(p1,p2)) {
+            MTV mtv;
+            mtv.colliding = false;
+            return mtv;
+        } else {
+            float o = overlapAmount(p1,p2);
+            if (o < the_overlap) {
+                the_overlap = o;
+                smallestAxis = axis;
+            }
         }
     }
-    return true;
+    MTV mtv;
+    mtv.colliding = true;
+    mtv.overlap = the_overlap;
+    mtv.axis = glm::normalize(smallestAxis);
+    // return std::make_pair(true,mtv);
+    return mtv;
+}
+
+float L_Cuboid::overlapAmount(const Projection& p1, const Projection& p2) {
+    float ret;
+    if (p1.first <= p2.first && p1.second <= p2.second) {
+        ret = p1.second - p2.first;
+    } else if (p2.first <= p1.first && p2.second <= p1.second) {
+        ret = p2.second - p1.first;
+    } else if (p1.first >= p2.first && p1.second <= p2.second) {
+        ret = p1.second - p1.first;
+    } else if (p1.first <= p2.first && p1.second >= p2.second) {
+        ret = p2.second - p2.first;   
+    } else {
+        assert(false && "Holy poopdick you should never get here in overlaps");
+    }
+    return ret;
 }
 
 Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {

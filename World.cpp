@@ -21,6 +21,7 @@
 #include <cmath>
 #include <algorithm>
 
+#include "MTV.hpp"
 #include "World.hpp"
 
 World::World(float worldSize, v2 windowSize, float restitution) :
@@ -52,10 +53,7 @@ void World::simulate(const float& t, const float& dt) {
 
 void World::collisions() {
 
-    static std::set<std::pair<Id,Id>> alreadyColliding;
-
-    // stuff that just collided
-    std::set<std::pair<Id,Id>> collidingPairs;
+    std::set<MTV> collidingPairs;
 
     for (auto& a: actors_.underlying()) {
         const Id& id = a.first;
@@ -74,21 +72,19 @@ void World::collisions() {
             //std::cout << "at" << printV(actors_[id_nearby].get_state().position) << "\n";
             const L_Cuboid& l_cub = actor.logical_cuboid();
             const L_Cuboid& l_cub_nearby = actor_nearby.logical_cuboid();
-            const bool areColliding = L_Cuboid::colliding(l_cub,l_cub_nearby);
+            MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
+            const bool areColliding = mtv.colliding;
             if (areColliding) {
-                const std::pair<Id,Id> colliding_pair = std::make_pair(
-                        std::min(id,id_nearby),std::max(id,id_nearby));
-                if (true || !contains(alreadyColliding, colliding_pair)) {
-                    collidingPairs.insert(colliding_pair);
-                }
-                alreadyColliding.insert(colliding_pair);
+                mtv.id1 = std::min(id, id_nearby);
+                mtv.id2 = std::max(id, id_nearby);
+                collidingPairs.insert(mtv);
             }
         }
     }
 
-    for (const auto& p: collidingPairs) {
-        const Id& id1 = p.first;
-        const Id& id2 = p.second;
+    for (const auto& mtv: collidingPairs) {
+        const Id& id1 = mtv.id1;
+        const Id& id2 = mtv.id2;
         Actor& a1 = actors_[id1];
         Actor& a2 = actors_[id2];
         const P_State& p1 = a1.get_state();
@@ -102,17 +98,17 @@ void World::collisions() {
         std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
-        std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
 
         const v3 relativeDir = glm::normalize(p2.position - p1.position);
         const v3 myDir = glm::normalize(u1-u2);
         const float angle = glm::dot(myDir,relativeDir);
         //std::cout << "Angle " << angle << "\n";
         if (angle <= 0.0f) { // if moving away
+            std::cout << "Skipped - angle " << angle << "\n";
             continue;
-            std::cout << "Skipped\n";
         }
 
+        std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
         const float rest = 0.0f;
         const v3 ue = (u2 - u1) * rest;
         std::cout << "Ue " << printV(ue) << "\n";
@@ -136,8 +132,17 @@ void World::collisions() {
         p_2.momentum = mom2;
         //p_1.velocity = v1;
         //p_2.velocity = v2;
-        p_1.recalc();
-        p_2.recalc();
+        std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
+        const v3 center_diff = p1.position - p2.position;
+        v3 f = mtv.axis * mtv.overlap;
+        if (glm::dot(center_diff,mtv.axis) < 0) {
+            f *= -1.0f;
+        }
+        const v3 f1 = f * m1 * 0.5f;
+        actors_.apply_force(id1,Force(f1,Force::Type::Force,false,true));
+        const v3 f2 = -f * m2 * 0.5f;
+        actors_.apply_force(id2,Force(f2,Force::Type::Force,false,true));
+        //std::cout << "Forces to " << id1 << " " << printV(f1) << " and " << id2 << " " << printV(f2) << "\n";
 
         //const float factor = 1.0f;
         //const v3 f1 = m1 * (v1 - u1) * factor;

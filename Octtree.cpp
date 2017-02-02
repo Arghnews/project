@@ -53,7 +53,7 @@ bool Octtree::del(v3Id p) {
             // to prevent moving all items after '5' by one
             std::swap(t, points.back());
             points.pop_back();
-            size_--;
+            --size_;
             return true;
         }
     }

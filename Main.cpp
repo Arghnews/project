@@ -47,6 +47,7 @@ void select_cube(Window_Inputs& inputs, Actors& actors);
 static const float my_mass = 5.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.01f;
+static const float floor_mass = 50.0f;
 
 int main() {
 
@@ -96,19 +97,18 @@ int main() {
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(0.0f,-3.0f,0.0f), other_mass, 5.0f, true);
+            v3(0.0f,9.0f,5.0f), other_mass, 5.0f, true);
     world.insert(cube2);
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(5.0f,-3.0f,0.0f), other_mass, 5.0f, true);
+            v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true);
     world.insert(cube3);
-    /*
+
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,0.1f,areaSize/2.0f),
-            zeroV, 10.0f, 5.0f, false);
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,1.0f,areaSize/2.0f),
+            zeroV, floor_mass, 5.0f, false);
     world.insert(the_floor);
-    */
 
     set_keyboard(inputs,window,world.actors());
 
