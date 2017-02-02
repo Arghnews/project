@@ -55,6 +55,12 @@ v3 static vabs(const v3& v) {
     return v3(fabs(v.x),fabs(v.y),fabs(v.z));
 }
 
+bool static isZero(const v3& v) {
+    static const float TINY = EPSILON * 0.01f;
+    //static const v3 TINY_V(TINY);
+    return fabs(v.x) < TINY && fabs(v.y) < TINY && fabs(v.z) < TINY;
+}
+
 template <class T>
 void static concat(std::vector<T>& grower, const std::vector<T>& added) {
     grower.insert( grower.end(), added.begin(), added.end() );

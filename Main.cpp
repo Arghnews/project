@@ -44,7 +44,7 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 void select_cube(Window_Inputs& inputs, Actors& actors);
 
-static const float my_mass = 100.0f;
+static const float my_mass = 5.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.01f;
 
@@ -99,12 +99,10 @@ int main() {
             v3(0.0f,-3.0f,0.0f), other_mass, 5.0f, true);
     world.insert(cube2);
 
-    /*
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(5.0f,-3.0f,0.0f), 0.0001f, 5.0f, true);
+            v3(5.0f,-3.0f,0.0f), other_mass, 5.0f, true);
     world.insert(cube3);
-    */
     /*
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,0.1f,areaSize/2.0f),

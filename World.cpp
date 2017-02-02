@@ -105,25 +105,31 @@ void World::collisions() {
         std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
 
         const v3 relativeDir = glm::normalize(p2.position - p1.position);
-        const v3 myDir = glm::normalize(u1);
+        const v3 myDir = glm::normalize(u1-u2);
         const float angle = glm::dot(myDir,relativeDir);
-
+        //std::cout << "Angle " << angle << "\n";
         if (angle <= 0.0f) { // if moving away
             continue;
+            std::cout << "Skipped\n";
         }
 
-        const v3 du_e = (u2 - u1) * restitution;
+        const float rest = 0.0f;
+        const v3 ue = (u2 - u1) * rest;
+        std::cout << "Ue " << printV(ue) << "\n";
         const v3 b = m1*u1 + m2*u2;
+        std::cout << "Total mom before " << printV(b) << "\n";
 
-        const v3 v2 = (b + m1*du_e) / (m1+m2);
-        const v3 v1 = (b - m2*v2) / m1;
-        std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
-
+        const v3 v1 = (b - m2*ue) / (m1+m2);
+        const v3 v2 = (b - m1*v1) / m2;
+        //const v3 v2 = (b + m1*du_e) / (m1+m2);
+        //const v3 v1 = (b - m2*v2) / m1;
         P_State& p_1 = a1.state_to_change();
         P_State& p_2 = a2.state_to_change();
         const float bla = 1.0f;
         auto mom1 = m1 * v1 * bla;
         auto mom2 = m2 * v2 * bla;
+        std::cout << "Total mom after " << printV(mom1+mom2) << "\n";
+        std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
         std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
         std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
         p_1.momentum = mom1;
