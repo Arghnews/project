@@ -16,7 +16,6 @@
 class P_State {
     private:
         Forces forces;
-        vv3 torques;
     public:
         P_State(float m, float inertia, v3 pos);
         // primary
@@ -40,7 +39,6 @@ class P_State {
 
         void apply_force(const Force& force);
         void clear_forces();
-        void clear_torques();
         void recalc();
         const Forces& net_forces() const;
 

@@ -50,7 +50,16 @@ void World::simulate(const float& t, const float& dt) {
 
 void World::collisions() {
 
+    auto setContains = [&] (const std::set<std::pair<Id,Id>>& s, const std::pair<Id,Id>& item) -> bool {
+        const bool is_in = s.find(item) != s.end();
+        return is_in;
+    };
+
+    static std::set<std::pair<Id,Id>> alreadyColliding;
+
+    // stuff that just collided
     std::set<std::pair<Id,Id>> collidingPairs;
+
     for (auto& a: actors_.underlying()) {
         const Id& id = a.first;
         Actor& actor = *a.second;
@@ -72,7 +81,10 @@ void World::collisions() {
             if (areColliding) {
                 const std::pair<Id,Id> colliding_pair = std::make_pair(
                         std::min(id,id_nearby),std::max(id,id_nearby));
-                collidingPairs.insert(colliding_pair);
+                if (true || !setContains(alreadyColliding, colliding_pair)) {
+                    collidingPairs.insert(colliding_pair);
+                }
+                alreadyColliding.insert(colliding_pair);
             }
         }
     }
@@ -102,13 +114,27 @@ void World::collisions() {
         const v3 v1 = (b - m2*v2) / m1;
         std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
 
-        const float factor = 1.0f;
-        const v3 f1 = m1 * (v1 - u1) * factor;
-        const v3 f2 = m2 * (v2 - u2) * factor;
-        std::cout << "Force on " << id1 << " " << printV(f1) << "\n";
-        std::cout << "Force on " << id2 << " " << printV(f2) << "\n";
-        actors_.apply_force(id1, Force(f1,Force::Type::Force,false,false));
-        actors_.apply_force(id2, Force(f2,Force::Type::Force,false,false));
+        P_State& p_1 = a1.state_to_change();
+        P_State& p_2 = a2.state_to_change();
+        const float bla = 1.0f;
+        auto mom1 = m1 * v1 * bla;
+        auto mom2 = m2 * v2 * bla;
+        std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
+        std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
+        p_1.momentum = mom1;
+        p_2.momentum = mom2;
+        //p_1.velocity = v1;
+        //p_2.velocity = v2;
+        p_1.recalc();
+        p_2.recalc();
+
+        //const float factor = 1.0f;
+        //const v3 f1 = m1 * (v1 - u1) * factor;
+        //const v3 f2 = m2 * (v2 - u2) * factor;
+        //std::cout << "Force on " << id1 << " " << printV(f1) << "\n";
+        //std::cout << "Force on " << id2 << " " << printV(f2) << "\n";
+        //actors_.apply_force(id1, Force(f1,Force::Type::Force,false,false));
+        //actors_.apply_force(id2, Force(f2,Force::Type::Force,false,false));
     }
 }
 
