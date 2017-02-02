@@ -16,6 +16,7 @@
 #include <map>
 #include <limits>
 #include <math.h>
+#include <set>
 
 typedef int Id;
 
@@ -57,6 +58,11 @@ v3 static vabs(const v3& v) {
 template <class T>
 void static concat(std::vector<T>& grower, const std::vector<T>& added) {
     grower.insert( grower.end(), added.begin(), added.end() );
+}
+
+template <class T>
+bool static contains(const std::set<T>& s, const T& item) {
+    return s.find(item) != s.end();
 }
 
 template <class T>

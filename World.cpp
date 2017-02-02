@@ -18,6 +18,8 @@
 #include "AABB.hpp"
 #include "Force.hpp"
 #include "Util.hpp"
+#include <cmath>
+#include <algorithm>
 
 #include "World.hpp"
 
@@ -50,11 +52,6 @@ void World::simulate(const float& t, const float& dt) {
 
 void World::collisions() {
 
-    auto setContains = [&] (const std::set<std::pair<Id,Id>>& s, const std::pair<Id,Id>& item) -> bool {
-        const bool is_in = s.find(item) != s.end();
-        return is_in;
-    };
-
     static std::set<std::pair<Id,Id>> alreadyColliding;
 
     // stuff that just collided
@@ -81,7 +78,7 @@ void World::collisions() {
             if (areColliding) {
                 const std::pair<Id,Id> colliding_pair = std::make_pair(
                         std::min(id,id_nearby),std::max(id,id_nearby));
-                if (true || !setContains(alreadyColliding, colliding_pair)) {
+                if (true || !contains(alreadyColliding, colliding_pair)) {
                     collidingPairs.insert(colliding_pair);
                 }
                 alreadyColliding.insert(colliding_pair);
@@ -106,6 +103,14 @@ void World::collisions() {
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
         std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
+
+        const v3 relativeDir = glm::normalize(p2.position - p1.position);
+        const v3 myDir = glm::normalize(u1);
+        const float angle = glm::dot(myDir,relativeDir);
+
+        if (angle <= 0.0f) { // if moving away
+            continue;
+        }
 
         const v3 du_e = (u2 - u1) * restitution;
         const v3 b = m1*u1 + m2*u2;

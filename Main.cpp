@@ -44,7 +44,7 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 void select_cube(Window_Inputs& inputs, Actors& actors);
 
-static const float my_mass = 10.0f;
+static const float my_mass = 100.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.01f;
 
