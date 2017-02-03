@@ -9,7 +9,8 @@ Actor::Actor(
     v3 startPos,
     float mass,
     float inertia,
-    bool selectable
+    bool selectable,
+    bool mobile
     ) :
     camera(),
     l_cuboid(vertexData, topCenter, scale, startPos),
@@ -17,7 +18,8 @@ Actor::Actor(
     p_state(mass, inertia, startPos),
     changed_state(false),
     invisible_(false),
-    selectable(selectable)
+    selectable(selectable),
+    mobile(mobile)
     {
     }
 

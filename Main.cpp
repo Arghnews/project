@@ -88,30 +88,31 @@ int main() {
     float mass,
     float inertia,
     bool selectable
+    bool mobile
     */
 
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
-            5.0f * oneV, my_mass, 5.0f, true);
+            5.0f * oneV, my_mass, 5.0f, true, true);
     world.insert(me);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            3.0f * oneV, other_mass, 5.0f, true);
+            3.0f * oneV, other_mass, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(0.0f,9.0f,5.0f), other_mass, 5.0f, true);
+            v3(0.0f,9.0f,5.0f), other_mass, 5.0f, true, true);
     world.insert(cube2);
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true);
+            v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true, true);
     world.insert(cube3);
 
     static const float seperator = 1.03f;
-    static const float floor_mass = 1.0f;
+    static const float floor_mass = 0.5f;
     const int n = 8;
     const int m = 8;
     for (int i=0; i<n; ++i) {
@@ -119,7 +120,7 @@ int main() {
             const v3 position(seperator*(float)i, 0.0f, seperator*(float)j);
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
-                    position, floor_mass, 5.0f, false);
+                    position, floor_mass, 5.0f, false, true);
             world.insert(floorpiece);
         }
     }
@@ -128,7 +129,7 @@ int main() {
         const v3 position(0.0f, seperator*(float)i, 0.0f);
         Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                 "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
-                position, floor_mass, 5.0f, false);
+                position, floor_mass, 5.0f, false, false);
         world.insert(floorpiece);
     }
     /*Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
@@ -175,7 +176,7 @@ int main() {
         
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
-        if (spareFrameTime < 4000l) {
+        if (spareFrameTime < 3000l) {
             std::cout << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
         }
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));

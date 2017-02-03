@@ -43,6 +43,10 @@ void World::simulate(const float& t, const float& dt) {
     // whenever move need to update octtree
     for (auto& a: actors_.underlying()) {
         const Id& id = a.first;
+        // don't similate immobile objects
+        if (!a.second->mobile) {
+            continue;
+        }
         P_State& cube_phys = (*a.second).state_to_change();
         const bool deleted = tree_.del(cube_phys.position, id);
         assert(deleted && "Should always be able to delete last cube position");
@@ -64,10 +68,15 @@ void World::collisions() {
         for (const auto& b: nearby) {
             const v3& pos_nearby = b.first;
             const Id& id_nearby = b.second;
+            // collision with self
             if (id_nearby == id) {
                 continue;
             }
             Actor& actor_nearby = actors_[id_nearby];
+            // both actors immobile - ie. worldly blocks that don't move
+            if (!actor.mobile && !actor_nearby.mobile) {
+                continue;
+            }
             //std::cout << "at" << printV(actors_[id].get_state().position) << "\n";
             //std::cout << "at" << printV(actors_[id_nearby].get_state().position) << "\n";
             const L_Cuboid& l_cub = actor.logical_cuboid();
@@ -135,14 +144,16 @@ void World::collisions() {
         std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
         const v3 center_diff = p1.position - p2.position;
         v3 f = mtv.axis * mtv.overlap;
-        if (glm::dot(center_diff,mtv.axis) < 0) {
+        if (glm::dot(center_diff,mtv.axis) < 0.0f) {
             f *= -1.0f;
         }
         // NOTE : can swap m1 and m2 in the forces to cause a light thing flying into a heavy thing
         // to have the light thing fly back proportional to mass of the other
-        const v3 f1 = f * m1 * 1.0001f * m2/m1;
+        // with them this way round ie. the force applied to each object is proportional to the other's mass
+        // a better sense is achieved of the lighter object coming off worse in a collision
+        const v3 f1 = f * m2;
         actors_.apply_force(id1,Force(f1,Force::Type::Force,false,true));
-        const v3 f2 = -f * m2 * 1.0001f * m1/m2;
+        const v3 f2 = -f * m1;
         actors_.apply_force(id2,Force(f2,Force::Type::Force,false,true));
         //std::cout << "Forces to " << id1 << " " << printV(f1) << " and " << id2 << " " << printV(f2) << "\n";
 
