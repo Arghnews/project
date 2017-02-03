@@ -37,13 +37,15 @@ class P_State {
         const float inertia;
         const float inverse_inertia;
 
+        void set_momentum(const v3& mom);
+
         void apply_force(const Force& force);
         void clear_forces();
         void recalc();
         const Forces& net_forces() const;
 
         m4 modelMatrix(const v3& scale) const;
-        m4 viewMatrix() const;
+        m4 viewMatrix(const v3& scale) const;
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 };

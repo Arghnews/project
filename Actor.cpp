@@ -25,6 +25,11 @@ void Actor::invis(const bool& b) {
     invisible_ = b;
 }
 
+void Actor::reorient() {
+    p_state.orient = fq();
+    p_state.recalc();
+}
+
 const bool Actor::invis() const {
     return invisible_;
 }
@@ -34,7 +39,7 @@ m4 Actor::modelMatrix() const {
 }
 
 m4 Actor::viewMatrix() const {
-    return p_state.viewMatrix();
+    return p_state.viewMatrix(l_cuboid.scale);
 }
 
 const P_State& Actor::get_state() const {

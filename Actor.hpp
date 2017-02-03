@@ -34,6 +34,7 @@ class Actor {
         const L_Cuboid& logical_cuboid();
         const G_Cuboid& graphical_cuboid() const;
         P_State& state_to_change();
+        void reorient();
         m4 viewMatrix() const;
         m4 modelMatrix() const;
         void apply_force(const Force& force);

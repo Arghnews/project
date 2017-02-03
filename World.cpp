@@ -128,8 +128,8 @@ void World::collisions() {
         std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
         std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
         std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
-        p_1.momentum = mom1;
-        p_2.momentum = mom2;
+        p_1.set_momentum(mom1);
+        p_2.set_momentum(mom2);
         //p_1.velocity = v1;
         //p_2.velocity = v2;
         std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
@@ -138,9 +138,11 @@ void World::collisions() {
         if (glm::dot(center_diff,mtv.axis) < 0) {
             f *= -1.0f;
         }
-        const v3 f1 = f * m1 * 0.5f;
+        // NOTE : can swap m1 and m2 in the forces to cause a light thing flying into a heavy thing
+        // to have the light thing fly back proportional to mass of the other
+        const v3 f1 = f * m1 * 1.0001f * m2/m1;
         actors_.apply_force(id1,Force(f1,Force::Type::Force,false,true));
-        const v3 f2 = -f * m2 * 0.5f;
+        const v3 f2 = -f * m2 * 1.0001f * m1/m2;
         actors_.apply_force(id2,Force(f2,Force::Type::Force,false,true));
         //std::cout << "Forces to " << id1 << " " << printV(f1) << " and " << id2 << " " << printV(f2) << "\n";
 

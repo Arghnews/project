@@ -29,6 +29,9 @@
 #include "World.hpp"
 #include "Force.hpp"
 
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+
 /* TO DO
  - Try actually set velocities/orients
  - Velocities before and after in conserve of momentum are too similiar
@@ -44,12 +47,13 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 void select_cube(Window_Inputs& inputs, Actors& actors);
 
-static const float my_mass = 5.0f;
+static const float my_mass = 2.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.01f;
-static const float floor_mass = 50.0f;
 
 int main() {
+    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+    ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
     Window_Inputs inputs;
 
@@ -68,7 +72,7 @@ int main() {
     long currentTime = timeNow();
     long acc = 0l;
 
-    const float areaSize = 500.0f;
+    const float areaSize = 2000.0f;
 
     const float restitution = 0.05f;
 
@@ -106,10 +110,31 @@ int main() {
             v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true);
     world.insert(cube3);
 
-    Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
+    static const float seperator = 1.03f;
+    static const float floor_mass = 1.0f;
+    const int n = 8;
+    const int m = 8;
+    for (int i=0; i<n; ++i) {
+        for (int j=0; j<m; ++j) {
+            const v3 position(seperator*(float)i, 0.0f, seperator*(float)j);
+            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
+                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
+                    position, floor_mass, 5.0f, false);
+            world.insert(floorpiece);
+        }
+    }
+    const int nt = 9;
+    for (int i=1; i<nt+1; ++i) {
+        const v3 position(0.0f, seperator*(float)i, 0.0f);
+        Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
+                "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
+                position, floor_mass, 5.0f, false);
+        world.insert(floorpiece);
+    }
+    /*Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
             zeroV, floor_mass, 5.0f, false);
-    world.insert(the_floor);
+    world.insert(the_floor);*/
 
     set_keyboard(inputs,window,world.actors());
 
@@ -151,7 +176,7 @@ int main() {
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
         if (spareFrameTime < 4000l) {
-            std::cout << "Spare frame time " << spareFrameTime << "\n";
+            std::cout << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
         }
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
@@ -186,24 +211,29 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors) {
 void select_cube(Window_Inputs& inputs, Actors& actors) {
     // camera
 
+    inputs.setFunc2(GLFW_KEY_P,[&] () {
+            //actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque,false,true));
+            // resets actor's roll
+            actors.selectedActor().reorient();
+    });
     inputs.setFunc2(GLFW_KEY_R,[&] () {
-            actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque));
+            actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Y,[&] () {
-            actors.apply_force(actors.selected(),Force(UP,Force::Type::Torque));
+            actors.apply_force(actors.selected(),Force(UP,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
-            actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Torque));
+            actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Torque,false,true));
     });
 
-    inputs.setFunc2(GLFW_KEY_P,[&] () {
+    //inputs.setFunc2(GLFW_KEY_P,[&] () {
             /*
             const v3 pos = actors.selectedActor().get_state().position;
             const fq orient = actors.selectedActor().get_state().orient;
             const v3 f = (orient * v3(0.5f,0.0f,0.0f)) + pos;
             actors.apply_force(actors.selected(),FORWARD,f);
             */
-    });
+    //});
     inputs.setFunc2(GLFW_KEY_W,[&] () {
             actors.apply_force(actors.selected(),Force(small*FORWARD,Force::Type::Force));
     });
