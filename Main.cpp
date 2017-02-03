@@ -71,6 +71,7 @@ int main() {
     const float areaSize = 500.0f;
 
     const float restitution = 0.05f;
+
     World world(areaSize, inputs.windowSize() * 0.6f, restitution);
 
     /*
@@ -91,7 +92,7 @@ int main() {
     world.insert(me);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(2.0f,1.0f,2.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
             3.0f * oneV, other_mass, 5.0f, true);
     world.insert(cube1);
 
@@ -106,7 +107,7 @@ int main() {
     world.insert(cube3);
 
     Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(areaSize/2.0f,1.0f,areaSize/2.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
             zeroV, floor_mass, 5.0f, false);
     world.insert(the_floor);
 
@@ -149,6 +150,9 @@ int main() {
         
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
+        if (spareFrameTime < 4000l) {
+            std::cout << "Spare frame time " << spareFrameTime << "\n";
+        }
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers

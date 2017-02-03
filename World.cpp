@@ -105,7 +105,7 @@ void World::collisions() {
         //std::cout << "Angle " << angle << "\n";
         if (angle <= 0.0f) { // if moving away
             std::cout << "Skipped - angle " << angle << "\n";
-            continue;
+            //continue;
         }
 
         std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
