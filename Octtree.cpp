@@ -6,6 +6,7 @@
 #include "Util.hpp"
 #include "AABB.hpp"
 #include "Octtree.hpp"
+#include <iterator>
 
 Octtree::Octtree(const Octtree& o) :
     node_capacity(o.node_capacity),
@@ -17,46 +18,42 @@ Octtree::Octtree(const Octtree& o) :
 {
 }
 
-Octtree::Octtree(AABB boundary) :
+Octtree::Octtree(const AABB& boundary) :
     boundary(boundary),
-    haveSubdivided(false)
+    haveSubdivided(false),
+    size_(0)
 {}
 
-Octtree::Octtree(v3 center, float halfDimension) :
+Octtree::Octtree(const v3& center, const float& halfDimension) :
     Octtree(AABB(center,halfDimension))
 {
     }
 
-int Octtree::size() {
+int Octtree::size() const {
     int acc = size_;
-    for (auto& kid: kids) {
+    for (const auto& kid: kids) {
         acc += kid.size();
     }
     return acc;
 }
 
-bool Octtree::del(v3 v, Id id) {
+bool Octtree::del(const v3& v, const Id& id) {
     return del(std::make_pair(v,id));
 }
 
-bool Octtree::del(v3Id p) {
-    //auto it = std::find(points.begin(), points.end(), p);
-    //if (it != points.end()) {
-    for (auto& t: points) {
-        auto& point = t.first;
-        auto& sPtr = t.second;
-        const bool samePlace = areSame(p.first,point);
-        const bool samePointer = (sPtr == p.second);
-        if (samePlace && samePointer) {
-            // swap the one to be removed with the last element
-            // and remove the item at the end of the container
-            // to prevent moving all items after '5' by one
-            std::swap(t, points.back());
-            points.pop_back();
+bool Octtree::del(const v3Id& p) {
+    for (auto i = points.begin(); i != points.end(); ++i) {
+        const v3& point = (*i).first;
+        const Id& id = (*i).second;
+        const bool samePlace = areSame(point,p.first);
+        const bool samePointer = (id == p.second);
+        if (samePointer && samePointer) {
+            points.erase(i);
             --size_;
             return true;
         }
     }
+
     for (auto& kid: kids) {
         const bool removed = kid.del(p);
         if (removed) {
@@ -66,11 +63,11 @@ bool Octtree::del(v3Id p) {
     return false;
 }
 
-bool Octtree::insert(v3 v, Id id) {
+bool Octtree::insert(const v3& v, const Id& id) {
     insert(std::make_pair(v,id));
 }
 
-bool Octtree::insert(v3Id p) {
+bool Octtree::insert(const v3Id& p) {
     // Ignore objects that do not belong in this quad tree
     if (!boundary.containsPoint(p.first)) {
         return false; // object cannot be added
@@ -79,7 +76,7 @@ bool Octtree::insert(v3Id p) {
     // If there is space in this quad tree, add the object here
     if (points.size() < node_capacity) {
         points.push_back(p);
-        size_++;
+        ++size_;
         return true;
     }
 
@@ -98,11 +95,11 @@ bool Octtree::insert(v3Id p) {
     return false;
 }
 
-vv3Id Octtree::queryRange(const v3 center, const float halfDimension) {
+vv3Id Octtree::queryRange(const v3& center, const float& halfDimension) {
     return queryRange(AABB(center,halfDimension));
 }
 
-vv3Id Octtree::queryRange(AABB range) {
+vv3Id Octtree::queryRange(const AABB& range) {
     // Prepare an array of results
     vv3Id pointsInRange;
 
@@ -112,7 +109,7 @@ vv3Id Octtree::queryRange(AABB range) {
     }
 
     // Check objects at this quad level
-    for (int p = 0; p < points.size(); p++) {
+    for (int p = 0; p < points.size(); ++p) {
         if (range.containsPoint(points[p].first)) {
             pointsInRange.push_back(points[p]);
         }

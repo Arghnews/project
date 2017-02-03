@@ -11,6 +11,7 @@
 #include "Physics.hpp"
 #include "P_State.hpp"
 #include "Force.hpp"
+#include <cmath>
 
 Physics::Physics() {
 }
@@ -91,7 +92,15 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     }
 
     net_affected *= 0.5f;
+    const v3 signs(sgn(state.momentum.x), sgn(state.momentum.y), sgn(state.momentum.z));
+    net_affected += -0.02f * signs * state.momentum * state.momentum;
     net_affected += -0.05f * state.momentum;
+    const float small = EPSILON;
+    v3 friction;
+    friction.x = -std::max(-small,std::min(state.momentum.x,small));
+    friction.y = -std::max(-small,std::min(state.momentum.y,small));
+    friction.z = -std::max(-small,std::min(state.momentum.z,small));
+    net_affected += friction;
     net_affected *= dt;
     //net += -0.75f * state.momentum;
 

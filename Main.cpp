@@ -91,44 +91,46 @@ int main() {
     bool mobile
     */
 
+    float scaleFactor = 1.0f;
+    const v3 scale = scaleFactor * oneV;
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), oneV,
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
             5.0f * oneV, my_mass, 5.0f, true, true);
     world.insert(me);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
             3.0f * oneV, other_mass, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
             v3(0.0f,9.0f,5.0f), other_mass, 5.0f, true, true);
     world.insert(cube2);
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
             v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true, true);
     world.insert(cube3);
 
     static const float seperator = 1.03f;
-    static const float floor_mass = 0.5f;
-    const int n = 8;
-    const int m = 8;
+    static const float floor_mass = 1.0f;
+    const int n = 36;
+    const int m = 36;
     for (int i=0; i<n; ++i) {
         for (int j=0; j<m; ++j) {
-            const v3 position(seperator*(float)i, 0.0f, seperator*(float)j);
+            const v3 position(scaleFactor*(seperator*(float)i-n/2), 0.0f, scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
-                    position, floor_mass, 5.0f, false, true);
+                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
+                    position, floor_mass, 5.0f, false, false);
             world.insert(floorpiece);
         }
     }
     const int nt = 9;
     for (int i=1; i<nt+1; ++i) {
-        const v3 position(0.0f, seperator*(float)i, 0.0f);
+        const v3 position(0.0f, scaleFactor*(seperator*(float)i), 0.0f);
         Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
+                "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
                 position, floor_mass, 5.0f, false, false);
         world.insert(floorpiece);
     }
@@ -139,15 +141,19 @@ int main() {
 
     set_keyboard(inputs,window,world.actors());
 
-    while (!glfwWindowShouldClose(window)) {
+    static int frame = 0;
 
+    while (!glfwWindowShouldClose(window)) {
+        ++frame;
         long newTime = timeNow();
         long frameTime = newTime - currentTime;
         currentTime = newTime;
         acc += frameTime;
 
         // simulate world
+        int runs = 0;
         while (acc >= dt) {
+            ++runs;
             // process inputs, change world
             inputs.processInput(); // polls input and executes action based on that
 
@@ -157,16 +163,16 @@ int main() {
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
-            std::cout << dt_normalized << "\n";
+            //std::cout << dt_normalized << "\n";
             world.simulate(t_normalized,dt_normalized);
             world.collisions();
+            //std::cout << "TIme taken " << (double)taken/1000.0 << "ms" << "\n";
 
             // feeds in essentially a time value of 1 every time
             // since fixed time step
             acc -= dt;
             t += dt;
         }
-
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform

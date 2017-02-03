@@ -6,10 +6,10 @@
 
 struct AABB {
     AABB();
-    AABB(v3, float);
-    v3 center;
-    float halfDimension;
-    bool containsPoint(v3 point);
-    bool intersectsAABB(AABB other);
+    AABB(const v3& center, const float& halfDimension);
+    const v3 center;
+    const float halfDimension;
+    bool containsPoint(const v3& point) const;
+    bool intersectsAABB(const AABB& other) const;
 };
 #endif

@@ -20,16 +20,16 @@ class Octtree {
         bool haveSubdivided;
         // up-left, up-right, up-back-left, up-back-right
         // down-left, down-right, down-back-left, down-back-right
-        int size();
+        int size() const;
         Octtree(const Octtree& o);
-        Octtree(AABB boundary);
-        Octtree(v3 center, float halfDimension);
-        bool insert(v3, Id);
-        bool insert(v3Id);
-        bool del(v3, Id);
-        bool del(v3Id p);
-        vv3Id queryRange(const v3 center, const float halfDimension);
-        vv3Id queryRange(AABB range);
+        Octtree(const AABB& boundary);
+        Octtree(const v3& center, const float& halfDimension);
+        bool insert(const v3&, const Id&);
+        bool insert(const v3Id&);
+        bool del(const v3&, const Id&);
+        bool del(const v3Id&);
+        vv3Id queryRange(const v3& center, const float& halfDimension);
+        vv3Id queryRange(const AABB& range);
         void subdivide();
 };
 

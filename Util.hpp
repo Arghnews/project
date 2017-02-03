@@ -51,6 +51,11 @@ static const v3 V3_PI(M_PI,M_PI,M_PI);
 
 static const double EPSILON = 0.001f;
 
+template <typename T>
+int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 v3 static vabs(const v3& v) {
     return v3(fabs(v.x),fabs(v.y),fabs(v.z));
 }

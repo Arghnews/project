@@ -59,12 +59,19 @@ void World::collisions() {
 
     std::set<MTV> collidingPairs;
 
-    for (auto& a: actors_.underlying()) {
+    long t_earlier = timeNowMicros();
+    long a_total = 0l;
+    long b_total = 0l;
+    for (const auto& a: actors_.underlying()) {
         const Id& id = a.first;
         Actor& actor = *a.second;
         const L_Cuboid& l_cub = actor.logical_cuboid();
         const P_State& phys = actor.get_state();
-        const vv3Id nearby = tree_.queryRange(phys.position, 2.0f*l_cub.furthestVertex);
+        long a_start = timeNowMicros();
+        const vv3Id nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
+        std::cout << l_cub.furthestVertex << "\n";
+        a_total += timeNowMicros() - a_start;
+        int nearbys = 0;
         for (const auto& b: nearby) {
             const v3& pos_nearby = b.first;
             const Id& id_nearby = b.second;
@@ -77,6 +84,7 @@ void World::collisions() {
             if (!actor.mobile && !actor_nearby.mobile) {
                 continue;
             }
+            ++nearbys;
             //std::cout << "at" << printV(actors_[id].get_state().position) << "\n";
             //std::cout << "at" << printV(actors_[id_nearby].get_state().position) << "\n";
             const L_Cuboid& l_cub = actor.logical_cuboid();
@@ -90,6 +98,9 @@ void World::collisions() {
             }
         }
     }
+    std::cout << "Total time of a " << ((double)a_total)/1000.0 << "ms" << "\n";
+    long taken = timeNowMicros() - t_earlier;
+    std::cout << "Time taken " << (double)taken/1000.0 << "ms for " << "\n";
 
     for (const auto& mtv: collidingPairs) {
         const Id& id1 = mtv.id1;
@@ -100,29 +111,29 @@ void World::collisions() {
         const P_State& p2 = a2.get_state();
 
         // resolve collision
-        std::cout << id1 << " and " << id2 << " colliding\n";
+        //std::cout << id1 << " and " << id2 << " colliding\n";
 
         const float m1 = p1.mass;
         const float m2 = p2.mass;
-        std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
+        //std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
 
         const v3 relativeDir = glm::normalize(p2.position - p1.position);
         const v3 myDir = glm::normalize(u1-u2);
         const float angle = glm::dot(myDir,relativeDir);
-        //std::cout << "Angle " << angle << "\n";
+        ////std::cout << "Angle " << angle << "\n";
         if (angle <= 0.0f) { // if moving away
-            std::cout << "Skipped - angle " << angle << "\n";
+            //std::cout << "Skipped - angle " << angle << "\n";
             //continue;
         }
 
-        std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
+        //std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
         const float rest = 0.0f;
         const v3 ue = (u2 - u1) * rest;
-        std::cout << "Ue " << printV(ue) << "\n";
+        //std::cout << "Ue " << printV(ue) << "\n";
         const v3 b = m1*u1 + m2*u2;
-        std::cout << "Total mom before " << printV(b) << "\n";
+        //std::cout << "Total mom before " << printV(b) << "\n";
 
         const v3 v1 = (b - m2*ue) / (m1+m2);
         const v3 v2 = (b - m1*v1) / m2;
@@ -133,15 +144,13 @@ void World::collisions() {
         const float bla = 1.0f;
         auto mom1 = m1 * v1 * bla;
         auto mom2 = m2 * v2 * bla;
-        std::cout << "Total mom after " << printV(mom1+mom2) << "\n";
-        std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
-        std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
-        std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
+        //std::cout << "Total mom after " << printV(mom1+mom2) << "\n";
+        //std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
+        //std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
+        //std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
-        //p_1.velocity = v1;
-        //p_2.velocity = v2;
-        std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
+        //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
         const v3 center_diff = p1.position - p2.position;
         v3 f = mtv.axis * mtv.overlap;
         if (glm::dot(center_diff,mtv.axis) < 0.0f) {
@@ -155,16 +164,9 @@ void World::collisions() {
         actors_.apply_force(id1,Force(f1,Force::Type::Force,false,true));
         const v3 f2 = -f * m1;
         actors_.apply_force(id2,Force(f2,Force::Type::Force,false,true));
-        //std::cout << "Forces to " << id1 << " " << printV(f1) << " and " << id2 << " " << printV(f2) << "\n";
-
-        //const float factor = 1.0f;
-        //const v3 f1 = m1 * (v1 - u1) * factor;
-        //const v3 f2 = m2 * (v2 - u2) * factor;
-        //std::cout << "Force on " << id1 << " " << printV(f1) << "\n";
-        //std::cout << "Force on " << id2 << " " << printV(f2) << "\n";
-        //actors_.apply_force(id1, Force(f1,Force::Type::Force,false,false));
-        //actors_.apply_force(id2, Force(f2,Force::Type::Force,false,false));
     }
+    //long taken = timeNowMicros() - t;
+    //std::cout << "TIme taken " << (double)taken/1000.0 << "ms" << "\n";
 }
 
 void World::apply_force(const Id& id, const Force& force) {

@@ -108,7 +108,7 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 
 // builds a cuboid that matches the graphical coordinates
 L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPos) :
-    originalTopCenter(topCenter),
+    originalTopCenter(scale*topCenter),
     scale(scale),
     furthestVertex(0.0f) {
     const fv& points = *points_in;
@@ -132,9 +132,12 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPo
 
     recalc(startPos,fq());
 
-    for (auto& v: vertices) {
+    // position at origin
+    const vv3 verts = calcVertices(originalVertices_,zeroV,fq(),scale);
+    for (const auto& v: verts) {
         furthestVertex = std::max(furthestVertex, glm::length(v));
     }
+    furthestVertex *= 2.0f;
 }
 
 vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori, const v3& scale) {

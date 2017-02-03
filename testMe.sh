@@ -12,13 +12,14 @@ main() {
     # Also situations where files aren't in same folder as make etc.
     # Everything assumed in the working dir atm
 
-	executable="test.exec" # change to be name of something else derived
+    # "Edge" ish case - script currently doesn't check executable -> all cpp files
+
+	executable="oct.exec"
 
     cppFiles=(
-    "Test.cpp"
-    "Window_Inputs.cpp"
-    "G_Cuboid.cpp"
-    "Shader.cpp"
+    "testTree.cpp"
+    "AABB.cpp"
+    "Octtree.cpp"
     )
 
 	#cppFiles=( 
@@ -32,6 +33,12 @@ main() {
 #g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi
     # at least on my home ubuntu, glfw -> dynamic/shared, glfw3 static
     libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi"
+    # older version of glm
+    # glew, glfw libs (dynamic) in your LIBRARY_PATH/LD_LIBRARY_PATH
+    # glew, glfw, glm headers in your CPATH
+    #export CPATH=$CPATH:$HOME/include
+    #export LIBRARY_PATH=$LIBRARY_PATH:$HOME/lib
+    #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib
 
 	includes=""
 
