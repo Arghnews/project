@@ -24,8 +24,8 @@
 #include "MTV.hpp"
 #include "World.hpp"
 
-World::World(float worldSize, v2 windowSize, float restitution) :
-    tree_(zeroV,worldSize),
+World::World(float worldSize, v2 windowSize, float restitution, int tree_node_capacity) :
+    tree_(zeroV,worldSize,tree_node_capacity),
     windowSize(windowSize),
     restitution(restitution) {
 }
@@ -62,6 +62,7 @@ void World::collisions() {
     long t_earlier = timeNowMicros();
     long a_total = 0l;
     long b_total = 0l;
+    long c_total = 0l;
     for (const auto& a: actors_.underlying()) {
         const Id& id = a.first;
         Actor& actor = *a.second;
@@ -69,9 +70,10 @@ void World::collisions() {
         const P_State& phys = actor.get_state();
         long a_start = timeNowMicros();
         const vv3Id nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
-        std::cout << l_cub.furthestVertex << "\n";
+        //std::cout << l_cub.furthestVertex << "\n";
         a_total += timeNowMicros() - a_start;
         int nearbys = 0;
+        long b_start = timeNowMicros();
         for (const auto& b: nearby) {
             const v3& pos_nearby = b.first;
             const Id& id_nearby = b.second;
@@ -85,11 +87,11 @@ void World::collisions() {
                 continue;
             }
             ++nearbys;
-            //std::cout << "at" << printV(actors_[id].get_state().position) << "\n";
-            //std::cout << "at" << printV(actors_[id_nearby].get_state().position) << "\n";
             const L_Cuboid& l_cub = actor.logical_cuboid();
             const L_Cuboid& l_cub_nearby = actor_nearby.logical_cuboid();
+            long c_start = timeNowMicros();
             MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
+            c_total += timeNowMicros() - c_start;
             const bool areColliding = mtv.colliding;
             if (areColliding) {
                 mtv.id1 = std::min(id, id_nearby);
@@ -97,10 +99,13 @@ void World::collisions() {
                 collidingPairs.insert(mtv);
             }
         }
+        b_total += timeNowMicros() - b_start;
     }
-    std::cout << "Total time of a " << ((double)a_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of octtree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of b " << ((double)b_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of collision checking " << ((double)c_total)/1000.0 << "ms" << "\n";
     long taken = timeNowMicros() - t_earlier;
-    std::cout << "Time taken " << (double)taken/1000.0 << "ms for " << "\n";
+    //std::cout << "Time taken " << (double)taken/1000.0 << "ms for collisions" << "\n";
 
     for (const auto& mtv: collidingPairs) {
         const Id& id1 = mtv.id1;

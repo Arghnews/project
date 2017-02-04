@@ -47,9 +47,14 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 void select_cube(Window_Inputs& inputs, Actors& actors);
 
-static const float my_mass = 2.0f;
+static const float my_mass = 3.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.01f;
+static const long program_start_time = timeNowMicros();
+
+long static timeNow() {
+    return timeNowMicros() - program_start_time;
+}
 
 int main() {
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
@@ -64,10 +69,6 @@ int main() {
     const long tickrate = 100l;
     const long dt = (1e6l)/tickrate; // run at tickrate 100
 
-    auto timeNow = [] () -> long {
-        static const long program_start_time = timeNowMicros();
-        return timeNowMicros() - program_start_time;
-    };
     long t = 0l;
     long currentTime = timeNow();
     long acc = 0l;
@@ -76,7 +77,7 @@ int main() {
 
     const float restitution = 0.05f;
 
-    World world(areaSize, inputs.windowSize() * 0.6f, restitution);
+    World world(areaSize, inputs.windowSize() * 0.6f, restitution, 128);
 
     /*
     const fv* vertexData,
@@ -115,18 +116,52 @@ int main() {
 
     static const float seperator = 1.03f;
     static const float floor_mass = 1.0f;
-    const int n = 36;
-    const int m = 36;
+    const int n = 25;
+    const int m = 10;
     for (int i=0; i<n; ++i) {
         for (int j=0; j<m; ++j) {
             const v3 position(scaleFactor*(seperator*(float)i-n/2), 0.0f, scaleFactor*(seperator*(float)j-m/2));
+            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
+                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
+                    position, floor_mass, 5.0f, false, true);
+            world.insert(floorpiece);
+        }
+    }
+
+    const float y_offset = -10.0f;
+    for (int i=0; i<n; ++i) {
+        for (int j=0; j<m; ++j) {
+            const v3 position(scaleFactor*(seperator*(float)i-n/2), y_offset, scaleFactor*(seperator*(float)j-m/2));
+            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
+                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
+                    position, floor_mass, 5.0f, false, true);
+            world.insert(floorpiece);
+        }
+    }
+
+    const float other_y_offset = -20.0f;
+    for (int i=0; i<n; ++i) {
+        for (int j=0; j<m; ++j) {
+            const v3 position(scaleFactor*(seperator*(float)i-n/2), other_y_offset, scaleFactor*(seperator*(float)j-m/2));
+            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
+                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
+                    position, floor_mass, 5.0f, false, true);
+            world.insert(floorpiece);
+        }
+    }
+
+    const float other_other_y_offset = -30.0f;
+    for (int i=0; i<n; ++i) {
+        for (int j=0; j<m; ++j) {
+            const v3 position(scaleFactor*(seperator*(float)i-n/2), other_other_y_offset, scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
                     position, floor_mass, 5.0f, false, false);
             world.insert(floorpiece);
         }
     }
-    const int nt = 9;
+
+    const int nt = 0;
     for (int i=1; i<nt+1; ++i) {
         const v3 position(0.0f, scaleFactor*(seperator*(float)i), 0.0f);
         Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
@@ -145,13 +180,18 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
         ++frame;
-        long newTime = timeNow();
-        long frameTime = newTime - currentTime;
+        std::cout << "Start of frame " << frame << "\n";
+        const long newTime = timeNow();
+        const long frameTime = newTime - currentTime;
         currentTime = newTime;
-        acc += frameTime;
+        acc += std::min(frameTime,1000l*100l);
+        //acc += frameTime;
+        std::cout << "frameTIme" << frameTime << "\n";
 
         // simulate world
         int runs = 0;
+        long worldSims = 0l;
+        long worldCols = 0l;
         while (acc >= dt) {
             ++runs;
             // process inputs, change world
@@ -163,31 +203,44 @@ int main() {
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
             const float dt_normalized = dt * normalize;
-            //std::cout << dt_normalized << "\n";
+
+            long marker = timeNow();
             world.simulate(t_normalized,dt_normalized);
+            worldSims += (timeNow() - marker);
+
+            marker = timeNow();
             world.collisions();
-            //std::cout << "TIme taken " << (double)taken/1000.0 << "ms" << "\n";
+            worldCols += (timeNow() - marker);
 
             // feeds in essentially a time value of 1 every time
             // since fixed time step
             acc -= dt;
             t += dt;
         }
+        //std::cout << "Time taken for world sim loop " << ((double)(worldSims)/1000.0) << "ms\n";
+        //std::cout << "Time taken for world col loop " << ((double)(worldCols)/1000.0) << "ms\n";
+        //std::cout << "Ran world sim loop " << runs << " times\n";
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
         gl_loop_start();
 
+        long renderTime = timeNow();
         world.render();
+        //std::cout << "Render time: " << (double)(timeNow() - renderTime) / 1000.0 << "ms\n";
         
         // sleep if fps would be > fps_max
         long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
         if (spareFrameTime < 3000l) {
-            std::cout << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
+            //std::cout << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
+        //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers
+
+        long thisFrameTime = timeNow() - newTime;
+        std::cout << "This frame: " << frame << ", frametime: " << (double)thisFrameTime/1000.0 << "ms\n";
+        std::cout << "End of frame " << frame << "\n";
     }
 
     inputs.close();
@@ -232,8 +285,7 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
             actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Torque,false,true));
     });
-
-    //inputs.setFunc2(GLFW_KEY_P,[&] () {
+    
             /*
             const v3 pos = actors.selectedActor().get_state().position;
             const fq orient = actors.selectedActor().get_state().orient;

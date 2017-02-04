@@ -66,7 +66,9 @@ P_State& Actor::state_to_change() {
 }
 
 void Actor::apply_force(const Force& force) {
-    p_state.apply_force(force);
+    if (mobile) {
+        p_state.apply_force(force);
+    }
 }
 
 /*

@@ -18,16 +18,18 @@ Octtree::Octtree(const Octtree& o) :
 {
 }
 
-Octtree::Octtree(const AABB& boundary) :
+Octtree::Octtree(const AABB& boundary, const int& node_capacity) :
     boundary(boundary),
     haveSubdivided(false),
-    size_(0)
-{}
-
-Octtree::Octtree(const v3& center, const float& halfDimension) :
-    Octtree(AABB(center,halfDimension))
+    size_(0),
+    node_capacity(node_capacity)
 {
-    }
+}
+
+Octtree::Octtree(const v3& center, const float& halfDimension, const int& node_capacity) :
+    Octtree(AABB(center,halfDimension),node_capacity)
+{
+}
 
 int Octtree::size() const {
     int acc = size_;
@@ -60,6 +62,7 @@ bool Octtree::del(const v3Id& p) {
             return true;
         }
     }
+    //std::cout << "Could not find " << printV(p.first) << "," << (p.second) << "\n";
     return false;
 }
 
@@ -137,13 +140,13 @@ void Octtree::subdivide() {
     auto& c = boundary.center;
     auto h = boundary.halfDimension / 2.0f;
 
-    kids.push_back(Octtree( v3(c.x + h, c.y + h, c.z + h),h ));
-    kids.push_back(Octtree( v3(c.x - h, c.y - h, c.z - h),h ));
-    kids.push_back(Octtree( v3(c.x - h, c.y + h, c.z + h),h ));
-    kids.push_back(Octtree( v3(c.x + h, c.y - h, c.z + h),h ));
-    kids.push_back(Octtree( v3(c.x + h, c.y + h, c.z - h),h ));
-    kids.push_back(Octtree( v3(c.x - h, c.y - h, c.z + h),h ));
-    kids.push_back(Octtree( v3(c.x - h, c.y + h, c.z - h),h ));
-    kids.push_back(Octtree( v3(c.x + h, c.y - h, c.z - h),h ));
+    kids.push_back(Octtree( v3(c.x + h, c.y + h, c.z + h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x - h, c.y - h, c.z - h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x - h, c.y + h, c.z + h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x + h, c.y - h, c.z + h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x + h, c.y + h, c.z - h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x - h, c.y - h, c.z + h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x - h, c.y + h, c.z - h),h,node_capacity ));
+    kids.push_back(Octtree( v3(c.x + h, c.y - h, c.z - h),h,node_capacity ));
 }
 
