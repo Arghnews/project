@@ -43,7 +43,7 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     float the_overlap = 1e8f;
     v3 smallestAxis;
 
-    vv3 allAxes = getAxes(s1.uniqEdges, s2.uniqEdges);
+    vv3 allAxes(getAxes(s1.uniqEdges, s2.uniqEdges));
 
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);
@@ -67,7 +67,6 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     mtv.colliding = true;
     mtv.overlap = the_overlap;
     mtv.axis = glm::normalize(smallestAxis);
-    // return std::make_pair(true,mtv);
     return mtv;
 }
 
@@ -104,7 +103,6 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
     Projection proj = std::make_pair(min, max);
     return proj;
 }
-
 
 // builds a cuboid that matches the graphical coordinates
 L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPos) :
@@ -155,8 +153,8 @@ vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori, co
 
 vv3 L_Cuboid::calcEdges(const vv3& v) {
     // calcs edges for cuboid
-    vv3 e;
     const int size = v.size();
+    vv3 e(size);
     for (int i=0; i<size; i+=4) {
         vv3 face(4);
         face[0] = v[i+0];
@@ -165,7 +163,7 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
         face[3] = v[i+3];
         const int faceSize = face.size();
         for (int j=0; j<faceSize; ++j) {
-            e.push_back((face[j] - face[(j+1)%faceSize]));
+            e[i+j] = ((face[j] - face[(j+1)%faceSize]));
         }
     }
     return e;
@@ -174,8 +172,8 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
 // should be done after cuboid is moved/changed
 void L_Cuboid::recalc(const v3& pos, const fq& ori) {
     const vv3 verts24 = calcVertices(originalVertices_,pos,ori,scale);
-    vertices = unique(verts24);
     edges = calcEdges(verts24);
+    vertices = unique(verts24);
     uniqEdges = unique(edges,true);
     topCenter = originalTopCenter * ori;
 }

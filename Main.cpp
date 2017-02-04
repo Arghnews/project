@@ -33,8 +33,11 @@
 #include <pmmintrin.h>
 
 /* TO DO
- - Try actually set velocities/orients
- - Velocities before and after in conserve of momentum are too similiar
+ - Need to have case for static on non static collide, so you can't push stuff through floor
+ - Fixed octtree?
+ - Modified octtree to use 128 per level instead of 1, huge perf. improve
+ - For optim - consider caching more data, maybe never have to recompute verts? I dunno
+ - Consider octtree reimplement with ordered maps
  - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
  - Collisions resolve
  - Collision where they hit
@@ -120,11 +123,13 @@ int main() {
     const int m = 10;
     for (int i=0; i<n; ++i) {
         for (int j=0; j<m; ++j) {
-            const v3 position(scaleFactor*(seperator*(float)i-n/2), 0.0f, scaleFactor*(seperator*(float)j-m/2));
+            const float ang_sep = 1.5f;
+            const v3 position(ang_sep*scaleFactor*(seperator*(float)i-n/2), 0.0f, ang_sep*scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
                     position, floor_mass, 5.0f, false, true);
             world.insert(floorpiece);
+            world.apply_force(std::max(world.actors().size()-1,0),Force(v3(i,0.0f,j),Force::Type::Torque));
         }
     }
 

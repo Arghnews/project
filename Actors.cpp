@@ -69,6 +69,10 @@ Actor& Actors::operator[](const Id& id) {
     return *actors[id];
 }
 
+int Actors::size() const {
+    return actors.size();
+}
+
 Actors::~Actors() {
     for (auto& a: actors) {
         delete a.second;

@@ -41,6 +41,7 @@ class Actors : std::map<Id, Actor*> {
         void next();
 
         Actor& operator[](const Id& id);
+        int size() const;
 
 };
 
