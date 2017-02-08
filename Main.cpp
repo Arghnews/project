@@ -29,8 +29,8 @@
 #include "World.hpp"
 #include "Force.hpp"
 
-#include <xmmintrin.h>
-#include <pmmintrin.h>
+//#include <xmmintrin.h>
+//#include <pmmintrin.h>
 
 /* TO DO
  - Need to have case for static on non static collide, so you can't push stuff through floor
@@ -60,7 +60,7 @@ long static timeNow() {
 }
 
 int main() {
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+//_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
     Window_Inputs inputs;
