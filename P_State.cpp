@@ -42,6 +42,9 @@ m4 P_State::viewMatrix(const v3& scale) const {
 
 void P_State::set_momentum(const v3& mom) {
     momentum = mom;
+    
+    // recalc velo
+    velocity = momentum * inverse_mass;
 }
 
 void P_State::recalc() {

@@ -91,7 +91,6 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
         }
     }
 
-    net_affected *= 0.5f;
     const v3 signs(sgn(state.momentum.x), sgn(state.momentum.y), sgn(state.momentum.z));
     net_affected += -0.5f * signs * state.momentum * state.momentum;
     net_affected += -0.05f * state.momentum;

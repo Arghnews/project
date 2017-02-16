@@ -6,8 +6,8 @@ inoremap <Right> <Nop>
 inoremap <Left> <Nop>
 inoremap <Down> <Nop>
 inoremap <Up> <Nop>
-nnoremap <silent> w :CCTreeWindowToggle
 nnoremap <silent> y :CCTreeWindowSaveCopy
+nnoremap <silent> w :CCTreeWindowToggle
 noremap K <k>
 nmap gx <Plug>NetrwBrowseX
 nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)
@@ -41,14 +41,14 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +204 Main.cpp
+badd +258 Main.cpp
 badd +4 Actor.cpp
 badd +27 Actor.hpp
-badd +70 L_Cuboid.cpp
+badd +137 L_Cuboid.cpp
 badd +2 L_Cuboid.hpp
 badd +16 G_Cuboid.cpp
 badd +1 G_Cuboid.hpp
-badd +37 Physics.cpp
+badd +42 Physics.cpp
 badd +1 Physics.hpp
 badd +23 P_State.cpp
 badd +40 P_State.hpp
@@ -182,7 +182,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 7 - ((6 * winheight(0) + 34) / 68)
+let s:l = 7 - ((6 * winheight(0) + 34) / 69)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -191,15 +191,15 @@ normal! 0
 tabedit L_Cuboid.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
-split
-1wincmd k
+vsplit
+1wincmd h
 wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 38 + 35) / 70)
-exe '2resize ' . ((&lines * 28 + 35) / 70)
+exe 'vert 1resize ' . ((&columns * 127 + 127) / 254)
+exe 'vert 2resize ' . ((&columns * 126 + 127) / 254)
 argglobal
 nnoremap <buffer> <silent> - :CCTreeRecurseDepthMinus
 nnoremap <buffer> <silent> = :CCTreeRecurseDepthPlus
@@ -307,7 +307,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 100 - ((25 * winheight(0) + 19) / 38)
+let s:l = 100 - ((0 * winheight(0) + 33) / 67)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -315,7 +315,7 @@ normal! zt
 normal! 019|
 wincmd w
 argglobal
-edit L_Cuboid.cpp
+edit L_Cuboid.hpp
 nnoremap <buffer> <silent> - :CCTreeRecurseDepthMinus
 nnoremap <buffer> <silent> = :CCTreeRecurseDepthPlus
 setlocal keymap=
@@ -422,16 +422,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 116 - ((6 * winheight(0) + 14) / 28)
+let s:l = 2 - ((1 * winheight(0) + 33) / 67)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-116
-normal! 05|
+2
+normal! 0
 wincmd w
-2wincmd w
-exe '1resize ' . ((&lines * 38 + 35) / 70)
-exe '2resize ' . ((&lines * 28 + 35) / 70)
+exe 'vert 1resize ' . ((&columns * 127 + 127) / 254)
+exe 'vert 2resize ' . ((&columns * 126 + 127) / 254)
 tabedit Main.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -545,13 +544,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 258 - ((33 * winheight(0) + 34) / 68)
+let s:l = 55 - ((7 * winheight(0) + 34) / 68)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-258
-normal! 024|
-2wincmd w
+55
+normal! 031|
 tabedit World.hpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -562,8 +560,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 28 + 35) / 70)
-exe '2resize ' . ((&lines * 38 + 35) / 70)
+exe '1resize ' . ((&lines * 23 + 35) / 70)
+exe '2resize ' . ((&lines * 43 + 35) / 70)
 argglobal
 nnoremap <buffer> <silent> - :CCTreeRecurseDepthMinus
 nnoremap <buffer> <silent> = :CCTreeRecurseDepthPlus
@@ -671,7 +669,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 20 - ((0 * winheight(0) + 14) / 28)
+let s:l = 20 - ((0 * winheight(0) + 11) / 23)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -786,16 +784,15 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 144 - ((24 * winheight(0) + 19) / 38)
+let s:l = 159 - ((26 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-144
-normal! 09|
+159
+normal! 028|
 wincmd w
-2wincmd w
-exe '1resize ' . ((&lines * 28 + 35) / 70)
-exe '2resize ' . ((&lines * 38 + 35) / 70)
+exe '1resize ' . ((&lines * 23 + 35) / 70)
+exe '2resize ' . ((&lines * 43 + 35) / 70)
 tabedit MTV.hpp
 set splitbelow splitright
 set nosplitbelow
@@ -915,7 +912,6 @@ exe s:l
 normal! zt
 1
 normal! 0
-2wincmd w
 tabedit Octtree.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -1157,7 +1153,6 @@ normal! zt
 26
 normal! 016|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit AABB.cpp
@@ -1401,7 +1396,6 @@ normal! zt
 5
 normal! 0
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 33 + 35) / 70)
 exe '2resize ' . ((&lines * 33 + 35) / 70)
 tabedit Actors.hpp
@@ -1645,7 +1639,6 @@ normal! zt
 38
 normal! 0
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 23 + 35) / 70)
 exe '2resize ' . ((&lines * 43 + 35) / 70)
 tabedit Actor.cpp
@@ -1889,7 +1882,6 @@ normal! zt
 34
 normal! 020|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 44 + 35) / 70)
 exe '2resize ' . ((&lines * 22 + 35) / 70)
 tabedit Physics.cpp
@@ -2133,7 +2125,6 @@ normal! zt
 1
 normal! 0
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit P_State.cpp
@@ -2377,7 +2368,6 @@ normal! zt
 20
 normal! 047|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit G_Cuboid.cpp
@@ -2621,7 +2611,6 @@ normal! zt
 1
 normal! 09|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit Camera.cpp
@@ -2743,7 +2732,6 @@ exe s:l
 normal! zt
 39
 normal! 0
-2wincmd w
 tabedit Window_Inputs.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -2985,7 +2973,6 @@ normal! zt
 46
 normal! 09|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 38 + 35) / 70)
 exe '2resize ' . ((&lines * 28 + 35) / 70)
 tabedit Util.hpp
@@ -3107,7 +3094,6 @@ exe s:l
 normal! zt
 31
 normal! 0
-2wincmd w
 tabedit doMe.sh
 set splitbelow splitright
 set nosplitbelow
@@ -3225,7 +3211,6 @@ exe s:l
 normal! zt
 31
 normal! 0
-2wincmd w
 tabnext 2
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

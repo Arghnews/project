@@ -103,8 +103,8 @@ int main() {
     world.insert(me);
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            3.0f * oneV, 1.0f, 5.0f, true, true);
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(4.0f,4.0f,4.0f),
+            3.0f * oneV, 50.0f, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
@@ -161,18 +161,9 @@ int main() {
             const v3 position(scaleFactor*(seperator*(float)i-n/2), other_other_y_offset, scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, floor_mass, 5.0f, false, false);
+                    position, 25.0f, 5.0f, false, true);
             world.insert(floorpiece);
         }
-    }
-
-    const int nt = 0;
-    for (int i=1; i<nt+1; ++i) {
-        const v3 position(0.0f, scaleFactor*(seperator*(float)i), 0.0f);
-        Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                position, floor_mass, 5.0f, false, false);
-        world.insert(floorpiece);
     }
 
     set_keyboard(inputs,window,world.actors());

@@ -55,7 +55,7 @@ main() {
 	includes=""
 
     #verbose=true # if "true" will print
-    verbose=true
+    verbose=false
     silent=false # if "true" will print
 
     MMD="-MM" # -M default, MM excludes sys headers
