@@ -98,6 +98,11 @@ bool Octtree::insert(const v3Id& p) {
     return false;
 }
 
+/*
+vv3Id Octtree::queryPoint(const v3& point) {
+    
+}*/
+
 vv3Id Octtree::queryRange(const v3& center, const float& halfDimension) {
     return queryRange(AABB(center,halfDimension));
 }

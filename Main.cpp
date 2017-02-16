@@ -52,7 +52,7 @@ void select_cube(Window_Inputs& inputs, Actors& actors);
 
 static const float my_mass = 3.0f;
 static const float other_mass = 1.0f;
-static const float small = my_mass * 0.01f;
+static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
 
 long static timeNow() {
@@ -104,20 +104,20 @@ int main() {
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            3.0f * oneV, other_mass, 5.0f, true, true);
+            3.0f * oneV, 1.0f, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,9.0f,5.0f), other_mass, 5.0f, true, true);
+            v3(0.0f,9.0f,5.0f), 10.0f, 5.0f, true, true);
     world.insert(cube2);
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(5.0f,8.0f,0.0f), other_mass, 5.0f, true, true);
+            v3(5.0f,8.0f,0.0f), 10.0f, 5.0f, true, true);
     world.insert(cube3);
 
-    static const float seperator = 1.03f;
+    static const float seperator = 1.15f;
     static const float floor_mass = 1.0f;
     const int n = 25;
     const int m = 10;
@@ -139,7 +139,7 @@ int main() {
             const v3 position(scaleFactor*(seperator*(float)i-n/2), y_offset, scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, floor_mass, 5.0f, false, true);
+                    position, 1.0f, 5.0f, false, true);
             world.insert(floorpiece);
         }
     }
@@ -150,7 +150,7 @@ int main() {
             const v3 position(scaleFactor*(seperator*(float)i-n/2), other_y_offset, scaleFactor*(seperator*(float)j-m/2));
             Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, floor_mass, 5.0f, false, true);
+                    position, 5.0f, 5.0f, false, true);
             world.insert(floorpiece);
         }
     }
@@ -174,10 +174,6 @@ int main() {
                 position, floor_mass, 5.0f, false, false);
         world.insert(floorpiece);
     }
-    /*Actor* the_floor = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(oneV),
-            zeroV, floor_mass, 5.0f, false);
-    world.insert(the_floor);*/
 
     set_keyboard(inputs,window,world.actors());
 
@@ -185,13 +181,13 @@ int main() {
 
     while (!glfwWindowShouldClose(window)) {
         ++frame;
-        std::cout << "Start of frame " << frame << "\n";
+        //std::cout << "Start of frame " << frame << "\n";
         const long newTime = timeNow();
         const long frameTime = newTime - currentTime;
         currentTime = newTime;
         acc += std::min(frameTime,1000l*100l);
         //acc += frameTime;
-        std::cout << "frameTIme" << frameTime << "\n";
+        //std::cout << "frameTIme" << frameTime << "\n";
 
         // simulate world
         int runs = 0;
@@ -244,8 +240,8 @@ int main() {
         inputs.swapBuffers(); // swaps buffers
 
         long thisFrameTime = timeNow() - newTime;
-        std::cout << "This frame: " << frame << ", frametime: " << (double)thisFrameTime/1000.0 << "ms\n";
-        std::cout << "End of frame " << frame << "\n";
+        //std::cout << "This frame: " << frame << ", frametime: " << (double)thisFrameTime/1000.0 << "ms\n";
+        //std::cout << "End of frame " << frame << "\n";
     }
 
     inputs.close();

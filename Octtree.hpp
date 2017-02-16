@@ -11,7 +11,6 @@
 
 class Octtree {
     public:
-        static const int eight = 8;
         const int node_capacity;
         AABB boundary;
         int size_;
