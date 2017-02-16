@@ -16,6 +16,7 @@
 #include <map>
 #include <limits>
 #include <math.h>
+#include <cmath>
 #include <set>
 
 typedef int Id;
@@ -50,6 +51,10 @@ static const double HALF_PI(M_PI/2.0f);
 static const v3 V3_PI(M_PI,M_PI,M_PI);
 
 static const double EPSILON = 0.001f;
+
+bool static hasNan(const v3& v) {
+    return isnan(v.x) || isnan(v.y) || isnan(v.z);
+}
 
 template <typename T>
 int sgn(T val) {
