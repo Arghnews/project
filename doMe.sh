@@ -55,7 +55,7 @@ main() {
 	includes=""
 
     #verbose=true # if "true" will print
-    verbose=false
+    verbose=true
     silent=false # if "true" will print
 
     MMD="-MM" # -M default, MM excludes sys headers
@@ -69,8 +69,8 @@ main() {
 		case $arg in
 			clean|-clean|--clean)
 				# args to this passed as literals - important as used in globbing
-				removeNoDoubleQuotes "$objectDir"/'*.o' # remove object files to force all recompile
-				removeNoDoubleQuotes  '$executable'
+				remove "$objectDir"/'*.o' # remove object files to force all recompile
+				remove "$executable"
 				exit 0
 				;;
 			"*")
@@ -226,7 +226,7 @@ function needsCompile() {
 
 # $1 should be file type, can be glob wildcard
 # crucial no quotes, don't want to expand *.o -> x.o y.o etc
-function removeNoDoubleQuotes () {
+function remove() {
 	if [ -z ${1+x} ]; then
 		echo "Function to remove files must be called with what file/files to clean"
 		exit 1
