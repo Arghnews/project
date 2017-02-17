@@ -53,7 +53,7 @@ static const v3 V3_PI(M_PI,M_PI,M_PI);
 static const double EPSILON = 0.001f;
 
 bool static hasNan(const v3& v) {
-    return isnan(v.x) || isnan(v.y) || isnan(v.z);
+    return std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z);
 }
 
 template <typename T>

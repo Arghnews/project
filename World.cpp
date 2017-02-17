@@ -158,6 +158,8 @@ void World::collisions() {
         //std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
+        p_1.recalc();
+        p_2.recalc();
         //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
         const v3 center_diff = p1.position - p2.position;
         v3 f = mtv.axis * mtv.overlap;
