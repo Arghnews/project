@@ -32,6 +32,8 @@ typedef std::vector<v3> vv3;
 typedef std::pair<v3, Id> v3Id;
 typedef std::vector<v3Id> vv3Id;
 
+typedef std::vector<Id> vId;
+
 struct Force;
 typedef std::vector<Force> Forces;
 
@@ -48,9 +50,9 @@ static const v3 oneV(1.0f,1.0f,1.0f);
 static const v3 UP_VECTOR(0.0f,1.0f,0.0f);
 static const double PI(M_PI);
 static const double HALF_PI(M_PI/2.0f);
-static const v3 V3_PI(M_PI,M_PI,M_PI);
+static const v3 PI_V3(M_PI,M_PI,M_PI);
 
-static const double EPSILON = 0.001f;
+static const double EPSILON = 1.0f / 1e6f;
 
 bool static hasNan(const v3& v) {
     return std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z);
@@ -78,6 +80,16 @@ void static concat(std::vector<T>& grower, const std::vector<T>& added) {
 
 template <class T>
 bool static contains(const std::set<T>& s, const T& item) {
+    return s.find(item) != s.end();
+}
+
+template <typename K, typename V>
+bool static contains(const std::map<K,V>& s, const K& item) {
+    return s.find(item) != s.end();
+}
+
+template <typename K, typename V, typename cmp>
+bool static contains(const std::map<K,V,cmp>& s, const K& item) {
     return s.find(item) != s.end();
 }
 
@@ -115,8 +127,9 @@ bool static areSame(const v3& a,const v3& b) {
     return areSame(a.x,b.x)&&areSame(a.y,b.y)&&areSame(a.z,b.z);
 }
 
-vv3 static unique(const vv3 vec_in, const bool ignoreSign) {
+vv3 static unique(const vv3& vec_in, const bool& ignoreSign) {
     vv3 uniq;
+    uniq.reserve(8);
     // quick and easy unique directions
     for (unsigned int i=0; i<vec_in.size(); ++i) {
         const auto& elem = vec_in[i];

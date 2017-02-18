@@ -29,7 +29,7 @@ main() {
     "Window_Inputs.cpp"
     "Main.cpp"
     "AABB.cpp"
-    "Octtree.cpp"
+    "Octree.cpp"
     "Actors.cpp"
     "World.cpp"
     )

@@ -7,6 +7,8 @@
 struct AABB {
     AABB();
     AABB(const v3& center, const float& halfDimension);
+    AABB(const AABB& o);
+    AABB& operator=(const AABB& o);
     const v3 center;
     const float halfDimension;
     bool containsPoint(const v3& point) const;

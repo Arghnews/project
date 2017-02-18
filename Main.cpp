@@ -34,10 +34,10 @@
 
 /* TO DO
  - Need to have case for static on non static collide, so you can't push stuff through floor
- - Fixed octtree?
- - Modified octtree to use 128 per level instead of 1, huge perf. improve
+ - Fixed octree?
+ - Modified octree to use 128 per level instead of 1, huge perf. improve
  - For optim - consider caching more data, maybe never have to recompute verts? I dunno
- - Consider octtree reimplement with ordered maps
+ - Consider octree reimplement with ordered maps
  - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
  - Collisions resolve
  - Collision where they hit

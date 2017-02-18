@@ -58,8 +58,8 @@ badd +1 Window_Inputs.hpp
 badd +1 doMe.sh
 badd +1 Util.hpp
 badd +540 graphics_cw_zip/arm.cpp
-badd +5 Octtree.cpp
-badd +1 Octtree.hpp
+badd +5 Octree.cpp
+badd +1 Octree.hpp
 badd +11 AABB.cpp
 badd +1 AABB.hpp
 badd +1 Actors.cpp
@@ -912,7 +912,7 @@ exe s:l
 normal! zt
 1
 normal! 0
-tabedit Octtree.cpp
+tabedit Octree.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
 split
@@ -1039,7 +1039,7 @@ normal! zt
 normal! 0
 wincmd w
 argglobal
-edit Octtree.hpp
+edit Octree.hpp
 nnoremap <buffer> <silent> - :CCTreeRecurseDepthMinus
 nnoremap <buffer> <silent> = :CCTreeRecurseDepthPlus
 setlocal keymap=

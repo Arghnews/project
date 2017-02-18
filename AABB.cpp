@@ -9,6 +9,9 @@ AABB::AABB(const v3& center, const float& halfDimension) :
 {
 }
 
+AABB::AABB(const AABB& o) : center(o.center), halfDimension(o.halfDimension) {
+}
+
 bool AABB::containsPoint(const v3& point) const {
     return (point.x <= center.x+halfDimension &&
             point.x >= center.x-halfDimension &&

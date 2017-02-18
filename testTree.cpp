@@ -1,6 +1,6 @@
 #include <glm/glm.hpp>
 
-#include "Octtree.hpp"
+#include "Octree.hpp"
 #include "AABB.hpp"
 
 #include "Util.hpp"
@@ -19,7 +19,7 @@ int main() {
     static const float scaleFactor = 1.0f;
     int id = 0;
     const int n = 1000;
-    Octtree tree(zeroV, areaSize);
+    Octree tree(zeroV, areaSize);
     for (int i=0; i<n; ++i) {
             const v3 position(v3(i,i,i));
             tree.insert(position,id);

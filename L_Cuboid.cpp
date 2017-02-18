@@ -125,6 +125,7 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPo
         square = unique(square);
         concat(faces, square);
     }
+    std::cout << faces.size() << "\n";
     assert(faces.size() == 24);
 
     // all the unique points in the faces are the verts, size 8

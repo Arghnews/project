@@ -41,8 +41,8 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 set shortmess=aoO
 badd +0 testTree.cpp
-badd +0 Octtree.cpp
-badd +0 Octtree.hpp
+badd +0 Octree.cpp
+badd +0 Octree.hpp
 badd +0 AABB.cpp
 badd +0 MTV.hpp
 badd +0 Main.cpp
@@ -174,7 +174,7 @@ exe s:l
 normal! zt
 60
 normal! 010|
-tabedit Octtree.cpp
+tabedit Octree.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
 split
@@ -306,7 +306,7 @@ normal! zt
 normal! 0
 wincmd w
 argglobal
-edit Octtree.hpp
+edit Octree.hpp
 setlocal keymap=
 setlocal noarabic
 setlocal noautoindent

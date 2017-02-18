@@ -14,7 +14,7 @@
 #include "L_Cuboid.hpp"
 #include "P_State.hpp"
 #include "Physics.hpp"
-#include "Octtree.hpp"
+#include "Octree.hpp"
 #include "AABB.hpp"
 #include "Force.hpp"
 #include "Util.hpp"
@@ -25,7 +25,7 @@
 #include "World.hpp"
 
 World::World(float worldSize, v2 windowSize, float restitution, int tree_node_capacity) :
-    tree_(zeroV,worldSize,tree_node_capacity),
+    tree_(zeroV,worldSize),
     windowSize(windowSize),
     restitution(restitution) {
 }
@@ -40,7 +40,7 @@ void World::insert(Actor* a) {
 }
 
 void World::simulate(const float& t, const float& dt) {
-    // whenever move need to update octtree
+    // whenever move need to update octree
     for (auto& a: actors_.underlying()) {
         const Id& id = a.first;
         // don't similate immobile objects
@@ -48,7 +48,7 @@ void World::simulate(const float& t, const float& dt) {
             continue;
         }
         P_State& cube_phys = (*a.second).state_to_change();
-        const bool deleted = tree_.del(cube_phys.position, id);
+        const bool deleted = tree_.del(cube_phys.position);
         assert(deleted && "Should always be able to delete last cube position");
         phys_.integrate(cube_phys, t, dt);
         tree_.insert(cube_phys.position, id);
@@ -69,14 +69,13 @@ void World::collisions() {
         const L_Cuboid& l_cub = actor.logical_cuboid();
         const P_State& phys = actor.get_state();
         long a_start = timeNowMicros();
-        const vv3Id nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
+        const vId nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
         //std::cout << l_cub.furthestVertex << "\n";
         a_total += timeNowMicros() - a_start;
         int nearbys = 0;
         long b_start = timeNowMicros();
         for (const auto& b: nearby) {
-            const v3& pos_nearby = b.first;
-            const Id& id_nearby = b.second;
+            const Id& id_nearby = b;
             // collision with self
             if (id_nearby == id) {
                 continue;
@@ -101,7 +100,7 @@ void World::collisions() {
         }
         b_total += timeNowMicros() - b_start;
     }
-    //std::cout << "Total time of octtree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of octree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
     //std::cout << "Total time of b " << ((double)b_total)/1000.0 << "ms" << "\n";
     //std::cout << "Total time of collision checking " << ((double)c_total)/1000.0 << "ms" << "\n";
     long taken = timeNowMicros() - t_earlier;

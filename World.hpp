@@ -10,7 +10,7 @@
 #include "L_Cuboid.hpp"
 #include "P_State.hpp"
 #include "Physics.hpp"
-#include "Octtree.hpp"
+#include "Octree.hpp"
 #include "AABB.hpp"
 #include "Force.hpp"
 #include "Util.hpp"
@@ -19,7 +19,7 @@ class World {
     private:
         Actors actors_;
         Physics phys_;
-        Octtree tree_;
+        Octree tree_;
         float restitution;
     public:
         World(float worldSize, v2 windowSize, float restitution, int tree_node_capacity);
