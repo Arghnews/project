@@ -16,6 +16,9 @@ main() {
 
     # object dir per executable
 
+    # when compiling lots of files and one errors, silently continue
+    # recompiling all the files that worked
+
 	executable="game.exec"
 
     cppFiles=(

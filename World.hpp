@@ -22,7 +22,7 @@ class World {
         Octree tree_;
         float restitution;
     public:
-        World(float worldSize, v2 windowSize, float restitution, int tree_node_capacity);
+        World(float worldSize, v2 windowSize, float restitution);
         v2 windowSize;
         Actors& actors();
         void insert(Actor* a);

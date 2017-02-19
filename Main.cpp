@@ -17,6 +17,7 @@
 #include <string>
 #include <map>
 #include <iterator>
+#include <sstream>
 
 #include "Util.hpp"
 #include "Shader.hpp"
@@ -73,14 +74,14 @@ int main() {
     const long dt = (1e6l)/tickrate; // run at tickrate 100
 
     long t = 0l;
-    long currentTime = timeNow();
+    long lastFrameStart = timeNow();
     long acc = 0l;
 
-    const float areaSize = 2000.0f;
+    const float areaSize = 500.0f;
 
     const float restitution = 0.05f;
 
-    World world(areaSize, inputs.windowSize() * 0.6f, restitution, 128);
+    World world(areaSize, inputs.windowSize() * 0.6f, restitution);
 
     /*
     const fv* vertexData,
@@ -144,7 +145,6 @@ int main() {
         }
     }
 
-    /*
     const float other_y_offset = -20.0f;
     for (int i=0; i<n; ++i) {
         for (int j=0; j<m; ++j) {
@@ -165,21 +165,29 @@ int main() {
                     position, 25.0f, 5.0f, false, true);
             world.insert(floorpiece);
         }
-    }*/
+    }
 
     set_keyboard(inputs,window,world.actors());
 
     static int frame = 0;
 
+    float fps = 60.0f;
+    float f_time = 1e6f / fps;
+
     while (!glfwWindowShouldClose(window)) {
         ++frame;
-        //std::cout << "Start of frame " << frame << "\n";
-        const long newTime = timeNow();
-        const long frameTime = newTime - currentTime;
-        currentTime = newTime;
-        acc += std::min(frameTime,1000l*100l);
+        std::stringstream print_buffer;
+        std::cout << "Start of frame " << frame << "\n";
+        long frameStart = timeNow();
+        //const long frameTime = std::max(frameStart - lastFrameStart,f_time);
+        const long frameTime = (long)f_time;
+        lastFrameStart = frameStart;
+        //auto extra = std::min(frameTime,1000l*100l);
+        auto extra = frameTime;
         //acc += frameTime;
-        //std::cout << "frameTIme" << frameTime << "\n";
+        print_buffer << "Adding to acc(" << acc << ")" << extra << "\n";
+        acc += extra;
+        //print_buffer << "frameTIme" << frameTime << "\n";
 
         // simulate world
         int runs = 0;
@@ -210,9 +218,9 @@ int main() {
             acc -= dt;
             t += dt;
         }
-        //std::cout << "Time taken for world sim loop " << ((double)(worldSims)/1000.0) << "ms\n";
-        //std::cout << "Time taken for world col loop " << ((double)(worldCols)/1000.0) << "ms\n";
-        //std::cout << "Ran world sim loop " << runs << " times\n";
+        print_buffer << "Time taken for simulations this loop " << ((double)(worldSims)/1000.0) << "ms\n";
+        print_buffer << "Time taken for collisions this  loop " << ((double)(worldCols)/1000.0) << "ms\n";
+        print_buffer << "Ran world sim loop " << runs << " times\n";
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
         //          model matrix   view matrix  projection matrix   viewport transform
@@ -220,20 +228,22 @@ int main() {
 
         long renderTime = timeNow();
         world.render();
-        //std::cout << "Render time: " << (double)(timeNow() - renderTime) / 1000.0 << "ms\n";
+        print_buffer << "Render time: " << (double)(timeNow() - renderTime) / 1000.0 << "ms\n";
         
         // sleep if fps would be > fps_max
-        long spareFrameTime = 1e6l / fps_max - (timeNow() - newTime);
-        if (spareFrameTime < 3000l) {
-            //std::cout << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
-        }
+            //print_buffer << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
         //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers
 
-        long thisFrameTime = timeNow() - newTime;
-        //std::cout << "This frame: " << frame << ", frametime: " << (double)thisFrameTime/1000.0 << "ms\n";
-        //std::cout << "End of frame " << frame << "\n";
+        double thisFrameTime = (timeNow() - frameStart)/1000.0;
+        print_buffer << "This frame: " << frame << ", frametime: " << thisFrameTime << "ms\n";
+        print_buffer << "End of frame " << frame << "\n";
+        if (thisFrameTime > 10.0) {
+            std::cout << print_buffer.str();
+            print_buffer << std::endl;
+            //std::cout << "This frame: " << frame << ", frametime: " << thisFrameTime << "ms\n";
+        }
     }
 
     inputs.close();

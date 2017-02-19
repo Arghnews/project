@@ -1,5 +1,6 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
 #include <vector>
 #include <utility>
 #include <stdexcept>
@@ -7,27 +8,32 @@
 #include "AABB.hpp"
 #include "Octree.hpp"
 #include <iterator>
-#include <map>
+#include <unordered_map>
 
 // copy constructor
 Octree::Octree(const Octree& o) :
     boundary(o.boundary),
     points(o.points),
     kids(o.kids),
-    haveKids(o.haveKids)
+    haveKids(o.haveKids),
+    depth(o.depth)
 {
 }
 
-Octree::Octree(const AABB& boundary) :
+Octree::Octree(const AABB& boundary, const int& depth) :
     boundary(boundary),
-    haveKids(false)
+    haveKids(false),
+    depth(depth)
     {
         kids.reserve(8);
 }
 
-Octree::Octree(const v3& center, const float& halfDimension) :
-    Octree(AABB(center,halfDimension))
+Octree::Octree(const v3& center, const float& halfDimension, const int& depth) :
+    Octree(AABB(center,halfDimension),depth)
 {}
+
+Octree::Octree(const v3& center, const float& halfDimension) :
+    Octree(center,halfDimension,1) {}
 
 int Octree::size() const {
     int acc = points.size();
@@ -38,23 +44,36 @@ int Octree::size() const {
 }
 
 bool Octree::del(const v3& p) {
+
+    // Ignore objects that do not belong in this quad tree
+    if (!boundary.containsPoint(p)) {
+        return false; // object cannot be added
+    }
+
+    //std::cout << "del - My center is " << printV(boundary.center) << " with range " << boundary.halfDimension << "\n";
+    //std::cout << "and I'm looking to delete " << printV(p) << "\n";
     if (haveKids) {
-        std::cout << "Have kids\n";
+        //std::cout << "Have kids depth " << depth << "\n";
         for (auto& kid: kids) {
             const bool removed = kid.del(p);
             if (removed) {
                 return true;
             }
         }
-        std::cout << "Could not erase " << printV(p) << "\n";
+        //std::cout << "Could not erase " << printV(p) << "\n";
     } else {
-        std::cout << "Don't have kids\n";
-        if (contains(points,p)) {
+        //std::cout << "Don't have kids\n";
+        //std::cout << "My map size is " << points.size() << "\n";
+        for (auto& a: points) {
+            //std::cout << printV(a.first) << " " << a.second << "\n";
+        }
+        //std::cout << "Look here for " << printV(p) << "\n";
+        if (points.find(p) != points.end()) {
+            //std::cout << "I do contain " << printV(p) << "\n";
             points.erase(p);
             return true;
         } else {
-            std::cout << "I don't contain " << printV(p) << "\n";
-            std::cout << "My center is " << printV(boundary.center) << " with range " << boundary.halfDimension << "\n";
+            //std::cout << "I don't contain " << printV(p) << "\n";
             return false;
         }
     }
@@ -81,7 +100,7 @@ bool Octree::insert(const v3Id& p) {
         }
     } else {
         if (points.size() < node_capacity) {
-            std::cout << "Trying to insert " << printV(p.first) << " with id " << p.second << "\n";
+            //std::cout << "Trying to insert " << printV(p.first) << " with id " << p.second << "\n";
             const auto ret = points.insert(p);
             bool worked = ret.second;
             if (worked) {
@@ -108,7 +127,7 @@ vId Octree::queryRange(const v3& center, const float& halfDimension) const {
 vId Octree::queryRange(const AABB& range) const {
     // Prepare an array of results
     vId idsInRange;
-    idsInRange.reserve(4);
+    //idsInRange.reserve(4);
 
     // Automatically abort if the range does not intersect this quad
     if (!boundary.intersectsAABB(range)) {
@@ -143,18 +162,21 @@ void Octree::makeKids() {
     auto h = boundary.halfDimension / 2.0f;
 
     int i = 0;
-    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z + h),h ));
-    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z - h),h ));
-    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z + h),h ));
-    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z + h),h ));
-    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z - h),h ));
-    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z + h),h ));
-    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z - h),h ));
-    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z - h),h ));
+    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z + h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z - h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z + h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z + h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z - h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z + h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z - h),h,depth+1 ));
+    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z - h),h,depth+1 ));
     
     // remove all objects at this level, insert into kids...
     for (const auto& p: points) {
-        insert(p);
+        const bool worked = insert(p);
+        if (!worked) {
+            throw std::runtime_error("Error: when making kids, could not move elements from parent to child nodes");
+        }
     }
     points.clear();
 }

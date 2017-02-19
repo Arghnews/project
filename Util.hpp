@@ -88,11 +88,6 @@ bool static contains(const std::map<K,V>& s, const K& item) {
     return s.find(item) != s.end();
 }
 
-template <typename K, typename V, typename cmp>
-bool static contains(const std::map<K,V,cmp>& s, const K& item) {
-    return s.find(item) != s.end();
-}
-
 template <class T>
 std::pair<bool,int> static vecContains(const std::vector<std::vector<T>>& vec, const T& t) {
     const int size = vec.size();

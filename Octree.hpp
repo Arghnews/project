@@ -3,34 +3,30 @@
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtx/hash.hpp>
 #include <vector>
 #include <utility>
-#include <map>
+#include <unordered_map>
 
 #include "Util.hpp"
 #include "AABB.hpp"
 
-struct cmp_v3 {
-    bool operator()(const v3& a, const v3& b) const {
-        return (a.x < b.x) || (a.z < b.z) || (a.y < b.y);
-    }
-};
-
-
 class Octree {
+    private:
+        Octree(const AABB& boundary, const int& depth);
+        Octree(const v3& center, const float& halfDimension, const int& depth);
     public:
-        static const int node_capacity = 64;
+        static const int node_capacity = 32;
+        Octree(const v3& center, const float& halfDimension);
         AABB boundary;
-        std::map<v3, Id, cmp_v3> points;
+        std::unordered_map<v3, Id> points;
         std::vector<Octree> kids;
         bool haveKids;
+        int depth;
         // up-left, up-right, up-back-left, up-back-right
         // down-left, down-right, down-back-left, down-back-right
-        Octree& operator=(const Octree&);
         int size() const;
         Octree(const Octree& o);
-        Octree(const AABB& boundary);
-        Octree(const v3& center, const float& halfDimension);
         bool insert(const v3Id&);
         bool insert(const v3&p, const Id& id);
         bool del(const v3&);
