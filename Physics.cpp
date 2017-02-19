@@ -12,6 +12,7 @@
 #include "P_State.hpp"
 #include "Force.hpp"
 #include <cmath>
+#include <algorithm>
 
 Physics::Physics() {
 }
@@ -81,7 +82,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
         if (f.t == Force::Type::Force) {
             v3 add(f.force);
             if (f.relative) {
-                add = state.orient * add;
+                add = glm::normalize(state.orient) * add;
             }
             if (f.affected) {
                 net_affected += add;
@@ -92,18 +93,21 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     }
 
     const v3 signs(sgn(state.momentum.x), sgn(state.momentum.y), sgn(state.momentum.z));
-    net_affected += -0.5f * signs * glm::dot(state.momentum,state.momentum);
-    net_affected += -0.1f * state.momentum;
-    const float small = 10.0f * EPSILON;
+    net_affected += -0.2f * signs * state.momentum * state.momentum;
+    net_affected += -0.05f * state.momentum;
+
+    const float fricLim = 0.01f;
     v3 friction;
-    friction.x = -std::max(-small,std::min(state.momentum.x,small));
-    friction.y = -std::max(-small,std::min(state.momentum.y,small));
-    friction.z = -std::max(-small,std::min(state.momentum.z,small));
+    friction = state.momentum;
+    friction.x = -1.0f * signs.x * std::min(fricLim, std::fabs(friction.x));
+    friction.y = -1.0f * signs.y * std::min(fricLim, std::fabs(friction.y));
+    friction.z = -1.0f * signs.z * std::min(fricLim, std::fabs(friction.z));
+
     net_affected += friction;
-    net_affected *= dt * 0.5f;
+    net_affected *= dt;
     //net += -0.75f * state.momentum;
 
-    net_unaffected *= dt * 0.5f;
+    net_unaffected *= dt;
 
     const v3 net = net_affected + net_unaffected;
 

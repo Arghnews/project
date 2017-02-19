@@ -100,9 +100,9 @@ void World::collisions() {
         }
         b_total += timeNowMicros() - b_start;
     }
-    std::cout << "Total time of octree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of octree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
     //std::cout << "Total time of b " << ((double)b_total)/1000.0 << "ms" << "\n";
-    std::cout << "Total time of collision checking " << ((double)c_total)/1000.0 << "ms" << "\n";
+    //std::cout << "Total time of collision checking " << ((double)c_total)/1000.0 << "ms" << "\n";
     long taken = timeNowMicros() - t_earlier;
     //std::cout << "Time taken " << (double)taken/1000.0 << "ms for finding collisions" << "\n";
     
@@ -123,9 +123,12 @@ void World::collisions() {
 
         const float m1 = p1.mass;
         const float m2 = p2.mass;
-        ////std::cout << "Mass of " << id1 << " " << m1 << " and " << id2 << " " << m2 << "\n";
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
+        const float CR = 1.0f; // coef of restitution
+
+        const v3 v1 = (m1*u1 + m2*u2 + m2*CR*(u2-u1)) / (m1+m2);
+        const v3 v2 = (m1*u1 + m2*u2 + m1*CR*(u1-u2)) / (m1+m2);
 
         const v3 relativeDir = glm::normalize(p2.position - p1.position);
         const v3 myDir = glm::normalize(u1-u2);
@@ -137,14 +140,9 @@ void World::collisions() {
         }
 
         ////std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
-        const float rest = 0.0f;
-        const v3 ue = (u2 - u1) * rest;
         ////std::cout << "Ue " << printV(ue) << "\n";
-        const v3 b = m1*u1 + m2*u2;
         ////std::cout << "Total mom before " << printV(b) << "\n";
 
-        const v3 v1 = (b - m2*ue) / (m1+m2);
-        const v3 v2 = (b - m1*v1) / m2;
         //const v3 v2 = (b + m1*du_e) / (m1+m2);
         //const v3 v1 = (b - m2*v2) / m1;
         P_State& p_1 = a1.state_to_change();
@@ -158,8 +156,6 @@ void World::collisions() {
         ////std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
-        //p_1.recalc();
-        //p_2.recalc();
         ////std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
         const v3 center_diff = p1.position - p2.position;
         v3 f = mtv.axis * mtv.overlap;

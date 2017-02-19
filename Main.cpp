@@ -105,7 +105,7 @@ int main() {
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(0.0f,3.0f,1.0f), 1.0f, 5.0f, true, true);
+            v3(0.0f,3.0f,1.0f), 0.25f, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
@@ -115,7 +115,7 @@ int main() {
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,3.0f,5.0f), 5.0f, 5.0f, true, true);
+            v3(0.0f,3.0f,5.0f), 8.0f, 5.0f, true, true);
     world.insert(cube3);
 
     static const float seperator = 1.15f;
@@ -177,7 +177,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         ++frame;
         std::stringstream print_buffer;
-        std::cout << "Start of frame " << frame << "\n";
+        //std::cout << "Start of frame " << frame << "\n";
         long frameStart = timeNow();
         //const long frameTime = std::max(frameStart - lastFrameStart,f_time);
         const long frameTime = (long)f_time;
@@ -240,7 +240,7 @@ int main() {
         print_buffer << "This frame: " << frame << ", frametime: " << thisFrameTime << "ms\n";
         print_buffer << "End of frame " << frame << "\n";
         if (thisFrameTime > 10.0) {
-            std::cout << print_buffer.str();
+            //std::cout << print_buffer.str();
             print_buffer << std::endl;
             //std::cout << "This frame: " << frame << ", frametime: " << thisFrameTime << "ms\n";
         }
