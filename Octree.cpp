@@ -64,9 +64,6 @@ bool Octree::del(const v3& p) {
     } else {
         //std::cout << "Don't have kids\n";
         //std::cout << "My map size is " << points.size() << "\n";
-        for (auto& a: points) {
-            //std::cout << printV(a.first) << " " << a.second << "\n";
-        }
         //std::cout << "Look here for " << printV(p) << "\n";
         if (points.find(p) != points.end()) {
             //std::cout << "I do contain " << printV(p) << "\n";
@@ -141,7 +138,7 @@ vId Octree::queryRange(const AABB& range) const {
         // return all kids ids that are valid
     } else {
         // Check objects at this quad level
-        for (auto& p: points) {
+        for (const auto& p: points) {
             if (range.containsPoint(p.first)) {
                 idsInRange.push_back(p.second);
             }

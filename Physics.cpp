@@ -119,6 +119,26 @@ void Physics::integrate(P_State& state,
         float dt ) {
     Derivative a,b,c,d;
 
+    const float TINY = 0.00008f;
+    const float SMALL = TINY * TINY;
+
+    // if no external forces going to change state
+    if (state.net_forces().size() == 0) {
+        if (state.momentum.x * state.momentum.x < SMALL &&
+            state.momentum.y * state.momentum.y < SMALL &&
+            state.momentum.z * state.momentum.z < SMALL) {
+            state.momentum = zeroV;
+        }
+        if (state.ang_momentum.x * state.ang_momentum.x < SMALL &&
+            state.ang_momentum.y * state.ang_momentum.y < SMALL &&
+            state.ang_momentum.z * state.ang_momentum.z < SMALL) {
+            state.ang_momentum = zeroV;
+        }
+        if (state.momentum == zeroV && state.ang_momentum == zeroV) {
+            return;
+        }
+    }
+
     // essentially calc new pos/velo at time t with dt at 0
     // then on that go again with half dt, repeat this
     // then find for full dt change
