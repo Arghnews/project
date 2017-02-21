@@ -57,7 +57,8 @@ void World::simulate(const float& t, const float& dt) {
 
 void World::collisions() {
 
-    std::set<MTV> collidingPairs;
+    std::set<MTV> collidingPairs; // stuff that just started colliding
+    std::set<std::pair<Id, Id>> pairsThisPass;
 
     long t_earlier = timeNowMicros();
     long a_total = 0l;
@@ -92,10 +93,28 @@ void World::collisions() {
             MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
             c_total += timeNowMicros() - c_start;
             const bool areColliding = mtv.colliding;
+            mtv.id1 = std::min(id, id_nearby);
+            mtv.id2 = std::max(id, id_nearby);
+            auto paired = std::make_pair(mtv.id1,mtv.id2);
+            // should move above collision check
+            if (contains(pairsThisPass, paired)) {
+                continue;
+            } else {
+                pairsThisPass.insert(paired);
+            }
             if (areColliding) {
-                mtv.id1 = std::min(id, id_nearby);
-                mtv.id2 = std::max(id, id_nearby);
+                // if not already colliding
+                // add to justColliding
                 collidingPairs.insert(mtv);
+                std::cout << "Now colliding inserting" << mtv << "\n";
+            } else {
+                // if not colliding, erase from already colliding set
+                if (contains(alreadyColliding, mtv)) {
+                    auto size = alreadyColliding.size();
+                    alreadyColliding.erase(mtv);
+                    std::cout << "No longer colliding deleting " << mtv << "\n";
+                    assert(alreadyColliding.size() + 1 == size);
+                }
             }
         }
         b_total += timeNowMicros() - b_start;
@@ -106,14 +125,25 @@ void World::collisions() {
     long taken = timeNowMicros() - t_earlier;
     //std::cout << "Time taken " << (double)taken/1000.0 << "ms for finding collisions" << "\n";
     
+
+    
     taken = timeNowMicros();
-    for (const auto& mtv: collidingPairs) {
+    for (const auto& mtv_original: collidingPairs) {
+        MTV mtv = mtv_original;
+
+        if (contains(alreadyColliding, mtv)) {
+            std::cout << "Already colliding skipping " << mtv.id1 << " and " << mtv.id2 << "\n";
+        }
+
+        mtv.axis = glm::normalize(mtv.axis);
         const Id& id1 = mtv.id1;
         const Id& id2 = mtv.id2;
         Actor& a1 = actors_[id1];
         Actor& a2 = actors_[id2];
         const P_State& p1 = a1.get_state();
         const P_State& p2 = a2.get_state();
+
+        std::cout << id1 << " colliding with " << id2 << "\n";
 
         // -------------------------------------------------------- READ ME :
         // maybe consider case just using momentum resolve and solving sticking
@@ -130,14 +160,10 @@ void World::collisions() {
         const v3 v1 = (m1*u1 + m2*u2 + m2*CR*(u2-u1)) / (m1+m2);
         const v3 v2 = (m1*u1 + m2*u2 + m1*CR*(u1-u2)) / (m1+m2);
 
-        const v3 relativeDir = glm::normalize(p2.position - p1.position);
-        const v3 myDir = glm::normalize(u1-u2);
-        const float angle = glm::dot(myDir,relativeDir);
         //////std::cout << "Angle " << angle << "\n";
-        if (angle <= 0.0f) { // if moving away
+        //const float angle = glm::dot(myDir,relativeDir);
             ////std::cout << "Skipped - angle " << angle << "\n";
             //continue;
-        }
 
         ////std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
         ////std::cout << "Ue " << printV(ue) << "\n";
@@ -145,31 +171,47 @@ void World::collisions() {
 
         //const v3 v2 = (b + m1*du_e) / (m1+m2);
         //const v3 v1 = (b - m2*v2) / m1;
-        P_State& p_1 = a1.state_to_change();
-        P_State& p_2 = a2.state_to_change();
-        const float bla = 1.0f;
-        auto mom1 = m1 * v1 * bla;
-        auto mom2 = m2 * v2 * bla;
         ////std::cout << "Total mom after " << printV(mom1+mom2) << "\n";
         ////std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
         ////std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
-        ////std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
+        //std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
+        P_State& p_1 = a1.state_to_change();
+        P_State& p_2 = a2.state_to_change();
+        const v3 mom1 = m1 * v1;
+        const v3 mom2 = m2 * v2;
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
-        ////std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
-        const v3 center_diff = p1.position - p2.position;
-        v3 f = mtv.axis * mtv.overlap;
-        if (glm::dot(glm::normalize(center_diff),mtv.axis) < 0.0f) {
-            f *= -1.0f;
+        std::cout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
+        std::cout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
+        const float small = 0.01f;
+        const float d1 = glm::length(glm::distance(p_1.position + mtv.axis * small, p_2.position));
+        const float d2 = glm::length(glm::distance(p_1.position - mtv.axis * small, p_2.position));
+        if (d2 < d1) {
+            mtv.axis = -1.0f * mtv.axis;
+            std::cout << "Inverting axis\n";
         }
+        
+        v3 f = mtv.axis * (mtv.overlap + 0.01f);
+        actors_.apply_force(id1,Force(f,Force::Type::Force,false,true));
+        actors_.apply_force(id2,Force(-f,Force::Type::Force,false,true));
+
+        //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
+        
+
         // NOTE : can swap m1 and m2 in the forces to cause a light thing flying into a heavy thing
         // to have the light thing fly back proportional to mass of the other
         // with them this way round ie. the force applied to each object is proportional to the other's mass
         // a better sense is achieved of the lighter object coming off worse in a collision
-        //const v3 f1 = f * m2;
-        //actors_.apply_force(id1,Force(f1,Force::Type::Force,false,true));
-        //const v3 f2 = -f * m1;
-        //actors_.apply_force(id2,Force(f2,Force::Type::Force,false,true));
+    }
+
+    for (const auto& a: collidingPairs) {
+        std::cout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
+        alreadyColliding.insert(a);
+    }
+
+    if (collidingPairs.size() > 0) {
+        std::cout << "\n";
+    } else {
     }
     //long taken = timeNowMicros() - t;
     //std::cout << "Time taken for collision resolving " << (double)(timeNowMicros() - taken)/1000.0 << "ms" << "\n";

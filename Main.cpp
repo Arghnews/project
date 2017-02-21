@@ -51,7 +51,10 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
 void select_cube(Window_Inputs& inputs, Actors& actors);
 
-static const float my_mass = 3.0f;
+static const float my_mass = 1.0f;
+static const float cube1_mass = 1.0f;
+static const float cube2_mass = 1.0f;
+static const float cube3_mass = 1.0f;
 static const float other_mass = 1.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
@@ -105,17 +108,17 @@ int main() {
 
     Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(0.0f,3.0f,1.0f), 0.25f, 5.0f, true, true);
+            v3(0.0f,3.0f,1.0f), cube1_mass, 5.0f, true, true);
     world.insert(cube1);
 
     Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,3.0f,3.0f), 3.0f, 5.0f, true, true);
+            v3(0.0f,3.0f,3.0f), cube2_mass, 5.0f, true, true);
     world.insert(cube2);
 
     Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,3.0f,5.0f), 8.0f, 5.0f, true, true);
+            v3(0.0f,3.0f,5.0f), cube3_mass, 5.0f, true, true);
     world.insert(cube3);
 
     static const float seperator = 1.15f;
@@ -309,5 +312,11 @@ void select_cube(Window_Inputs& inputs, Actors& actors) {
     });
     inputs.setFunc2(GLFW_KEY_D,[&] () {
             actors.apply_force(actors.selected(),Force(small*RIGHT,Force::Type::Force));
+    });
+    inputs.setFunc2(GLFW_KEY_UP,[&] () {
+            actors.apply_force(actors.selected(),Force(small*UP,Force::Type::Force));
+    });
+    inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
+            actors.apply_force(actors.selected(),Force(small*DOWN,Force::Type::Force));
     });
 }

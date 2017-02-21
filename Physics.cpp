@@ -94,16 +94,16 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
 
     const v3 signs(sgn(state.momentum.x), sgn(state.momentum.y), sgn(state.momentum.z));
     net_affected += -0.2f * signs * state.momentum * state.momentum;
-    net_affected += -0.05f * state.momentum;
+    net_affected += -0.1f * state.momentum;
 
-    const float fricLim = 0.01f;
+    const float fricLim = 0.002f;
     v3 friction;
     friction = state.momentum;
     friction.x = -1.0f * signs.x * std::min(fricLim, std::fabs(friction.x));
     friction.y = -1.0f * signs.y * std::min(fricLim, std::fabs(friction.y));
     friction.z = -1.0f * signs.z * std::min(fricLim, std::fabs(friction.z));
-
     net_affected += friction;
+
     net_affected *= dt;
     //net += -0.75f * state.momentum;
 

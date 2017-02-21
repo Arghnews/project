@@ -48,6 +48,7 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);
     };
+
     for (const auto& axis: allAxes) {
         Projection p1 = project(axis, s1.vertices);
         Projection p2 = project(axis, s2.vertices);
@@ -66,7 +67,7 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     MTV mtv;
     mtv.colliding = true;
     mtv.overlap = the_overlap;
-    mtv.axis = glm::normalize(smallestAxis);
+    mtv.axis = smallestAxis;
     return mtv;
 }
 
