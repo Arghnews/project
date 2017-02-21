@@ -105,7 +105,6 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     net_affected += friction;
 
     net_affected *= dt;
-    //net += -0.75f * state.momentum;
 
     net_unaffected *= dt;
 

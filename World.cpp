@@ -125,15 +125,11 @@ void World::collisions() {
     long taken = timeNowMicros() - t_earlier;
     //std::cout << "Time taken " << (double)taken/1000.0 << "ms for finding collisions" << "\n";
     
-
+    std::map<Id,std::vector<Force>> forceQueue;
     
     taken = timeNowMicros();
     for (const auto& mtv_original: collidingPairs) {
         MTV mtv = mtv_original;
-
-        if (contains(alreadyColliding, mtv)) {
-            std::cout << "Already colliding skipping " << mtv.id1 << " and " << mtv.id2 << "\n";
-        }
 
         mtv.axis = glm::normalize(mtv.axis);
         const Id& id1 = mtv.id1;
@@ -179,11 +175,14 @@ void World::collisions() {
         P_State& p_2 = a2.state_to_change();
         const v3 mom1 = m1 * v1;
         const v3 mom2 = m2 * v2;
-        p_1.set_momentum(mom1);
-        p_2.set_momentum(mom2);
+        if (contains(alreadyColliding, mtv)) {
+            std::cout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
+            p_1.set_momentum(mom1);
+            p_2.set_momentum(mom2);
+        }
         std::cout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
         std::cout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
-        const float small = 0.01f;
+        const float small = 0.0001f;
         const float d1 = glm::length(glm::distance(p_1.position + mtv.axis * small, p_2.position));
         const float d2 = glm::length(glm::distance(p_1.position - mtv.axis * small, p_2.position));
         if (d2 < d1) {
@@ -191,9 +190,22 @@ void World::collisions() {
             std::cout << "Inverting axis\n";
         }
         
-        v3 f = mtv.axis * (mtv.overlap + 0.01f);
-        actors_.apply_force(id1,Force(f,Force::Type::Force,false,true));
-        actors_.apply_force(id2,Force(-f,Force::Type::Force,false,true));
+        assert(mtv.overlap >= 0.0f);
+        auto overlap = std::max(mtv.overlap,0.01f);
+        v3 f = mtv.axis * overlap;
+        
+        const float total_mass = m1+m2;
+        const float total_mass_i = 1.0f/total_mass;
+        const float m1_ratio = m1 * total_mass_i;
+        const float m2_ratio = m2 * total_mass_i;
+        const float f1_m_mul = total_mass * m2_ratio;
+        const float f2_m_mul = total_mass * m1_ratio;
+
+        v3 f1 = f * f1_m_mul * 0.5f;
+        v3 f2 = -f * f2_m_mul * 0.5f;
+        std::cout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
+        forceQueue[id1].push_back(Force(f1,Force::Type::Force,false,true));
+        forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));
 
         //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
         
@@ -202,6 +214,22 @@ void World::collisions() {
         // to have the light thing fly back proportional to mass of the other
         // with them this way round ie. the force applied to each object is proportional to the other's mass
         // a better sense is achieved of the lighter object coming off worse in a collision
+    }
+
+    for (const auto& id_force: forceQueue) {
+        const Id& id = id_force.first;
+        const std::vector<Force>& forces = id_force.second;
+        // all the forces on that actor
+        Force force(forces[0]);
+        if (forces.size() > 1) {
+            for (int i=1; i<forces.size(); ++i) {
+                force.force = force.force + forces[i].force; // sum
+                // can decide what to do with multiple forces on object here
+            }
+            std::cout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
+            std::cout << "Divided force now " << printV(force.force) << "\n";
+        }
+        actors_.apply_force(id, force);
     }
 
     for (const auto& a: collidingPairs) {
