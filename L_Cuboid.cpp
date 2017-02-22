@@ -114,6 +114,7 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPo
     // first calc the faces
     const int size = points.size(); // 3d
     // 108 points -> faces
+    vv3 faces; // 24 vertices
     assert(size == 108);
     for (int i=0; i<size; i+=18) {
         vv3 square;

@@ -40,6 +40,22 @@ void World::insert(Actor* a) {
     actors_.insert(id, a);
 }
 
+void World::firedShot(const Id& id) {
+
+    const v3 org = actors_[id].get_state().position;
+    const v3 dir = actors_[id].get_state().facing();
+    std::cout << id << " fired\n";
+
+    // assume shooting at 1 for now
+    const L_Cuboid& lc = actors_[1].logical_cuboid();
+    const vv3& verts = lc.vertices;
+    const int size = verts.size();
+    for (int i=0; i<size; i+=4) {
+        
+    }
+
+}
+
 void World::simulate(const float& t, const float& dt) {
     // whenever move need to update octree
     for (auto& a: actors_.underlying()) {
@@ -201,7 +217,7 @@ void World::collisions() {
             if (!std::isnan(velo_change)) {
                 //velo_change = std::fabs(velo_change);
                 if (velo_change < 0.0f) {
-                    velo_change *= 2.0f;
+                    velo_change *= 1.5f;
                 }
                 velo_change = std::fabs(velo_change);
             } else {

@@ -43,6 +43,7 @@ class P_State {
         void clear_forces();
         void recalc();
         const Forces& net_forces() const;
+        v3 facing() const;
 
         m4 modelMatrix(const v3& scale) const;
         m4 viewMatrix(const v3& scale) const;

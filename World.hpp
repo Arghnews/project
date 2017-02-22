@@ -31,6 +31,7 @@ class World {
         void apply_force(const Id& id, const Force& force);
         void render();
         void collisions();
+        void firedShot(const Id& id);
 };
 
 #endif

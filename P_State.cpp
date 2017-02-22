@@ -34,12 +34,16 @@ m4 P_State::modelMatrix(const v3& scale) const {
     return model;
 }
 
+v3 P_State::facing() const {
+    return orient * FORWARD;
+}
+
 m4 P_State::viewMatrix(const v3& scale) const {
-    const v3 facing = orient * FORWARD;
+    const v3 dir = facing();
     const v3 up_relative = orient * UP;
     const float scale_mul = std::max(std::max(scale.x,scale.y),scale.z);
     const v3 behindMe = scale_mul * (orient * v3(0.0f,2.0f,3.0f));
-    return glm::lookAt(position+behindMe, position + facing, up_relative);
+    return glm::lookAt(position+behindMe, position + dir, up_relative);
 }
 
 void P_State::set_momentum(const v3& mom) {
