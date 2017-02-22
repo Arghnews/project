@@ -26,6 +26,8 @@ class Actor {
         bool changed_state;
         bool invisible_;
     public:
+        static int num_actors;
+        Id id;
         bool selectable;
         bool mobile;
         const v3 scale;
@@ -48,7 +50,8 @@ class Actor {
         float mass,
         float inertia,
         bool selectable,
-        bool mobile);
+        bool mobile
+        );
 };
 
 #endif

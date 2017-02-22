@@ -35,8 +35,9 @@ Actors& World::actors() {
 }
 
 void World::insert(Actor* a) {
-    const Id id = actors_.insert(a);
+    const Id id = a->id;
     tree_.insert(a->get_state().position,id);
+    actors_.insert(id, a);
 }
 
 void World::simulate(const float& t, const float& dt) {
@@ -59,7 +60,7 @@ void World::collisions() {
 
     std::set<MTV> collidingPairs; // stuff that just started colliding
     //static std::map<MTV,int> alreadyColliding; // stuff that was already c
-    static std::set<MTV> alreadyColliding; // stuff that was already c
+    static std::map<MTV,int> alreadyColliding; // stuff that was already colliding, for how long (ticks)
     std::set<std::pair<Id, Id>> pairsThisPass;
 
     long t_earlier = timeNowMicros();
@@ -159,29 +160,12 @@ void World::collisions() {
         const v3 v1 = (m1*u1 + m2*u2 + m2*CR*(u2-u1)) / (m1+m2);
         const v3 v2 = (m1*u1 + m2*u2 + m1*CR*(u1-u2)) / (m1+m2);
 
-        //////std::cout << "Angle " << angle << "\n";
-        //const float angle = glm::dot(myDir,relativeDir);
-            ////std::cout << "Skipped - angle " << angle << "\n";
-            //continue;
-
-        ////std::cout << "Start_velocityof " << id1 << " " << printV(u1) << " and " << id2 << " " << printV(u2) << "\n";
-        ////std::cout << "Ue " << printV(ue) << "\n";
-        ////std::cout << "Total mom before " << printV(b) << "\n";
-
-        //const v3 v2 = (b + m1*du_e) / (m1+m2);
-        //const v3 v1 = (b - m2*v2) / m1;
-        ////std::cout << "Total mom after " << printV(mom1+mom2) << "\n";
-        ////std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
-        ////std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
-        //std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
-        
-        
         P_State& p_1 = a1.state_to_change();
         P_State& p_2 = a2.state_to_change();
         const v3 mom1 = m1 * v1;
         const v3 mom2 = m2 * v2;
         //if (contains(alreadyColliding, mtv)) {
-           //std::coutout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
+        //std::coutout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
         //std::coutout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
         //std::coutout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
         const float small = 0.0001f;
@@ -189,9 +173,9 @@ void World::collisions() {
         const float d2 = glm::length(glm::distance(p_1.position - mtv.axis * small, p_2.position));
         if (d2 < d1) {
             mtv.axis = -1.0f * mtv.axis;
-           //std::coutout << "Inverting axis\n";
+            //std::coutout << "Inverting axis\n";
         }
-        
+
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
 
@@ -212,16 +196,22 @@ void World::collisions() {
         float f1_m_mul = total_mass * m2_ratio;
         float f2_m_mul = total_mass * m1_ratio;
 
-        float velo_change1 = glm::dot(glm::normalize(u1),glm::normalize(v1));
-        if (!std::isnan(velo_change1)) {
-            velo_change1 = std::fabs(velo_change1);
-            f1_m_mul *= velo_change1;
-        }
-        float velo_change2 = glm::dot(glm::normalize(u2),glm::normalize(v2));
-        if (!std::isnan(velo_change2)) {
-            velo_change2 = std::fabs(velo_change2);
-            f2_m_mul *= velo_change2;
-        }
+        auto velo_changer = [&] (const v3& u, const v3& v) -> float {
+            float velo_change = glm::dot(glm::normalize(u),glm::normalize(v));
+            if (!std::isnan(velo_change)) {
+                //velo_change = std::fabs(velo_change);
+                if (velo_change < 0.0f) {
+                    velo_change *= 2.0f;
+                }
+                velo_change = std::fabs(velo_change);
+            } else {
+                velo_change = 1.0f;
+            }
+            return velo_change;
+        };
+
+        f1_m_mul *= velo_changer(u1,v1);
+        f2_m_mul *= velo_changer(u2,v2);
 
         v3 f1 = f * f1_m_mul;
         v3 f2 = -f * f2_m_mul;
@@ -254,9 +244,13 @@ void World::collisions() {
         actors_.apply_force(id, force);
     }
 
-    for (const auto& a: collidingPairs) {
+    for (const auto& mtv: collidingPairs) {
        //std::coutout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
-        alreadyColliding.insert(a);
+        if (contains(alreadyColliding, mtv)) {
+            alreadyColliding[mtv] = ++alreadyColliding[mtv];
+        } else {
+            alreadyColliding.insert(std::make_pair(mtv,0));
+        }
     }
 
     if (collidingPairs.size() > 0) {

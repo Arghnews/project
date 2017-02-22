@@ -1,5 +1,7 @@
 #include "Actor.hpp"
 
+int Actor::num_actors = 0;
+
 Actor::Actor(
     const fv* vertexData,
     std::string vertShader,
@@ -19,7 +21,8 @@ Actor::Actor(
     changed_state(false),
     invisible_(false),
     selectable(selectable),
-    mobile(mobile)
+    mobile(mobile),
+    id(num_actors++)
     {
     }
 

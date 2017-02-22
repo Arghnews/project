@@ -9,10 +9,10 @@
 #include <iterator>
 #include <map>
 
-class Actors : std::map<Id, Actor*> {
+class Actors {
     private:
         std::map<Id, Actor*> actors;
-        Id selected_;
+        int selected_index;
         void check();
 
     public:
@@ -25,11 +25,9 @@ class Actors : std::map<Id, Actor*> {
 
         void apply_force(const Id& id, const Force& force);
 
-        Id insert(Actor* a);
+        bool insert(const Id& id, Actor* a);
 
-        Id insert(const Id& id, Actor* a);
-
-        const Id selected();
+        Id selected();
 
         Actor& selectedActor();
 

@@ -133,6 +133,7 @@ int main() {
                     "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
                     position, floor_mass, 5.0f, false, true);
             world.insert(floorpiece);
+            std::cout << std::max(world.actors().size()-1,0) << "\n";
             world.apply_force(std::max(world.actors().size()-1,0),Force(v3(i,0.0f,j),Force::Type::Torque));
         }
     }
@@ -170,7 +171,7 @@ int main() {
         }
     }
 
-    set_keyboard(inputs,window,world);;
+    set_keyboard(inputs,window,world);
 
     static int frame = 0;
 
@@ -268,8 +269,9 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
     inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
-            std::cout << "Left mouse\n";
-            
+        std::cout << "Left mouse\n";
+        const Id id = world.actors().selected();
+        std::cout << world.actors().selectedActor().id << "\n";
     });
 
     // must be capture by value here

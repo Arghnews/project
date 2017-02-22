@@ -13,56 +13,49 @@ const std::map<Id, Actor*>& Actors::underlying() const {
     return actors;
 }
 
-Actors::Actors() {}
+Actors::Actors() : selected_index(0) {}
 
 void Actors::apply_force(const Id& id, const Force& force) {
     actors[id]->apply_force(force);
 }
 
-Id Actors::insert(Actor* a) {
-    return insert(actors.size(), a);
-}
-
-Id Actors::insert(const Id& id, Actor* a) {
-    actors.insert(std::make_pair(id,a));
-    return id;
+bool Actors::insert(const Id& id, Actor* a) {
+    auto ret = actors.insert(std::make_pair(id,a));
+    return ret.second;
 }
 
 void Actors::check() {
-    if (actors.count(selected_) == 0) {
-        if (actors.size() == 0) {
-            std::cout << "There are no actors to switch the next to\n";
-        }
-        selected_ = actors.begin()->first;
-    }
+    assert(actors.size() > 0 && "Need actors to select from");
 }
 
-const Id Actors::selected() {
+Id Actors::selected() {
     check();
-    return selected_;
+    return actors[selected_index]->id;
 }
 
 Actor& Actors::selectedActor() {
-    return *actors[selected()];
+    check();
+    return *actors[selected_index];
 }
 
 // gets next selectable actor
 void Actors::next() {
     check();
-    const int num_actors = actors.size();
-    int i=0;
-    do  {
-        actors[selected_]->invis(false);
-        auto it = actors.find(selected_);
-        if (is_last(it, actors)) {
-            selected_ = actors.begin()->first;
-        } else {
-            selected_ = (*std::next(it)).first;
+    bool anySelectable = false;
+    for (const auto& a:actors) {
+        if (a.second->selectable == true) {
+            anySelectable = true;
+            break;
         }
     }
-    while (i < num_actors && selectedActor().selectable == false);
-    std::cout << "Selected cube " << selected_ << "\n";
-    actors[selected_]->invis(true);
+    if (!anySelectable) {
+        std::cout << "Cannot select next actor, none selectable\n";
+        return;
+    }
+    do {
+        ++selected_index;
+        selected_index %= actors.size();
+    } while (selectedActor().selectable == false);
 }
 
 Actor& Actors::operator[](const Id& id) {
