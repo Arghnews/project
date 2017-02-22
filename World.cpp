@@ -106,13 +106,13 @@ void World::collisions() {
                 // if not already colliding
                 // add to justColliding
                 collidingPairs.insert(mtv);
-                std::cout << "Now colliding inserting" << mtv << "\n";
+               //std::coutout << "Now colliding inserting" << mtv << "\n";
             } else {
                 // if not colliding, erase from already colliding set
                 if (contains(alreadyColliding, mtv)) {
                     auto size = alreadyColliding.size();
                     alreadyColliding.erase(mtv);
-                    std::cout << "No longer colliding deleting " << mtv << "\n";
+                   //std::coutout << "No longer colliding deleting " << mtv << "\n";
                     assert(alreadyColliding.size() + 1 == size);
                 }
             }
@@ -139,7 +139,7 @@ void World::collisions() {
         const P_State& p1 = a1.get_state();
         const P_State& p2 = a2.get_state();
 
-        std::cout << id1 << " colliding with " << id2 << "\n";
+       //std::coutout << id1 << " colliding with " << id2 << "\n";
 
         // -------------------------------------------------------- READ ME :
         // maybe consider case just using momentum resolve and solving sticking
@@ -171,27 +171,33 @@ void World::collisions() {
         ////std::cout << "End_velocity of " << id1 << " " << printV(v1) << " and " << id2 << " " << printV(v2) << "\n";
         ////std::cout << "MOms were " << id1 << " mom  " << printV(m1*u1) << " and " << id2 << " " << printV(m2*u2) << "\n";
         //std::cout << "Setting " << id1 << " mom to " << printV(mom1) << " and " << id2 << " " << printV(mom2) << "\n";
+        
+        
         P_State& p_1 = a1.state_to_change();
         P_State& p_2 = a2.state_to_change();
         const v3 mom1 = m1 * v1;
         const v3 mom2 = m2 * v2;
-        if (contains(alreadyColliding, mtv)) {
-            std::cout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
-            p_1.set_momentum(mom1);
-            p_2.set_momentum(mom2);
-        }
-        std::cout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
-        std::cout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
+        //if (contains(alreadyColliding, mtv)) {
+           //std::coutout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
+        //std::coutout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
+        //std::coutout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
         const float small = 0.0001f;
         const float d1 = glm::length(glm::distance(p_1.position + mtv.axis * small, p_2.position));
         const float d2 = glm::length(glm::distance(p_1.position - mtv.axis * small, p_2.position));
         if (d2 < d1) {
             mtv.axis = -1.0f * mtv.axis;
-            std::cout << "Inverting axis\n";
+           //std::coutout << "Inverting axis\n";
         }
         
+        p_1.set_momentum(mom1);
+        p_2.set_momentum(mom2);
+
         assert(mtv.overlap >= 0.0f);
-        auto overlap = std::max(mtv.overlap,0.01f);
+
+        if (mtv.overlap <= 0.06f) continue;
+
+        auto overlap = std::max(mtv.overlap,0.005f) * 0.5f;
+        std::cout << overlap << "\n";
         v3 f = mtv.axis * overlap;
         
         const float total_mass = m1+m2;
@@ -203,7 +209,7 @@ void World::collisions() {
 
         v3 f1 = f * f1_m_mul * 0.5f;
         v3 f2 = -f * f2_m_mul * 0.5f;
-        std::cout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
+       //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
         forceQueue[id1].push_back(Force(f1,Force::Type::Force,false,true));
         forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));
 
@@ -226,19 +232,19 @@ void World::collisions() {
                 force.force = force.force + forces[i].force; // sum
                 // can decide what to do with multiple forces on object here
             }
-            std::cout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
-            std::cout << "Divided force now " << printV(force.force) << "\n";
+           //std::coutout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
+           //std::coutout << "Divided force now " << printV(force.force) << "\n";
         }
         actors_.apply_force(id, force);
     }
 
     for (const auto& a: collidingPairs) {
-        std::cout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
+       //std::coutout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
         alreadyColliding.insert(a);
     }
 
     if (collidingPairs.size() > 0) {
-        std::cout << "\n";
+       //std::coutout << "\n";
     } else {
     }
     //long taken = timeNowMicros() - t;
