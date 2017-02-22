@@ -153,7 +153,8 @@ void World::collisions() {
         const float m2 = p2.mass;
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
-        const float CR = 1.0f; // coef of restitution
+        const float CR = 0.9f; // coef of restitution
+        // honestly just don't change CR
 
         const v3 v1 = (m1*u1 + m2*u2 + m2*CR*(u2-u1)) / (m1+m2);
         const v3 v2 = (m1*u1 + m2*u2 + m1*CR*(u1-u2)) / (m1+m2);
@@ -197,7 +198,8 @@ void World::collisions() {
         float overlap = mtv.overlap;
         assert(mtv.overlap >= 0.0f);
 
-        if (mtv.overlap <= 0.05f) continue;
+        //std::cout << mtv.overlap << "\n";
+        if (mtv.overlap <= 0.045f) continue;
 
         overlap *= 0.3f;
 
@@ -207,8 +209,19 @@ void World::collisions() {
         const float total_mass_i = 1.0f/total_mass;
         const float m1_ratio = m1 * total_mass_i;
         const float m2_ratio = m2 * total_mass_i;
-        const float f1_m_mul = total_mass * m2_ratio;
-        const float f2_m_mul = total_mass * m1_ratio;
+        float f1_m_mul = total_mass * m2_ratio;
+        float f2_m_mul = total_mass * m1_ratio;
+
+        float velo_change1 = glm::dot(glm::normalize(u1),glm::normalize(v1));
+        if (!std::isnan(velo_change1)) {
+            velo_change1 = std::fabs(velo_change1);
+            f1_m_mul *= velo_change1;
+        }
+        float velo_change2 = glm::dot(glm::normalize(u2),glm::normalize(v2));
+        if (!std::isnan(velo_change2)) {
+            velo_change2 = std::fabs(velo_change2);
+            f2_m_mul *= velo_change2;
+        }
 
         v3 f1 = f * f1_m_mul;
         v3 f2 = -f * f2_m_mul;

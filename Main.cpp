@@ -48,8 +48,8 @@
 */
 
 void gl_loop_start();
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors);
-void select_cube(Window_Inputs& inputs, Actors& actors);
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
+void select_cube(Window_Inputs& inputs, World& world);
 
 static const float my_mass = 10.0f;
 static const float cube1_mass = 1.0f;
@@ -170,7 +170,7 @@ int main() {
         }
     }
 
-    set_keyboard(inputs,window,world.actors());
+    set_keyboard(inputs,window,world);;
 
     static int frame = 0;
 
@@ -261,22 +261,28 @@ void gl_loop_start() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, Actors& actors) {
+void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
+    Actors& actors = world.actors();
+    select_cube(inputs,world);
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
-    inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {std::cout << "Left mouse\n"; });
+    inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
+            std::cout << "Left mouse\n";
+            
+    });
 
     // must be capture by value here
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
 
     inputs.setFunc1(GLFW_KEY_TAB,[&] () {
         actors.next(); 
-        select_cube(inputs,actors);        
+        select_cube(inputs,world);        
     });
 }
 
-void select_cube(Window_Inputs& inputs, Actors& actors) {
+void select_cube(Window_Inputs& inputs, World& world) {
+    Actors& actors = world.actors();
     // camera
 
     inputs.setFunc2(GLFW_KEY_P,[&] () {
