@@ -22,7 +22,6 @@ class World {
         Octree tree_;
         float restitution;
         std::map<Id, v3> positions_;
-        std::set<MTV> alreadyColliding; // stuff that was already colliding
     public:
         World(float worldSize, v2 windowSize, float restitution);
         v2 windowSize;

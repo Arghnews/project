@@ -58,6 +58,8 @@ void World::simulate(const float& t, const float& dt) {
 void World::collisions() {
 
     std::set<MTV> collidingPairs; // stuff that just started colliding
+    //static std::map<MTV,int> alreadyColliding; // stuff that was already c
+    static std::set<MTV> alreadyColliding; // stuff that was already c
     std::set<std::pair<Id, Id>> pairsThisPass;
 
     long t_earlier = timeNowMicros();
@@ -192,12 +194,13 @@ void World::collisions() {
         p_1.set_momentum(mom1);
         p_2.set_momentum(mom2);
 
+        float overlap = mtv.overlap;
         assert(mtv.overlap >= 0.0f);
 
-        if (mtv.overlap <= 0.06f) continue;
+        if (mtv.overlap <= 0.05f) continue;
 
-        auto overlap = std::max(mtv.overlap,0.005f) * 0.5f;
-        std::cout << overlap << "\n";
+        overlap *= 0.3f;
+
         v3 f = mtv.axis * overlap;
         
         const float total_mass = m1+m2;
@@ -207,8 +210,8 @@ void World::collisions() {
         const float f1_m_mul = total_mass * m2_ratio;
         const float f2_m_mul = total_mass * m1_ratio;
 
-        v3 f1 = f * f1_m_mul * 0.5f;
-        v3 f2 = -f * f2_m_mul * 0.5f;
+        v3 f1 = f * f1_m_mul;
+        v3 f2 = -f * f2_m_mul;
        //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
         forceQueue[id1].push_back(Force(f1,Force::Type::Force,false,true));
         forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));

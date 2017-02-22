@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 /* a simple class that encompasses the physical state of an object
  * Things like it's position, momentum, mass and orientation are here
@@ -36,7 +37,8 @@ m4 P_State::modelMatrix(const v3& scale) const {
 m4 P_State::viewMatrix(const v3& scale) const {
     const v3 facing = orient * FORWARD;
     const v3 up_relative = orient * UP;
-    const v3 behindMe = scale * (orient * v3(0.0f,2.0f,3.0f));
+    const float scale_mul = std::max(std::max(scale.x,scale.y),scale.z);
+    const v3 behindMe = scale_mul * (orient * v3(0.0f,2.0f,3.0f));
     return glm::lookAt(position+behindMe, position + facing, up_relative);
 }
 
