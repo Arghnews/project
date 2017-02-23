@@ -46,12 +46,31 @@ void World::firedShot(const Id& id) {
     const v3 dir = actors_[id].get_state().facing();
     std::cout << id << " fired\n";
 
+    // https://github.com/erich666/GraphicsGems/blob/master/gemsii/RayCPhdron.c
+
     // assume shooting at 1 for now
     const L_Cuboid& lc = actors_[1].logical_cuboid();
-    const vv3& verts = lc.vertices;
+    const vv3& verts = lc.verts24;
     const int size = verts.size();
+    std::cout << size << " is size\n";
+    assert(size == 24);
+
+    std::vector<v4> planes(6);
+    int plane_index = 0;
     for (int i=0; i<size; i+=4) {
-        
+        const v3& ve1 = verts[4*i + 0];
+        const v3& ve2 = verts[4*i + 1];
+        const v3& ve3 = verts[4*i + 2];
+        const v3& ve4 = verts[4*i + 3];
+        v3 n = glm::normalize(glm::cross(ve2-ve1,ve3-ve1)); // normal to plane
+        assert(!hasNan(n));
+        float d = -glm::dot(n,ve1); // d, essentially const depending on where plane is
+        planes[plane_index++] = v4(n, d);
+    }
+
+    for (const auto& pln: planes) {
+        float vd = glm::dot(dir, v3(pln));
+        float vn = glm::dot(org, v3(pln)) + pln.w;
     }
 
 }
@@ -170,7 +189,7 @@ void World::collisions() {
         const float m2 = p2.mass;
         const v3 u1 = p1.velocity;
         const v3 u2 = p2.velocity;
-        const float CR = 0.9f; // coef of restitution
+        const float CR = 0.95f; // coef of restitution
         // honestly just don't change CR
 
         const v3 v1 = (m1*u1 + m2*u2 + m2*CR*(u2-u1)) / (m1+m2);
@@ -199,9 +218,9 @@ void World::collisions() {
         assert(mtv.overlap >= 0.0f);
 
         //std::cout << mtv.overlap << "\n";
-        if (mtv.overlap <= 0.045f) continue;
+        if (mtv.overlap <= 0.04f) continue;
 
-        overlap *= 0.3f;
+        overlap *= 0.35f;
 
         v3 f = mtv.axis * overlap;
         
@@ -217,7 +236,7 @@ void World::collisions() {
             if (!std::isnan(velo_change)) {
                 //velo_change = std::fabs(velo_change);
                 if (velo_change < 0.0f) {
-                    velo_change *= 1.5f;
+                    velo_change *= 1.4f;
                 }
                 velo_change = std::fabs(velo_change);
             } else {

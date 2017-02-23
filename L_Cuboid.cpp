@@ -131,8 +131,7 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPo
     assert(faces.size() == 24);
 
     // all the unique points in the faces are the verts, size 8
-    originalVertices_ = unique(faces);
-    assert(originalVertices_.size() == 8);
+    originalVertices_ = faces;
 
     recalc(startPos,fq());
 
@@ -177,7 +176,8 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
 
 // should be done after cuboid is moved/changed
 void L_Cuboid::recalc(const v3& pos, const fq& ori) {
-    const vv3 verts24 = calcVertices(originalVertices_,pos,ori,scale);
+    verts24 = calcVertices(originalVertices_,pos,ori,scale);
+    assert(verts24.size() == 24);
     edges = calcEdges(verts24);
     vertices = unique(verts24);
     uniqEdges = unique(edges,true);

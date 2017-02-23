@@ -29,7 +29,6 @@ class L_Cuboid {
         float static overlapAmount(const Projection& p1, const Projection& p2);
         std::pair<float, float> static project(const v3& axis_in, const vv3& verts);
         float calcFurthestVertex(const vv3& vertices);
-        vv3 calcOriginalVerts(const fv* points_in);
 
     public:
         MTV static colliding(const L_Cuboid& s1, const L_Cuboid& s2);
@@ -38,6 +37,7 @@ class L_Cuboid {
         const v3 scale;
         L_Cuboid(const fv* points, v3 topCenter, v3 scale, v3 startPos);
         //vv3 faces; // 24 vertices
+        vv3 verts24; // 24 non-unique vertices, 4 per face, 6 faces
         vv3 vertices; // 8 vertices unique
         vv3 edges; // 24 edges, between vertices
         vv3 uniqEdges; // 3 edges
