@@ -30,17 +30,20 @@ void Actors::check() {
 
 Id Actors::selected() {
     check();
+    actors[selected_index]->invis(true);
     return actors[selected_index]->id;
 }
 
 Actor& Actors::selectedActor() {
     check();
+    actors[selected_index]->invis(true);
     return *actors[selected_index];
 }
 
 // gets next selectable actor
 void Actors::next() {
     check();
+    actors[selected_index]->invis(false);
     bool anySelectable = false;
     for (const auto& a:actors) {
         if (a.second->selectable == true) {
@@ -56,6 +59,10 @@ void Actors::next() {
         ++selected_index;
         selected_index %= actors.size();
     } while (selectedActor().selectable == false);
+    for (const auto& a:actors) {
+        a.second->invis(false);
+    }
+    actors[selected_index]->invis(true);
 }
 
 Actor& Actors::operator[](const Id& id) {

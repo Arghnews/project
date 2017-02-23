@@ -102,7 +102,7 @@ int main() {
     float scaleFactor = 1.0f;
     const v3 scale = scaleFactor * oneV;
     Actor* me = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(4.0f,1.0f,4.0f),
+            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
             5.0f * oneV, my_mass, 5.0f, true, true);
     world.insert(me);
 
@@ -232,10 +232,11 @@ int main() {
 
         long renderTime = timeNow();
         world.render();
+
         print_buffer << "Render time: " << (double)(timeNow() - renderTime) / 1000.0 << "ms\n";
-        
+
         // sleep if fps would be > fps_max
-            //print_buffer << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
+        //print_buffer << "---\t---- Spare frame time " << spareFrameTime << "---\t---\n";
         //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         inputs.swapBuffers(); // swaps buffers
@@ -271,7 +272,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
     inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
         std::cout << "Left mouse\n";
         const Id id = world.actors().selected();
-        std::cout << world.actors().selectedActor().id << "\n";
+        std::cout << "Actor firing " << id << " " << world.actors().selectedActor().id << "\n";
         world.firedShot(id);
     });
 

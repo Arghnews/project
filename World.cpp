@@ -44,6 +44,7 @@ void World::firedShot(const Id& id) {
 
     const v3 org = actors_[id].get_state().position;
     const v3 dir = actors_[id].get_state().facing();
+    const float tmax = 2.0f;
     std::cout << id << " fired\n";
 
     // https://github.com/erich666/GraphicsGems/blob/master/gemsii/RayCPhdron.c
@@ -52,25 +53,88 @@ void World::firedShot(const Id& id) {
     const L_Cuboid& lc = actors_[1].logical_cuboid();
     const vv3& verts = lc.verts24;
     const int size = verts.size();
-    std::cout << size << " is size\n";
     assert(size == 24);
 
     std::vector<v4> planes(6);
     int plane_index = 0;
     for (int i=0; i<size; i+=4) {
-        const v3& ve1 = verts[4*i + 0];
-        const v3& ve2 = verts[4*i + 1];
-        const v3& ve3 = verts[4*i + 2];
-        const v3& ve4 = verts[4*i + 3];
-        v3 n = glm::normalize(glm::cross(ve2-ve1,ve3-ve1)); // normal to plane
+        const v3& ve1 = verts[i + 0];
+        const v3& ve2 = verts[i + 1];
+        const v3& ve3 = verts[i + 2];
+        const v3& ve4 = verts[i + 3];
+        //std::cout << "Crossing " << printV(ve2-ve1) << " and " << printV(ve4-ve1) << "\n";
+        v3 n = (glm::cross(ve2-ve1,ve4-ve1)); // normal to plane
         assert(!hasNan(n));
         float d = -glm::dot(n,ve1); // d, essentially const depending on where plane is
         planes[plane_index++] = v4(n, d);
     }
 
+    float tnear = -1e10f;
+    float tfar = tmax;
+
+    bool survived = true;
+
     for (const auto& pln: planes) {
         float vd = glm::dot(dir, v3(pln));
         float vn = glm::dot(org, v3(pln)) + pln.w;
+        std::cout << vd << " " << vn << "\n";
+        if (vd == 0.0f) {
+            /* ray is parallel to plane - check if ray origin is inside plane's
+               half-space */
+            if (vn > 0.0f) {
+                /* ray origin is outside half-space */
+                std::cout << "Missed, parallel\n";
+                survived = false;
+                break;
+            }
+        } else {
+            /* ray not parallel - get distance to plane */
+            float t = -vn / vd;
+            if (vd < 0.0f) {
+                /* front face - T is a near point */
+                if (t > tfar) {
+                    std::cout << "Missed, too far\n";
+                    survived = false;
+                    break;
+                }
+                if (t > tnear) {
+                    /* hit near face, update normal */
+                    tfar = t;
+                    std::cout << "Hit near face\n";
+                }
+            } else {
+                /* back face - T is a far point */
+                if ( t < tnear ) {
+                    std::cout << "Missed, back face too close?\n";
+                    survived = false;
+                    break;
+                }
+                if ( t < tfar ) {
+                    /* hit far face, update normal */
+                    tfar = t ;
+                    std::cout << "Hit far face\n";
+                }
+            }
+        }
+    }
+
+    if (survived) {
+        std::cout << "Survived tests\n";
+
+        if (tnear >= 0.0f) {
+            /* outside, hitting front face */
+            std::cout << "Frontface hit\n";
+        } else {
+            if (tfar < tmax) {
+                /* inside, hitting back face */
+                std::cout << "Backface hit\n";
+            } else {
+                /* inside, but back face beyond tmax */
+                std::cout << "Missed...\n";
+            }
+        }
+    } else {
+        std::cout << "Missed\n";
     }
 
 }
@@ -311,8 +375,8 @@ void World::render() {
         const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
         const Actor& actor = (*a.second);
 
-        if (true) {
-        //if (!actor.invis()) {
+        //if (true) {
+        if (!actor.invis()) {
 
             graphical_cube.bindBuffers();
             graphical_cube.useShader();
@@ -335,4 +399,42 @@ void World::render() {
             // Render end -- -- --
         }
     }
+
+    // 5 minute crosshair
+    // An array of 3 vectors which represents 3 vertices
+    static const GLfloat g_vertex_buffer_data[] = {
+        -0.5f, 0.0f, 0.0f,
+        0.5f, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,
+        0.0f, -0.5f, 0.0f
+    };
+
+    bool once = false;
+    // This will identify our vertex buffer
+    static GLuint vertexbuffer;
+    if (!once) {
+        // Generate 1 buffer, put the resulting identifier in vertexbuffer
+        glGenBuffers(1, &vertexbuffer);
+        once = true;
+    }
+    // The following commands will talk about our 'vertexbuffer' buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    // Give our vertices to OpenGL.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+            );
+    // Draw the triangle !
+    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
+    glDisableVertexAttribArray(0);
+
 }
