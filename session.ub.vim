@@ -81,8 +81,8 @@ badd +1 AABB.cpp
 badd +1 AABB.hpp
 badd +1 Octree.hpp
 badd +10 MTV.hpp
-badd +0 Actors.cpp
-badd +0 Actors.hpp
+badd +1 Actors.cpp
+badd +1 Actors.hpp
 argglobal
 silent! argdel *
 argadd Main.cpp
@@ -345,8 +345,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 18 + 29) / 59)
-exe '2resize ' . ((&lines * 37 + 29) / 59)
+exe '1resize ' . ((&lines * 8 + 29) / 59)
+exe '2resize ' . ((&lines * 47 + 29) / 59)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -459,12 +459,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 31 - ((12 * winheight(0) + 9) / 18)
+let s:l = 34 - ((7 * winheight(0) + 4) / 8)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-31
-normal! 0
+34
+normal! 014|
 wincmd w
 argglobal
 edit World.cpp
@@ -579,15 +579,16 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 40 - ((18 * winheight(0) + 18) / 37)
+let s:l = 88 - ((36 * winheight(0) + 23) / 47)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-40
+88
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 18 + 29) / 59)
-exe '2resize ' . ((&lines * 37 + 29) / 59)
+2wincmd w
+exe '1resize ' . ((&lines * 8 + 29) / 59)
+exe '2resize ' . ((&lines * 47 + 29) / 59)
 tabedit L_Cuboid.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -1216,7 +1217,6 @@ normal! zt
 40
 normal! 018|
 wincmd w
-2wincmd w
 exe '1resize ' . ((&lines * 23 + 29) / 59)
 exe '2resize ' . ((&lines * 32 + 29) / 59)
 tabedit AABB.cpp
@@ -1468,7 +1468,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 11
-normal! 035|
+normal! 01|
 wincmd w
 exe '1resize ' . ((&lines * 37 + 29) / 59)
 exe '2resize ' . ((&lines * 18 + 29) / 59)
@@ -3744,7 +3744,7 @@ exe s:l
 normal! zt
 36
 normal! 0
-tabnext 6
+tabnext 3
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

@@ -270,7 +270,6 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
 
     inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
-        std::cout << "Left mouse\n";
         const Id id = world.actors().selected();
         std::cout << "Actor firing " << id << " " << world.actors().selectedActor().id << "\n";
         world.firedShot(id);

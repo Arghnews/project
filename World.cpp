@@ -41,101 +41,64 @@ void World::insert(Actor* a) {
 }
 
 void World::firedShot(const Id& id) {
-
-    const v3 org = actors_[id].get_state().position;
-    const v3 dir = actors_[id].get_state().facing();
-    const float tmax = 2.0f;
     std::cout << id << " fired\n";
 
-    // https://github.com/erich666/GraphicsGems/blob/master/gemsii/RayCPhdron.c
-
-    // assume shooting at 1 for now
-    const L_Cuboid& lc = actors_[1].logical_cuboid();
-    const vv3& verts = lc.verts24;
-    const int size = verts.size();
+    const v3 org = actors_[id].get_state().position;
+    const v3 dir = glm::normalize(actors_[id].get_state().facing());
+    
+    const auto& l_cub = actors_[1].logical_cuboid();
+    const vv3& verts24 = l_cub.verts24;
+    const int size = verts24.size();
     assert(size == 24);
 
-    std::vector<v4> planes(6);
-    int plane_index = 0;
+    // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+
+    auto hits = [&] (const vv3& verts24, const int& i) -> bool {
+        bool success = false;
+        const auto plane_v1 = verts24[4*i+1] - verts24[4*i+0];
+        const auto plane_v2 = verts24[4*i+2] - verts24[4*i+0];
+        const auto n = glm::cross(plane_v1,plane_v2);
+        //const float D = glm::dot(n, verts24[4*i+0]);
+        // plane Ax + By + Cz + D = 0
+        // have D, ABC = normal
+        //float t = - ( (d + glm::dot(n,org)) / glm::dot(n,dir));
+        const float upper = glm::dot(verts24[4*i+0] - org,n);
+        const float lower = glm::dot(dir,n);
+        /*
+        if (isZero(lower)) {
+            // line and plane parallel
+            if (isZero(upper)) {
+                // line in plane -> true
+                std::cout << "Line in plane\n";
+                success = true;
+            } else {
+                // no intersect -> false
+                std::cout << "No intersection(...)\n";
+                success = false;
+            }
+        } else {
+        */
+            // no single point of intersection
+            const float d = upper / lower;
+            if (std::isnan(d)) {
+                std::cout << "No intersection (nan)\n";
+                success = false;
+            } else {
+                const v3 intersection = d * dir + org;
+                std::cout << "Intersection at (d:" << d << ") " << printV(intersection) << "\n";
+                // intersect at intersection -> true
+                success = true;
+            //}
+        }
+        return success;
+    };
+
+    int numb_hits = 0;
     for (int i=0; i<size; i+=4) {
-        const v3& ve1 = verts[i + 0];
-        const v3& ve2 = verts[i + 1];
-        const v3& ve3 = verts[i + 2];
-        const v3& ve4 = verts[i + 3];
-        //std::cout << "Crossing " << printV(ve2-ve1) << " and " << printV(ve4-ve1) << "\n";
-        v3 n = (glm::cross(ve2-ve1,ve4-ve1)); // normal to plane
-        assert(!hasNan(n));
-        float d = -glm::dot(n,ve1); // d, essentially const depending on where plane is
-        planes[plane_index++] = v4(n, d);
+        bool hit = hits(verts24, i);
+        numb_hits += hit;
     }
-
-    float tnear = -1e10f;
-    float tfar = tmax;
-
-    bool survived = true;
-
-    for (const auto& pln: planes) {
-        float vd = glm::dot(dir, v3(pln));
-        float vn = glm::dot(org, v3(pln)) + pln.w;
-        std::cout << vd << " " << vn << "\n";
-        if (vd == 0.0f) {
-            /* ray is parallel to plane - check if ray origin is inside plane's
-               half-space */
-            if (vn > 0.0f) {
-                /* ray origin is outside half-space */
-                std::cout << "Missed, parallel\n";
-                survived = false;
-                break;
-            }
-        } else {
-            /* ray not parallel - get distance to plane */
-            float t = -vn / vd;
-            if (vd < 0.0f) {
-                /* front face - T is a near point */
-                if (t > tfar) {
-                    std::cout << "Missed, too far\n";
-                    survived = false;
-                    break;
-                }
-                if (t > tnear) {
-                    /* hit near face, update normal */
-                    tfar = t;
-                    std::cout << "Hit near face\n";
-                }
-            } else {
-                /* back face - T is a far point */
-                if ( t < tnear ) {
-                    std::cout << "Missed, back face too close?\n";
-                    survived = false;
-                    break;
-                }
-                if ( t < tfar ) {
-                    /* hit far face, update normal */
-                    tfar = t ;
-                    std::cout << "Hit far face\n";
-                }
-            }
-        }
-    }
-
-    if (survived) {
-        std::cout << "Survived tests\n";
-
-        if (tnear >= 0.0f) {
-            /* outside, hitting front face */
-            std::cout << "Frontface hit\n";
-        } else {
-            if (tfar < tmax) {
-                /* inside, hitting back face */
-                std::cout << "Backface hit\n";
-            } else {
-                /* inside, but back face beyond tmax */
-                std::cout << "Missed...\n";
-            }
-        }
-    } else {
-        std::cout << "Missed\n";
-    }
+    std::cout << numb_hits << " hits\n";
 
 }
 

@@ -67,6 +67,12 @@ v3 static vabs(const v3& v) {
     return v3(fabs(v.x),fabs(v.y),fabs(v.z));
 }
 
+bool static isZero(const float& v) {
+    static const float TINY = 1.0f / 1e12f;
+    //static const v3 TINY_V(TINY);
+    return fabs(v) < TINY;
+}
+
 bool static isZero(const v3& v) {
     static const float TINY = EPSILON * 0.01f;
     //static const v3 TINY_V(TINY);
