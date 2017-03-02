@@ -37,8 +37,9 @@ main() {
     "World.cpp"
     )
 
-	#cppFiles=( 
-	#)
+	cppFiles=( 
+    "Archive.cpp"
+	)
 
 	compiler="g++"
 
@@ -55,14 +56,14 @@ main() {
     #export LIBRARY_PATH=$LIBRARY_PATH:$HOME/lib
     #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib
 
-	includes=""
+	includes="-Icereal/include"
 
     #verbose=true # if "true" will print
     verbose=false
     silent=false # if "true" will print
 
     MMD="-MM" # -M default, MM excludes sys headers
-    genDependencies="$compiler $compilerFlags $MMD"
+    genDependencies="$compiler $compilerFlags $includes $MMD"
 
     objectDir="objects"
 
@@ -76,6 +77,10 @@ main() {
 				remove "$executable"
 				exit 0
 				;;
+            -v|--v|-verbose|--verbose)
+                verbose=true
+                v "Verbose output enabled"
+                ;;
 			"*")
 				# nothing
 				;;
@@ -110,6 +115,7 @@ main() {
     for f in ${cppFiles[@]}; do
         v "Generating dependencies for $f using $genDependencies"
         local dependencies="$($genDependencies $f)"
+        v "Generated dependencies"
         needsCompile "$dependencies"
         local ret=$?
         if [ $ret -ne 0 ]; then # needs recompile
