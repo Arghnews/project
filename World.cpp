@@ -55,25 +55,25 @@ void World::firedShot(const Id& id) {
 
     auto hits = [&] (const vv3& verts24, const int& i) -> bool {
         bool success = false;
-        const auto plane_v1 = verts24[4*i+1] - verts24[4*i+0];
-        const auto plane_v2 = verts24[4*i+2] - verts24[4*i+0];
+        const auto plane_v1 = verts24[i+1] - verts24[i+0];
+        const auto plane_v2 = verts24[i+2] - verts24[i+0];
         const auto n = glm::cross(plane_v1,plane_v2);
-        //const float D = glm::dot(n, verts24[4*i+0]);
+        //const float D = glm::dot(n, verts24[i+0]);
         // plane Ax + By + Cz + D = 0
         // have D, ABC = normal
         //float t = - ( (d + glm::dot(n,org)) / glm::dot(n,dir));
-        const float upper = glm::dot(verts24[4*i+0] - org,n);
+        const float upper = glm::dot(verts24[i+0] - org,n);
         const float lower = glm::dot(dir,n);
         /*
         if (isZero(lower)) {
             // line and plane parallel
             if (isZero(upper)) {
                 // line in plane -> true
-                std::cout << "Line in plane\n";
+                //std::cout << "Line in plane\n";
                 success = true;
             } else {
                 // no intersect -> false
-                std::cout << "No intersection(...)\n";
+                //std::cout << "No intersection(...)\n";
                 success = false;
             }
         } else {
@@ -81,22 +81,51 @@ void World::firedShot(const Id& id) {
             // no single point of intersection
             const float d = upper / lower;
             if (std::isnan(d)) {
-                std::cout << "No intersection (nan)\n";
+                //std::cout << "No intersection (nan)\n";
                 success = false;
             } else {
-                const v3 intersection = d * dir + org;
-                std::cout << "Intersection at (d:" << d << ") " << printV(intersection) << "\n";
+                const v3 M = d * dir + org;
+                //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
+                const v3& A = verts24[i+0];
+                const v3& B = verts24[i+1];
+                const v3& C = verts24[i+2];
+                const v3& D = verts24[i+3];
+                //std::cout << "A: " << printV(A) << "\n";
+                //std::cout << "B: " << printV(B) << "\n";
+                //std::cout << "C: " << printV(C) << "\n";
+                //std::cout << "D: " << printV(D) << "\n";
+                const v3 AM = M - A;
+                const v3 AB = B - A;
+                const v3 AD = D - A;
+                const float AMAB = glm::dot(AM,AB);
+                const float AMAD = glm::dot(AM,AD);
+                const float ABAB = glm::dot(AB,AB);
+                const float ADAD = glm::dot(AD,AD);
+                bool proj_AB = 0.0f <= AMAB && AMAB <= ABAB;
+                bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
                 // intersect at intersection -> true
-                success = true;
+                if (proj_AB && proj_AD) {
+                    success = true;
+                    //std::cout << "Hit at " << printV(M) << "\n";
+                    // inside the rectangle
+                } else {
+                    // intersects with plane outside face
+                    success = false;
+                    //std::cout << "Miss at " << printV(M) << "\n";
+                }
             //}
         }
         return success;
     };
 
     int numb_hits = 0;
+    // can use 8 as only need hit not whether back or front
     for (int i=0; i<size; i+=4) {
-        bool hit = hits(verts24, i);
+        const bool hit = hits(verts24, i);
         numb_hits += hit;
+        if (numb_hits > 0) {
+            break;
+        }
     }
     std::cout << numb_hits << " hits\n";
 

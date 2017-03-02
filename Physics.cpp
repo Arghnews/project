@@ -118,7 +118,7 @@ void Physics::integrate(P_State& state,
         float dt ) {
     Derivative a,b,c,d;
 
-    const float TINY = 0.00008f;
+    const float TINY = 0.000008f;
     const float SMALL = TINY * TINY;
 
     // if no external forces going to change state
