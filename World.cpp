@@ -6,6 +6,7 @@
 #include <map>
 #include <utility>
 #include <set>
+#include <limits>
 
 #include "Actors.hpp"
 #include "Actor.hpp"
@@ -40,95 +41,121 @@ void World::insert(Actor* a) {
     actors_.insert(id, a);
 }
 
-void World::firedShot(const Id& id) {
-    std::cout << id << " fired\n";
+Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int& i) {
+    Hit hit;
+    const auto plane_v1 = verts24[i+1] - verts24[i+0];
+    const auto plane_v2 = verts24[i+2] - verts24[i+0];
+    const auto n = glm::cross(plane_v1,plane_v2);
+    //const float D = glm::dot(n, verts24[i+0]);
+    // plane Ax + By + Cz + D = 0
+    // have D, ABC = normal
+    //float t = - ( (d + glm::dot(n,org)) / glm::dot(n,dir));
+    const float upper = glm::dot(verts24[i+0] - org,n);
+    const float lower = glm::dot(dir,n);
+    if (isZero(lower) || isZero(upper)) {
+        // strictly speaking there is a case where the line is parallel to the plane
+        // this seems so unlikely to occur that for now haven't bothered to accept
+        // this case
+        //std::cout << "No intersection (nan)\n";
+    } else {
+        const float d = upper / lower;
+        const v3 M = d * dir + org;
+        //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
+        const v3& A = verts24[i+0];
+        const v3& B = verts24[i+1];
+        //const v3& C = verts24[i+2];
+        const v3& D = verts24[i+3];
+        const v3 AM = M - A;
+        const v3 AB = B - A;
+        const v3 AD = D - A;
+        const float AMAB = glm::dot(AM,AB);
+        const float AMAD = glm::dot(AM,AD);
+        const float ABAB = glm::dot(AB,AB);
+        const float ADAD = glm::dot(AD,AD);
+        bool proj_AB = 0.0f <= AMAB && AMAB <= ABAB;
+        bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
+        // intersect at intersection -> true
+        if (proj_AB && proj_AD) {
+            hit.hit = true;
+            hit.pos = M;
+            //std::cout << "Hit at " << printV(M) << "\n";
+            // inside the rectangle
+        } else {
+            // intersects with plane outside face
+            //std::cout << "Miss at " << printV(M) << "\n";
+        }
+    }
+    return hit;
+}
 
-    const v3 org = actors_[id].get_state().position;
-    const v3 dir = glm::normalize(actors_[id].get_state().facing());
-    
-    const auto& l_cub = actors_[1].logical_cuboid();
+Hit World::hit_actor(const v3& org, const v3& dir, const Id& id) {
+    const auto& l_cub = actors_[id].logical_cuboid();
     const vv3& verts24 = l_cub.verts24;
     const int size = verts24.size();
     assert(size == 24);
 
     // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
 
-    auto hits = [&] (const vv3& verts24, const int& i) -> bool {
-        bool success = false;
-        const auto plane_v1 = verts24[i+1] - verts24[i+0];
-        const auto plane_v2 = verts24[i+2] - verts24[i+0];
-        const auto n = glm::cross(plane_v1,plane_v2);
-        //const float D = glm::dot(n, verts24[i+0]);
-        // plane Ax + By + Cz + D = 0
-        // have D, ABC = normal
-        //float t = - ( (d + glm::dot(n,org)) / glm::dot(n,dir));
-        const float upper = glm::dot(verts24[i+0] - org,n);
-        const float lower = glm::dot(dir,n);
-        /*
-        if (isZero(lower)) {
-            // line and plane parallel
-            if (isZero(upper)) {
-                // line in plane -> true
-                //std::cout << "Line in plane\n";
-                success = true;
-            } else {
-                // no intersect -> false
-                //std::cout << "No intersection(...)\n";
-                success = false;
-            }
-        } else {
-        */
-            // no single point of intersection
-            const float d = upper / lower;
-            if (std::isnan(d)) {
-                //std::cout << "No intersection (nan)\n";
-                success = false;
-            } else {
-                const v3 M = d * dir + org;
-                //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
-                const v3& A = verts24[i+0];
-                const v3& B = verts24[i+1];
-                const v3& C = verts24[i+2];
-                const v3& D = verts24[i+3];
-                //std::cout << "A: " << printV(A) << "\n";
-                //std::cout << "B: " << printV(B) << "\n";
-                //std::cout << "C: " << printV(C) << "\n";
-                //std::cout << "D: " << printV(D) << "\n";
-                const v3 AM = M - A;
-                const v3 AB = B - A;
-                const v3 AD = D - A;
-                const float AMAB = glm::dot(AM,AB);
-                const float AMAD = glm::dot(AM,AD);
-                const float ABAB = glm::dot(AB,AB);
-                const float ADAD = glm::dot(AD,AD);
-                bool proj_AB = 0.0f <= AMAB && AMAB <= ABAB;
-                bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
-                // intersect at intersection -> true
-                if (proj_AB && proj_AD) {
-                    success = true;
-                    //std::cout << "Hit at " << printV(M) << "\n";
-                    // inside the rectangle
-                } else {
-                    // intersects with plane outside face
-                    success = false;
-                    //std::cout << "Miss at " << printV(M) << "\n";
-                }
-            //}
-        }
-        return success;
-    };
+    Hit closest;
 
-    int numb_hits = 0;
-    // can use 8 as only need hit not whether back or front
+    // test each face for hits
+    // now need to try and not test against every other shape
+    // first try to use octree to get blocks in front?
+    // then compare dist of nearest hit
+    float dist(std::numeric_limits<float>::max());
     for (int i=0; i<size; i+=4) {
-        const bool hit = hits(verts24, i);
-        numb_hits += hit;
-        if (numb_hits > 0) {
-            break;
+        const Hit hit = hit_face(verts24, org, dir, i);
+        const v3& hit_pos = hit.pos;
+        if (hit.hit) {
+            const v3 diff = hit_pos - org;
+            const float dist_away = glm::dot(diff,diff);
+            if (dist_away < dist) {
+                // find closest point
+                dist = dist_away;
+                closest = hit;
+            }
         }
     }
-    std::cout << numb_hits << " hits\n";
+    // face func doesn't care about id of actor hit
+    closest.id = id;
+    return closest;
+}
 
+void World::firedShot(const Id& id) {
+    std::cout << id << " fired\n";
+
+    const v3 org = actors_[id].get_state().position;
+    const v3 dir = glm::normalize(actors_[id].get_state().facing());
+    
+    long now = timeNowMicros();
+    // for now just checking against every other actor, seems to take only 1.5ms max, sometimes 0.5ms
+    
+    float dist(std::numeric_limits<float>::max());
+    Hit closest;
+
+    for (const auto& a: actors_.underlying()) {
+        const Id& a_id = a.first;
+        if (id == a_id) {
+            continue;
+        }
+        Hit h = hit_actor(org, dir, a_id);
+        if (h.hit) {
+            const v3 diff = h.pos - org;
+            const float dist_away = glm::dot(diff,diff);
+            if (dist_away < dist) {
+                dist = dist_away;
+                closest = h;
+            }
+        }
+    }
+    
+    if (closest.hit) {
+        std::cout << "Hit " << closest.id << " at " << printV(closest.pos) << "\n";
+    }
+
+    long taken = timeNowMicros() - now;
+    std::cout << "Hit checking took " << (double)taken/1000.0 << "ms\n";
+    
 }
 
 void World::simulate(const float& t, const float& dt) {
