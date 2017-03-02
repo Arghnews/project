@@ -271,7 +271,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
 
     inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
         const Id id = world.actors().selected();
-        std::cout << "Actor firing " << id << " " << world.actors().selectedActor().id << "\n";
+        //std::cout << "Actor firing " << id << " " << world.actors().selectedActor().id << "\n";
         world.firedShot(id);
     });
 

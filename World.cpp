@@ -122,8 +122,6 @@ Hit World::hit_actor(const v3& org, const v3& dir, const Id& id) {
 }
 
 void World::firedShot(const Id& id) {
-    std::cout << id << " fired\n";
-
     const v3 org = actors_[id].get_state().position;
     const v3 dir = glm::normalize(actors_[id].get_state().facing());
     
@@ -150,11 +148,13 @@ void World::firedShot(const Id& id) {
     }
     
     if (closest.hit) {
-        std::cout << "Hit " << closest.id << " at " << printV(closest.pos) << "\n";
+        std::cout << id << " fired and hit " << closest.id << " at " << printV(closest.pos) << "\n";
+    } else {
+        std::cout << id << " fired and missed" << "\n";
     }
 
     long taken = timeNowMicros() - now;
-    std::cout << "Hit checking took " << (double)taken/1000.0 << "ms\n";
+    //std::cout << "Hit checking took " << (double)taken/1000.0 << "ms\n";
     
 }
 
@@ -421,9 +421,12 @@ void World::render() {
 
     // 5 minute crosshair
     // An array of 3 vectors which represents 3 vertices
-    static const GLfloat g_vertex_buffer_data[] = {
-        -0.5f, 0.0f, 0.0f,
-        0.5f, 0.0f, 0.0f,
+    v2 normed = glm::normalize(windowSize);
+    float rat = normed.y/normed.x;
+    std::cout << rat << "\n";
+    static GLfloat g_vertex_buffer_data[] = {
+        -0.5f*rat, 0.0f, 0.0f,
+        0.5f*rat, 0.0f, 0.0f,
         0.0f, 0.5f, 0.0f,
         0.0f, -0.5f, 0.0f
     };
