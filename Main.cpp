@@ -264,7 +264,6 @@ void gl_loop_start() {
 }
 
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
-    Actors& actors = world.actors();
     select_cube(inputs,world);
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_PRESS,[&] () {std::cout << "You pressed escape\n"; });
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_REPEAT,[&] () {std::cout << "You held escape\n"; });
@@ -279,7 +278,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
     inputs.setFunc(GLFW_KEY_ESCAPE,GLFW_RELEASE,[=] () {glfwSetWindowShouldClose(window, GLFW_TRUE); });
 
     inputs.setFunc1(GLFW_KEY_TAB,[&] () {
-        actors.next(); 
+        world.actors().next(); 
         select_cube(inputs,world);        
     });
 }
@@ -291,41 +290,34 @@ void select_cube(Window_Inputs& inputs, World& world) {
     inputs.setFunc2(GLFW_KEY_P,[&] () {
             //actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque,false,true));
             // resets actor's roll
-            actors.selectedActor().reorient();
+            //actors.selectedActor().reorient();
     });
     inputs.setFunc2(GLFW_KEY_R,[&] () {
-            actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque,false,true));
+            world.apply_force(world.actors().selected(),Force(LEFT,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Y,[&] () {
-            actors.apply_force(actors.selected(),Force(UP,Force::Type::Torque,false,true));
+            world.apply_force(world.actors().selected(),Force(UP,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
-            actors.apply_force(actors.selected(),Force(FORWARD,Force::Type::Torque,false,true));
+            world.apply_force(world.actors().selected(),Force(FORWARD,Force::Type::Torque,false,true));
     });
-    
-            /*
-            const v3 pos = actors.selectedActor().get_state().position;
-            const fq orient = actors.selectedActor().get_state().orient;
-            const v3 f = (orient * v3(0.5f,0.0f,0.0f)) + pos;
-            actors.apply_force(actors.selected(),FORWARD,f);
-            */
-    //});
+
     inputs.setFunc2(GLFW_KEY_W,[&] () {
-            actors.apply_force(actors.selected(),Force(small*FORWARD,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*FORWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_S,[&] () {
-            actors.apply_force(actors.selected(),Force(small*BACKWARD,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*BACKWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_A,[&] () {
-            actors.apply_force(actors.selected(),Force(small*LEFT,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*LEFT,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_D,[&] () {
-            actors.apply_force(actors.selected(),Force(small*RIGHT,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*RIGHT,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_UP,[&] () {
-            actors.apply_force(actors.selected(),Force(small*UP,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*UP,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
-            actors.apply_force(actors.selected(),Force(small*DOWN,Force::Type::Force));
+            world.apply_force(world.actors().selected(),Force(small*DOWN,Force::Type::Force));
     });
 }

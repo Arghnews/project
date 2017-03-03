@@ -22,7 +22,7 @@ class Actor {
         Camera camera;
         L_Cuboid l_cuboid;
         G_Cuboid g_cuboid;
-        P_State p_state;
+        P_State p_state_;
         bool changed_state;
         bool invisible_;
     public:
@@ -33,7 +33,7 @@ class Actor {
         const v3 scale;
         void invis(const bool& b);
         const bool invis() const;
-        const P_State& get_state() const;
+        const P_State& p_state() const;
         const L_Cuboid& logical_cuboid();
         const G_Cuboid& graphical_cuboid() const;
         P_State& state_to_change();

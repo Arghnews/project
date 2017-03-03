@@ -3,7 +3,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "cereal/archives/binary.hpp"
+#include "cereal/archives/portable_binary.hpp"
+
+// Portable binary checks endianness etc, for small overhead
 
 namespace cereal {
     template<class Archive>
@@ -23,11 +25,10 @@ struct Classy {
 };
 
 int main() {
-    /*
     std::stringstream ss; // any stream can be used
 
     {
-        cereal::BinaryOutputArchive oarchive(ss); // Create an output archive
+        cereal::PortableBinaryOutputArchive oarchive(ss); // Create an output archive
         Classy c1_in;
         c1_in.x = 12.0f;
         c1_in.y.x = 69.0f;
@@ -38,9 +39,11 @@ int main() {
     
     Classy c2_in;
     {
-        cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+        cereal::PortableBinaryInputArchive iarchive(ss); // Create an input archive
         iarchive(c2_in); // Read the data from the archive
     }
-    */
+
+    std::cout << c2_in.y.x << "\n";
+
 
 }

@@ -37,7 +37,7 @@ Actors& World::actors() {
 
 void World::insert(Actor* a) {
     const Id id = a->id;
-    tree_.insert(a->get_state().position,id);
+    tree_.insert(a->p_state().position,id);
     actors_.insert(id, a);
 }
 
@@ -59,30 +59,34 @@ Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int&
         //std::cout << "No intersection (nan)\n";
     } else {
         const float d = upper / lower;
-        const v3 M = d * dir + org;
-        //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
-        const v3& A = verts24[i+0];
-        const v3& B = verts24[i+1];
-        //const v3& C = verts24[i+2];
-        const v3& D = verts24[i+3];
-        const v3 AM = M - A;
-        const v3 AB = B - A;
-        const v3 AD = D - A;
-        const float AMAB = glm::dot(AM,AB);
-        const float AMAD = glm::dot(AM,AD);
-        const float ABAB = glm::dot(AB,AB);
-        const float ADAD = glm::dot(AD,AD);
-        bool proj_AB = 0.0f <= AMAB && AMAB <= ABAB;
-        bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
-        // intersect at intersection -> true
-        if (proj_AB && proj_AD) {
-            hit.hit = true;
-            hit.pos = M;
-            //std::cout << "Hit at " << printV(M) << "\n";
-            // inside the rectangle
+        if (d < 0.0f) {
+            // face hit is behind - shooting out your bum
         } else {
-            // intersects with plane outside face
-            //std::cout << "Miss at " << printV(M) << "\n";
+            const v3 M = d * dir + org;
+            //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
+            const v3& A = verts24[i+0];
+            const v3& B = verts24[i+1];
+            //const v3& C = verts24[i+2];
+            const v3& D = verts24[i+3];
+            const v3 AM = M - A;
+            const v3 AB = B - A;
+            const v3 AD = D - A;
+            const float AMAB = glm::dot(AM,AB);
+            const float AMAD = glm::dot(AM,AD);
+            const float ABAB = glm::dot(AB,AB);
+            const float ADAD = glm::dot(AD,AD);
+            bool proj_AB = 0.0f <= AMAB && AMAB <= ABAB;
+            bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
+            // intersect at intersection -> true
+            if (proj_AB && proj_AD) {
+                hit.hit = true;
+                hit.pos = M;
+                //std::cout << "Hit at " << printV(M) << "\n";
+                // inside the rectangle
+            } else {
+                // intersects with plane outside face
+                //std::cout << "Miss at " << printV(M) << "\n";
+            }
         }
     }
     return hit;
@@ -122,8 +126,8 @@ Hit World::hit_actor(const v3& org, const v3& dir, const Id& id) {
 }
 
 void World::firedShot(const Id& id) {
-    const v3 org = actors_[id].get_state().position;
-    const v3 dir = glm::normalize(actors_[id].get_state().facing());
+    const v3 org = actors_[id].p_state().position;
+    const v3 dir = glm::normalize(actors_[id].p_state().facing());
     
     long now = timeNowMicros();
     // for now just checking against every other actor, seems to take only 1.5ms max, sometimes 0.5ms
@@ -133,9 +137,23 @@ void World::firedShot(const Id& id) {
 
     for (const auto& a: actors_.underlying()) {
         const Id& a_id = a.first;
+        Actor& actor = *a.second;
+        auto& l_cub = actor.logical_cuboid();
         if (id == a_id) {
             continue;
         }
+        // early exit if could not possibly be closer than dist
+        // basically max diagonal distance across shape
+        const float max_width = l_cub.furthestVertex * 0.5f;
+        const v3 diff = actor.p_state().position - org;
+        // closest possible corner/edge/face/point on shape
+        const float nearest_dist = glm::dot(diff,diff) - max_width*max_width;
+        if (nearest_dist > dist) {
+            // no need to bother
+            // even at closest possible hit could not be closer than "closest"
+            continue;
+        }
+
         Hit h = hit_actor(org, dir, a_id);
         if (h.hit) {
             const v3 diff = h.pos - org;
@@ -189,7 +207,7 @@ void World::collisions() {
         const Id& id = a.first;
         Actor& actor = *a.second;
         const L_Cuboid& l_cub = actor.logical_cuboid();
-        const P_State& phys = actor.get_state();
+        const P_State& phys = actor.p_state();
         long a_start = timeNowMicros();
         const vId nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
         ////std::cout << l_cub.furthestVertex << "\n";
@@ -257,8 +275,8 @@ void World::collisions() {
         const Id& id2 = mtv.id2;
         Actor& a1 = actors_[id1];
         Actor& a2 = actors_[id2];
-        const P_State& p1 = a1.get_state();
-        const P_State& p2 = a2.get_state();
+        const P_State& p1 = a1.p_state();
+        const P_State& p2 = a2.p_state();
 
        //std::coutout << id1 << " colliding with " << id2 << "\n";
 
@@ -301,7 +319,7 @@ void World::collisions() {
         assert(mtv.overlap >= 0.0f);
 
         //std::cout << mtv.overlap << "\n";
-        if (mtv.overlap <= 0.04f) continue;
+        if (mtv.overlap <= 0.03f) continue;
 
         overlap *= 0.35f;
 
@@ -423,7 +441,6 @@ void World::render() {
     // An array of 3 vectors which represents 3 vertices
     v2 normed = glm::normalize(windowSize);
     float rat = normed.y/normed.x;
-    std::cout << rat << "\n";
     static GLfloat g_vertex_buffer_data[] = {
         -0.5f*rat, 0.0f, 0.0f,
         0.5f*rat, 0.0f, 0.0f,
