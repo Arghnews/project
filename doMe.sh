@@ -40,6 +40,8 @@ main() {
     #"Archive.cpp"
 	cppFiles=( 
     "Net.cpp"
+    "Socket.cpp"
+    "Address.cpp"
 	)
 
 	compiler="g++"
