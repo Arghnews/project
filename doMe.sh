@@ -37,8 +37,9 @@ main() {
     "World.cpp"
     )
 
-	AcppFiles=( 
-    "Archive.cpp"
+    #"Archive.cpp"
+	cppFiles=( 
+    "Net.cpp"
 	)
 
 	compiler="g++"

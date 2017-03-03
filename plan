@@ -1,0 +1,7 @@
+networking wrapper class that establishes UDP connection
+then make network class able to send objects that are serialised
+convert force/fire_shot into Action object that can be sent
+will then have basic setup where can send from server to client etc dumb?
+need to implement proper protocol on top of this as by gaffer, ie. resending redundant shit, buffering send/received, packet order ID's, etc
+
+plan for now

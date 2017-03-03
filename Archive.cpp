@@ -45,5 +45,4 @@ int main() {
 
     std::cout << c2_in.y.x << "\n";
 
-
 }
