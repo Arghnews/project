@@ -21,6 +21,10 @@ main() {
 
 	executable="game.exec"
 
+	cppFiles=( 
+    "Archive.cpp"
+	)
+
     cppFiles=(
     "Physics.cpp"
     "Shader.cpp"
@@ -36,10 +40,6 @@ main() {
     "Actors.cpp"
     "World.cpp"
     )
-
-	cppFiles=( 
-    "Archive.cpp"
-	)
 
 	compiler="g++"
 

@@ -170,7 +170,13 @@ void Physics::integrate(P_State& state,
 
 void Physics::newOrient(P_State& state, const float& dt) {
     const v3 v = state.ang_velocity * dt;
-    fq q = fq(v);
-    //fq q(1.0f, v.x, v.y, v.z);
-    state.orient = glm::normalize(0.5f * state.orient * q);
+
+    // so no roll
+    const v3 framePitch(0.0f, v.y, 0.0f);
+    const v3 frameYaw(v.x, 0.0f, 0.0f);
+    state.orient = fq(framePitch) * state.orient * fq(frameYaw);
+    state.orient = glm::normalize(state.orient);
+
+    //fq q = fq(v);
+    //state.orient = glm::normalize(0.5f * state.orient * q);
 }

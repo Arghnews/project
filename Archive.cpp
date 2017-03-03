@@ -23,8 +23,7 @@ struct Classy {
 };
 
 int main() {
-    std::cout << "Mainly\n";
-
+    /*
     std::stringstream ss; // any stream can be used
 
     {
@@ -42,6 +41,6 @@ int main() {
         cereal::BinaryInputArchive iarchive(ss); // Create an input archive
         iarchive(c2_in); // Read the data from the archive
     }
-    std::cout << c2_in.x << "," << c2_in.y.x << "\n";
+    */
 
 }

@@ -119,6 +119,8 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
 
+    glfwSetWindowPos(window, 500, 100);
+
     // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
     glewExperimental = GL_TRUE;
     // Initialize GLEW to setup the OpenGL Function pointers
