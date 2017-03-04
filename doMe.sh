@@ -44,6 +44,10 @@ main() {
     "Address.cpp"
 	)
 
+	cppFiles=( 
+    "echo.cpp"
+	)
+
 	compiler="g++"
 
 	compilerFlags="-O3 -std=c++11"
@@ -59,7 +63,7 @@ main() {
     #export LIBRARY_PATH=$LIBRARY_PATH:$HOME/lib
     #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib
 
-	includes="-Icereal/include"
+	includes="-Icereal/include -Iasio/include"
 
     #verbose=true # if "true" will print
     verbose=false
@@ -72,6 +76,24 @@ main() {
 
     # end of user parameters
 
+    args=()
+
+    # there is a case where if you need to pass say --verbose to program and/or to script
+    # currently only script will get it, if this case ever comes to pass/I can be bothered
+    # shall add a pass through $@ to find if -- is present, if so then all args before --
+    # passed to script, args after passed to program
+
+    # special case for verbose, eg. want to run ./script clean -v won't work without this
+
+	for arg in "$@"; do
+		case $arg in
+            -v|--v|-verbose|--verbose)
+                verbose=true
+                v "Verbose output enabled"
+                ;;
+		esac
+    done
+
 	for arg in "$@"; do
 		case $arg in
 			clean|-clean|--clean)
@@ -81,14 +103,24 @@ main() {
 				exit 0
 				;;
             -v|--v|-verbose|--verbose)
-                verbose=true
-                v "Verbose output enabled"
                 ;;
-			"*")
-				# nothing
+			*)
+                args+=("$arg")
+                # add args passed to script to arg array
+                # these args will be passed to the program
 				;;
 		esac
 	done
+
+    # if want to remove args etc should do in loop above or here
+    # argsStr is for printout etc
+
+    argsStr=""
+	for arg in "${args[@]}"; do
+        argsStr="$argsStr$arg "
+    done
+
+    v "${#args[@]} argument(s) to be passed to program: $argsStr"
 
     # changes /usr/lib//bla/blabla/// -> /usr/lib/bla/blabla/
     objectDir=$(echo "$objectDir" | sed -E "s:/{1,}:/:g")
@@ -148,9 +180,10 @@ main() {
         # alternatively could run gcc compile -c -o for every cpp/object
         # number of object files in current directory
         # -U unordered, b escapes newlines, 1 -> 1 entry per line, counts objects in current working dir
-        local numberObjects=$(ls 2>/dev/null -Ub1 | grep ^.*\.o$ | wc -l)
+        local numberObjects=$(ls 2>/dev/null -Ub1 | grep "^.*\.o$" | wc -l)
         if [ "$numberObjects" -ne ${#recompiles[@]} ]; then
-            echoErr "Warning: Moving object files from working dir to object dirs, but found $numberObjects to move but ${#recompiles[@]} to recompile.\nMay be moving some objects you don't want to be moved."
+            echoErr "Warning: Moving object files from working dir to $objectDir, but found $numberObjects to move but ${#recompiles[@]} to recompile."
+            echoErr "May be moving some objects you don't want to be moved (will add confirm yes/no in future)"
         fi
         v "Moving *.o to $objectDir/"
         mv *.o $objectDir/
@@ -175,9 +208,19 @@ main() {
         v "Linked successfully"
 	fi
 
-    run="./$executable"
-    p "Running $run"
-    ./"$run"
+    exe="./$executable"
+
+    local argsLen=${#args[@]}
+    local runPrint=""
+    local execPrint="Running $exe"
+    local argsPrint="with args $argsStr"
+
+    runPrintout="$runPrintout$execPrint"
+    if [ "$argsLen" -gt 0 ]; then
+        runPrintout="$runPrintout $argsPrint"
+    fi
+    p "$runPrintout"
+    $exe $args
 
     exit $?
 }
@@ -245,9 +288,17 @@ function remove() {
 	fi
 	ls $1 &>/dev/null # all output to dev null
 	local any=$?
-    v "Deleting $1"
-	[ $any -eq 0 ] && rm $1
-    return $any
+    local rmRet=0
+    if [ "$any" -eq 0 ]; then
+        v "Deleting $1"
+        rm $1
+        rmRet=$?
+        let ret=$any+$rmRet
+        return $ret
+    else
+        v "No files to delete matching $1"
+        return 0
+    fi
 }
 
 function v() { # verbose print
