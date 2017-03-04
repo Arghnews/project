@@ -35,6 +35,7 @@ int main() {
         oarchive(c1_in); // Write the data to the archive
     } // archive goes out of scope, ensuring all contents are flushed
 
+
     // insert networked magic here
     
     Classy c2_in;
@@ -44,5 +45,4 @@ int main() {
     }
 
     std::cout << c2_in.y.x << "\n";
-
 }

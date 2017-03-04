@@ -19,7 +19,7 @@ main() {
     # when compiling lots of files and one errors, silently continue
     # recompiling all the files that worked
 
-	executable="game.exec"
+	executable="server.exec"
 
     cppFiles=(
     "Physics.cpp"
@@ -45,7 +45,7 @@ main() {
 	)
 
 	cppFiles=( 
-    "Archive.cpp"
+    "echo_server.cpp"
 	)
 
 	compiler="g++"
