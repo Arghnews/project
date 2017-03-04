@@ -203,7 +203,12 @@ int main() {
             inputs.processInput(); // polls input and executes action based on that
 
             const v2 mouseDelta = inputs.cursorDelta();
-            world.apply_force(world.actors().selected(),Force(v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f),Force::Type::Torque,false,false));
+            /*bool gf = inputs.window_gained_focus();
+            bool lf = inputs.window_lost_focus();
+            // these functions reset a bool, should be called every frame really
+            */
+            const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
+            world.apply_force(world.actors().selected(),Force(mouse_torque,Force::Type::Torque,false,false));
 
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
@@ -286,12 +291,10 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
 void select_cube(Window_Inputs& inputs, World& world) {
     Actors& actors = world.actors();
     // camera
-
-    inputs.setFunc2(GLFW_KEY_P,[&] () {
-            //actors.apply_force(actors.selected(),Force(LEFT,Force::Type::Torque,false,true));
-            // resets actor's roll
-            //actors.selectedActor().reorient();
+    inputs.setFunc1(GLFW_KEY_P,[&] () {
+        inputs.toggle_cursor();
     });
+
     inputs.setFunc2(GLFW_KEY_R,[&] () {
             world.apply_force(world.actors().selected(),Force(LEFT,Force::Type::Torque,false,true));
     });

@@ -38,7 +38,7 @@ main() {
     )
 
     #"Archive.cpp"
-	cppFiles=( 
+	AcppFiles=( 
     "Net.cpp"
     "Socket.cpp"
     "Address.cpp"

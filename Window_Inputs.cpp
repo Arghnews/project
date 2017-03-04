@@ -42,6 +42,19 @@ void Input::doAction() {
     }
 }
 
+static void window_focus_callback(GLFWwindow* window, int focused) {
+    if (focused) {
+        window_gained_focus_ = true;
+        window_lost_focus_ = false;
+        // The window gained input focus
+    }
+    else {
+        window_gained_focus_ = false;
+        window_lost_focus_ = true;
+        // The window lost input focus
+    }
+}
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     key_inputs.push_back(Key_Input(key,action));
 }
@@ -67,15 +80,6 @@ static void window_close_callback(GLFWwindow* window) {
 static void window_size_callback(GLFWwindow* window, int width, int height) {
     // window resized
     //std::cout << "Window size now " << width << " by " << height << "\n";
-}
-
-static void window_focus_callback(GLFWwindow* window, int focused) {
-    if (focused) {
-        // The window gained input focus
-    }
-    else {
-        // The window lost input focus
-    }
 }
 
 static void error_callback(int error, const char* description) {
@@ -114,10 +118,10 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     glfwSetWindowFocusCallback(window, window_focus_callback);
     glfwSetKeyCallback(window, key_callback);
     glfwSwapInterval(1);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetWindowFocusCallback(window, window_focus_callback);
 
     glfwSetWindowPos(window, 500, 100);
 
@@ -135,6 +139,8 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     cursor_pos.x = xpos;
     cursor_pos.y = ypos;
 
+    disable_cursor();
+
     // turn off v-sync
     // do sleeping myself
     glfwSwapInterval(0);
@@ -144,9 +150,28 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
 Window_Inputs::Window_Inputs() {
 }
 
+void Window_Inputs::disable_cursor() {
+    cursor_disabled = true;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    cursorDelta(); // bin the movement from the switch, so don't get a lurch
+}
+
+void Window_Inputs::enable_cursor() {
+    cursor_disabled = false;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Window_Inputs::toggle_cursor() {
+    if (cursor_disabled) {
+        enable_cursor();
+    } else {
+        disable_cursor();
+    }
+}
+
 v2 Window_Inputs::cursorDelta() {
     // if queue empty, cursor hasn't moved
-    if (cursor_inputs.empty()) {
+    if (cursor_inputs.empty() || !cursor_disabled) {
         return v2(zeroV);
     }
 
@@ -179,6 +204,18 @@ void Window_Inputs::processInput() {
         Input& in = inp.second;
         in.doAction();
     }
+}
+
+bool Window_Inputs::window_gained_focus() {
+    bool stat = window_gained_focus_;
+    window_gained_focus_ = false;
+    return stat;
+}
+
+bool Window_Inputs::window_lost_focus() {
+    bool stat = window_lost_focus_;
+    window_lost_focus_ = false;
+    return stat;
 }
 
 void Window_Inputs::close() {

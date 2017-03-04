@@ -9,6 +9,9 @@
 typedef std::function<void()> void_func;
 static const void_func NOPfunc = ([](){});
 
+static bool window_gained_focus_;
+static bool window_lost_focus_;
+
 struct Key_Input {
     const int key;
     const int action;
@@ -23,7 +26,6 @@ class Input {
         int action;
 
     public:
-
         void_func pressed_func;
         void_func released_func;
         void_func repeated_func;
@@ -46,6 +48,15 @@ class Window_Inputs {
         GLFWwindow* init_window(int x=800, int y=600);
         GLFWwindow* getWindow();
         v2 windowSize();
+        
+        // reading from this resets the static bool
+        bool window_gained_focus();
+        bool window_lost_focus();
+
+        void toggle_cursor();
+        void disable_cursor();
+        void enable_cursor();
+        bool cursor_disabled;
 
         void swapBuffers();
         void processInput();
@@ -72,6 +83,7 @@ class Window_Inputs {
             setFunc(key,GLFW_PRESS,f);
         }
 
+        // sets to REPEAT for as long as you hold key
         template <typename F>
         void setFunc2(int key, F f) {
             setFunc(key,GLFW_PRESS,f);
