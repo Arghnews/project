@@ -139,7 +139,7 @@ void World::firedShot(const Id& id) {
     for (const auto& a: actors_.underlying()) {
         const Id& a_id = a.first;
         Actor& actor = *a.second;
-        auto& l_cub = actor.logical_cuboid();
+        const auto& l_cub = actor.logical_cuboid();
         if (id == a_id) {
             continue;
         }
@@ -179,8 +179,9 @@ void World::firedShot(const Id& id) {
 
 void World::simulate(const float& t, const float& dt) {
     // whenever move need to update octree
-    for (auto& a: actors_.underlying()) {
+    for (const auto& a: actors_.underlying()) {
         const Id& id = a.first;
+        Actor& actor = *a.second;
         // don't similate immobile objects
         if (!a.second->mobile) {
             continue;
@@ -188,7 +189,11 @@ void World::simulate(const float& t, const float& dt) {
         P_State& cube_phys = (*a.second).state_to_change();
         const bool deleted = tree_.del(cube_phys.position);
         assert(deleted && "Should always be able to delete last cube position");
-        phys_.integrate(cube_phys, t, dt);
+        const bool changed = phys_.integrate(cube_phys, t, dt);
+        if (changed) {
+            actor.set_changed();
+            actor.recalc();
+        }
         tree_.insert(cube_phys.position, id);
     }
 }
@@ -206,12 +211,11 @@ void World::collisions() {
     long c_total = 0l;
     for (const auto& a: actors_.underlying()) {
         const Id& id = a.first;
-        Actor& actor = *a.second;
+        const Actor& actor = *a.second;
         const L_Cuboid& l_cub = actor.logical_cuboid();
         const P_State& phys = actor.p_state();
         long a_start = timeNowMicros();
         const vId nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
-        ////std::cout << l_cub.furthestVertex << "\n";
         a_total += timeNowMicros() - a_start;
         int nearbys = 0;
         long b_start = timeNowMicros();
@@ -227,7 +231,6 @@ void World::collisions() {
                 continue;
             }
             ++nearbys;
-            const L_Cuboid& l_cub = actor.logical_cuboid();
             const L_Cuboid& l_cub_nearby = actor_nearby.logical_cuboid();
             long c_start = timeNowMicros();
             MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
@@ -259,11 +262,15 @@ void World::collisions() {
         }
         b_total += timeNowMicros() - b_start;
     }
-    //std::cout << "Total time of octree lookup " << ((double)a_total)/1000.0 << "ms" << "\n";
+    auto a_time = ((double)a_total)/1000.0;
+    auto c_time = ((double)c_total)/1000.0;
+    std::cout << "Total time of a - octree lookup " << a_time << "ms" << "\n";
     //std::cout << "Total time of b " << ((double)b_total)/1000.0 << "ms" << "\n";
-    //std::cout << "Total time of collision checking " << ((double)c_total)/1000.0 << "ms" << "\n";
+    std::cout << "Total time of c - colliding calc " << c_time << "ms" << "\n";
     long taken = timeNowMicros() - t_earlier;
-    //std::cout << "Time taken " << (double)taken/1000.0 << "ms for finding collisions" << "\n";
+    auto time_first_bit = (double)taken/1000.0;
+    std::cout << "Other time " << time_first_bit - a_time - c_time << "ms\n";
+    std::cout << "Time taken " << time_first_bit << "ms for finding collisions" << "\n";
     
     std::map<Id,std::vector<Force>> forceQueue;
     

@@ -51,11 +51,11 @@ void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
 void select_cube(Window_Inputs& inputs, World& world);
 
-static const float my_mass = 10.0f;
-static const float cube1_mass = 10.0f;
-static const float cube2_mass = 20.0f;
-static const float cube3_mass = 5.0f;
-static const float default_mass = 10.0f;
+static const float my_mass = 1.0f;
+static const float cube1_mass = 1.0f;
+static const float cube2_mass = 2.0f;
+static const float cube3_mass = 10.0f;
+static const float default_mass = 1.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
 
@@ -162,11 +162,12 @@ int main() {
 
     //float fps = 60.0f;
     //float f_time = 1e6f / fps;
-    double rate = 60.0;
+    double rate = 100.0;
     double frame_time = 1e6 / rate;
 
     long temp = timeNow();
 
+    // simple as tits loop with render/tick bound for now - just easier to work with
     while (!glfwWindowShouldClose(window)) {
         ++frame;
         long frameStart = timeNow();

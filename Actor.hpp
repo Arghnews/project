@@ -19,11 +19,10 @@
 
 class Actor {
     private:
-        Camera camera;
         L_Cuboid l_cuboid;
         int g_cuboid;
         P_State p_state_;
-        bool changed_state;
+        bool changed_state_;
         bool invisible_;
     public:
         static int num_actors;
@@ -33,10 +32,15 @@ class Actor {
         const v3 scale;
         void invis(const bool& b);
         const bool invis() const;
+
+        void set_changed();
+        bool changed_state() const;
+        void recalc();
         const P_State& p_state() const;
-        const L_Cuboid& logical_cuboid();
-        int graphical_cuboid() const;
         P_State& state_to_change();
+        const L_Cuboid& logical_cuboid() const;
+
+        int graphical_cuboid() const;
         m4 viewMatrix() const;
         m4 modelMatrix() const;
         void apply_force(const Force& force);

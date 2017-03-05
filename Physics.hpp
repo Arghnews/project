@@ -15,7 +15,8 @@ struct Derivative;
 
 class Physics {
 	public:
-		void integrate(P_State&, float t, float dt);
+        // true if changed, false if not
+		bool integrate(P_State&, float t, float dt);
 		Physics();
 	private:
         void newOrient(P_State& state, const float& dt);

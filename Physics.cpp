@@ -112,7 +112,7 @@ v3 Physics::simple_force_resolve(const P_State& state, float dt) {
     return net;
 }
 
-void Physics::integrate(P_State& state,
+bool Physics::integrate(P_State& state,
         float t, 
         float dt ) {
     Derivative a,b,c,d;
@@ -133,7 +133,7 @@ void Physics::integrate(P_State& state,
             state.ang_momentum = zeroV;
         }
         if (state.momentum == zeroV && state.ang_momentum == zeroV) {
-            return;
+            return false;
         }
     }
 
@@ -165,6 +165,7 @@ void Physics::integrate(P_State& state,
 
 	state.clear_forces(); // clear forces vector
     state.recalc(); // update secondary values
+    return true;
 }
 
 void Physics::newOrient(P_State& state, const float& dt) {

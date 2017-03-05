@@ -12,11 +12,10 @@ Actor::Actor(
     bool selectable,
     bool mobile
     ) :
-    camera(),
     l_cuboid(vertexData, scale, startPos),
     g_cuboid(g_cub),
     p_state_(mass, inertia, startPos),
-    changed_state(false),
+    changed_state_(false),
     invisible_(false),
     selectable(selectable),
     mobile(mobile),
@@ -44,11 +43,7 @@ const P_State& Actor::p_state() const {
     return p_state_;
 }
 
-const L_Cuboid& Actor::logical_cuboid() {
-    if (changed_state) {
-        l_cuboid.recalc(p_state_.position,p_state_.orient);
-        changed_state = false;
-    }
+const L_Cuboid& Actor::logical_cuboid() const {
     return l_cuboid;
 }
 
@@ -56,8 +51,24 @@ int Actor::graphical_cuboid() const {
     return g_cuboid;
 }
 
+void Actor::set_changed() {
+    changed_state_ = true;
+}
+
+void Actor::recalc() {
+    static const std::string s = "Should only ever recalc an actor's state if it changed "
+    "- if strange bug here after time, take care that physics sim clamps mom/ang_mom to zero, "
+    " try removing clamping";
+    assert((s,changed_state_));
+    l_cuboid.recalc(p_state_.position,p_state_.orient);
+    changed_state_ = false;
+}
+
+bool Actor::changed_state() const {
+    return changed_state_;
+}
+
 P_State& Actor::state_to_change() {
-    changed_state = true;
     return p_state_;
 }
 

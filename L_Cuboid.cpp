@@ -23,10 +23,11 @@
 
 vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
     // "The axes you must test are the normals of each shape’s edges."
+    assert(edges1.size() <= 9);
+    assert(edges2.size() <= 9);
     vv3 axes;
-    axes.reserve(15);
+    axes.reserve(9);
     vv3 normals;
-    normals.reserve(9);
     for (const auto& e1: edges1) {
         for (const auto& e2: edges2) {
             const auto t = glm::normalize(glm::cross(e1,e2));
@@ -45,7 +46,7 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     float the_overlap = 1e8f;
     v3 smallestAxis;
 
-    vv3 allAxes(getAxes(s1.uniqEdges, s2.uniqEdges));
+    vv3 allAxes(unique(getAxes(s1.uniqEdges, s2.uniqEdges),true));
 
     auto overlap = [&] (const Projection& p1, const Projection& p2) -> bool {
         return (p1.second >= p2.first) && (p1.first <= p2.second);

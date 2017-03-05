@@ -21,7 +21,6 @@ typedef std::pair<float, float> Projection;
 
 class L_Cuboid {
     private:
-        const v3 originalTopCenter;
         vv3 originalVertices_; // don't change
         vv3 static getAxes(const vv3& edges1, const vv3& edges2);
         vv3 static calcVertices(const vv3& vertices, const v3& pos, const fq& ori, const v3& scale);
