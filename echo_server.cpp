@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "asio.hpp"
+#include <unistd.h>
 
 using asio::ip::udp;
 
@@ -21,9 +22,7 @@ class Server {
     public:
         Server(asio::io_service& io_service, unsigned short port)
             : socket_(io_service, udp::endpoint(udp::v4(), port)) {
-                std::cout << "Server constructor start\n";
-                do_receive();
-                std::cout << "Server constructor end\n";
+                std::cout << "Server constructed\n";
             }
 
         void do_receive() {
@@ -32,17 +31,13 @@ class Server {
                     sender_endpoint_,
                     [this](std::error_code ec, std::size_t bytes_recvd)
                     {
-                        std::cout << "Server do_receive start\n";
                         if (!ec && bytes_recvd > 0) {
                             std::cout << "Server sending back start\n";
                             do_send(bytes_recvd);
                             std::cout << "Server sending back end\n";
                         } else {
-                            std::cout << "Server recieve back start\n";
-                            do_receive();
-                            std::cout << "Server recieve back end\n";
+                            std::cout << "Server received nothing\n";
                         }
-                        std::cout << "Server do_receive end\n";
                     });
         }
 
@@ -52,9 +47,7 @@ class Server {
                     sender_endpoint_,
                     [this](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
                     {
-                        std::cout << "Server do_send start\n";
-                        do_receive();
-                        std::cout << "Server do_send end\n";
+                        std::cout << "Server do_send\n";
                     });
         }
 
@@ -66,25 +59,34 @@ class Server {
 };
 
 int main(int argc, char* argv[]) {
-  try {
-    if (argc != 2) {
-      std::cerr << "Usage: async_udp_echo_Server <port>\n";
-      return 1;
+    try {
+        if (argc != 2) {
+            std::cerr << "Usage: async_udp_echo_Server <port>\n";
+            return 1;
+        }
+
+        asio::io_service io_service;
+
+        Server s(io_service, std::atoi(argv[1]));
+
+
+        std::cout << "Ioservice run\n";
+        s.do_receive();
+        io_service.run();
+        io_service.reset();
+        std::cout << "Ioservice run done\n";
+
+        std::cout << "Ioservice run\n";
+        s.do_send(10);
+        io_service.run();
+        io_service.reset();
+        std::cout << "Ioservice run done\n";
+
+    }
+    catch (std::exception& e) {
+        std::cerr << "Exception: " << e.what() << "\n";
     }
 
-    asio::io_service io_service;
-
-    std::cout << "Created server\n";
-    Server s(io_service, std::atoi(argv[1]));
-
-    std::cout << "Ioservice run\n";
-    io_service.run();
-    std::cout << "Server done\n";
-  }
-  catch (std::exception& e) {
-    std::cerr << "Exception: " << e.what() << "\n";
-  }
-
-  return 0;
+    return 0;
 }
 
