@@ -24,7 +24,9 @@
 vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
     // "The axes you must test are the normals of each shape’s edges."
     vv3 axes;
+    axes.reserve(15);
     vv3 normals;
+    normals.reserve(9);
     for (const auto& e1: edges1) {
         for (const auto& e2: edges2) {
             const auto t = glm::normalize(glm::cross(e1,e2));
@@ -106,8 +108,7 @@ Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
 }
 
 // builds a cuboid that matches the graphical coordinates
-L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPos) :
-    originalTopCenter(scale*topCenter),
+L_Cuboid::L_Cuboid(const fv* points_in, const v3 scale, v3 startPos) :
     scale(scale),
     furthestVertex(0.0f) {
     const fv& points = *points_in;
@@ -127,7 +128,6 @@ L_Cuboid::L_Cuboid(const fv* points_in, v3 topCenter, const v3 scale, v3 startPo
         square = unique(square);
         concat(faces, square);
     }
-    std::cout << faces.size() << "\n";
     assert(faces.size() == 24);
 
     // all the unique points in the faces are the verts, size 8
@@ -181,7 +181,6 @@ void L_Cuboid::recalc(const v3& pos, const fq& ori) {
     edges = calcEdges(verts24);
     vertices = unique(verts24);
     uniqEdges = unique(edges,true);
-    topCenter = originalTopCenter * ori;
 }
 
 std::ostream& operator<<(std::ostream& stream, const L_Cuboid& c) {

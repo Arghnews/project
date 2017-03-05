@@ -62,8 +62,6 @@ void P_State::recalc() {
         inverse_inertia;
 
     orient = glm::normalize(orient);
-
-    spin = 0.5f * fq(ang_velocity) * orient;
 }
 
 void P_State::apply_force(const Force& f) {

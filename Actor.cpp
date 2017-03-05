@@ -3,10 +3,8 @@
 int Actor::num_actors = 0;
 
 Actor::Actor(
+    int g_cub,
     const fv* vertexData,
-    std::string vertShader,
-    std::string fragShader,
-    v3 topCenter,
     v3 scale,
     v3 startPos,
     float mass,
@@ -15,8 +13,8 @@ Actor::Actor(
     bool mobile
     ) :
     camera(),
-    l_cuboid(vertexData, topCenter, scale, startPos),
-    g_cuboid(vertexData, vertShader, fragShader),
+    l_cuboid(vertexData, scale, startPos),
+    g_cuboid(g_cub),
     p_state_(mass, inertia, startPos),
     changed_state(false),
     invisible_(false),
@@ -28,11 +26,6 @@ Actor::Actor(
 
 void Actor::invis(const bool& b) {
     invisible_ = b;
-}
-
-void Actor::reorient() {
-    p_state_.orient = fq();
-    p_state_.recalc();
 }
 
 const bool Actor::invis() const {
@@ -59,7 +52,7 @@ const L_Cuboid& Actor::logical_cuboid() {
     return l_cuboid;
 }
 
-const G_Cuboid& Actor::graphical_cuboid() const {
+int Actor::graphical_cuboid() const {
     return g_cuboid;
 }
 

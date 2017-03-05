@@ -35,13 +35,12 @@ class L_Cuboid {
         void recalc(const v3& pos, const fq& ori);
 
         const v3 scale;
-        L_Cuboid(const fv* points, v3 topCenter, v3 scale, v3 startPos);
+        L_Cuboid(const fv* points, v3 scale, v3 startPos);
         //vv3 faces; // 24 vertices
         vv3 verts24; // 24 non-unique vertices, 4 per face, 6 faces
         vv3 vertices; // 8 vertices unique
         vv3 edges; // 24 edges, between vertices
         vv3 uniqEdges; // 3 edges
-        v3 topCenter;
         float furthestVertex;
         friend std::ostream& operator<<(std::ostream&, const L_Cuboid&);
 };

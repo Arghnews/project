@@ -21,7 +21,7 @@ class Actor {
     private:
         Camera camera;
         L_Cuboid l_cuboid;
-        G_Cuboid g_cuboid;
+        int g_cuboid;
         P_State p_state_;
         bool changed_state;
         bool invisible_;
@@ -35,16 +35,14 @@ class Actor {
         const bool invis() const;
         const P_State& p_state() const;
         const L_Cuboid& logical_cuboid();
-        const G_Cuboid& graphical_cuboid() const;
+        int graphical_cuboid() const;
         P_State& state_to_change();
-        void reorient();
         m4 viewMatrix() const;
         m4 modelMatrix() const;
         void apply_force(const Force& force);
-        Actor(const fv* vertexData,
-        std::string vertShader,
-        std::string fragShader,
-        v3 topCenter,
+        Actor(
+        int g_cub,
+        const fv* vertexData,
         v3 scale,
         v3 startPos,
         float mass,

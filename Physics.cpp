@@ -33,7 +33,6 @@ Derivative Physics::evaluate(P_State state,
     Derivative output;
     output.dx = state.velocity;
     output.dp = simple_force_resolve(state, dt);
-    output.dq = state.spin;
     output.dL = simple_torque_resolve(state, dt);
     return output;
 }

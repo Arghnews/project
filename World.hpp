@@ -31,6 +31,7 @@ class World {
         float restitution;
         std::map<Id, v3> positions_;
     public:
+        std::map<int,G_Cuboid> g_cubs;
         World(float worldSize, v2 windowSize, float restitution);
         v2 windowSize;
         Actors& actors();

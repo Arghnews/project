@@ -56,7 +56,7 @@ static void window_focus_callback(GLFWwindow* window, int focused) {
 }
 
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    key_inputs.push_back(Key_Input(key,action));
+    key_inputs.emplace_back(key,action);
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -198,7 +198,6 @@ void Window_Inputs::processInput() {
         keymap[key_input.key].setAction(key_input.action);
     }
     key_inputs.clear();
-
     
     for (auto& inp: keymap) {
         Input& in = inp.second;

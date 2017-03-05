@@ -52,10 +52,10 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
 void select_cube(Window_Inputs& inputs, World& world);
 
 static const float my_mass = 10.0f;
-static const float cube1_mass = 1.0f;
-static const float cube2_mass = 1.0f;
-static const float cube3_mass = 1.0f;
-static const float other_mass = 1.0f;
+static const float cube1_mass = 10.0f;
+static const float cube2_mass = 20.0f;
+static const float cube3_mass = 5.0f;
+static const float default_mass = 10.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
 
@@ -85,99 +85,136 @@ int main() {
     const float restitution = 0.05f;
 
     World world(areaSize, inputs.windowSize() * 0.6f, restitution);
+    
+    // make default cube with index in map 0
+    int default_g_cube = 0;
+
+    world.g_cubs.emplace(
+            std::make_pair(default_g_cube,
+            G_Cuboid(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader"))
+    );
 
     /*
-    const fv* vertexData,
-    std::string vertShader,
-    std::string fragShader,
-    v3 topCenter,
-    v3 scale,
-    v3 startPos,
+    Actor(
+    int g_cub, // index to display cuboid in the world.g_cubs map (int->G_Cuboid)
+    const fv* vertexData, // used to construct logical cuboid - note could change
+    // so that logical cuboid completely different to graphical data
+    v3 scale, // sizing, ie. to make cuboid (2.0,1.0,2.0)
+    v3 startPos, // spawn point, obv. important for non-mobile
     float mass,
     float inertia,
-    bool selectable
-    bool mobile
+    bool selectable, // can tab to it or not
+    bool mobile // can move etc.
+    );
     */
 
-    float scaleFactor = 1.0f;
-    const v3 scale = scaleFactor * oneV;
-    Actor* me = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            5.0f * oneV, my_mass, 5.0f, true, true);
-    world.insert(me);
+    auto create_default_cube = [&] (v3 start_pos, float mass, bool selectable, bool mobile) {
+        world.insert(
+                new Actor(default_g_cube,
+                    &vertices,
+                    v3(1.0f,1.0f,1.0f),
+                    start_pos,
+                    mass,
+                    5.0f,
+                    selectable,
+                    mobile)
+                );
+    };
 
-    Actor* cube1 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), v3(1.0f,1.0f,1.0f),
-            v3(0.0f,3.0f,1.0f), cube1_mass, 5.0f, true, true);
-    world.insert(cube1);
-
-    Actor* cube2 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,3.0f,3.0f), cube2_mass, 5.0f, true, true);
-    world.insert(cube2);
-
-    Actor* cube3 = new Actor(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-            v3(0.0f,3.0f,5.0f), cube3_mass, 5.0f, true, true);
-    world.insert(cube3);
-
-    static const float seperator = 1.15f;
-    static const float floor_mass = 1.0f;
-    const int n = 25;
-    const int m = 10;
-    for (int i=0; i<n; ++i) {
-        for (int j=0; j<m; ++j) {
-            const float ang_sep = 1.5f;
-            const v3 position(ang_sep*scaleFactor*(seperator*(float)i-n/2), 0.0f, ang_sep*scaleFactor*(seperator*(float)j-m/2));
-            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, floor_mass, 5.0f, false, true);
-            world.insert(floorpiece);
-            std::cout << std::max(world.actors().size()-1,0) << "\n";
-            world.apply_force(std::max(world.actors().size()-1,0),Force(v3(i,0.0f,j),Force::Type::Torque));
+    auto spawn_cubes = [&] (v3 where, int n, int m, bool rotated, bool selectable, bool mobile) {
+        static const float seperator = 1.0f;
+        for (int i=0; i<n; ++i) {
+            for (int j=0; j<m; ++j) {
+                const float ang_sep = 1.5f;
+                v3 position(ang_sep*(seperator*(float)i-n/2), 0.0f, ang_sep*(seperator*(float)j-m/2));
+                position += where;
+                create_default_cube(position,default_mass,selectable,mobile);
+                if (rotated) {
+                    world.apply_force(std::max(world.actors().size()-1,0),Force(v3(i,0.0f,j),Force::Type::Torque));
+                }
+            }
         }
-    }
+    };
 
-    const float y_offset = -10.0f;
-    for (int i=0; i<n; ++i) {
-        for (int j=0; j<m; ++j) {
-            const v3 position(scaleFactor*(seperator*(float)i-n/2), y_offset, scaleFactor*(seperator*(float)j-m/2));
-            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, 1.0f, 5.0f, false, true);
-            world.insert(floorpiece);
-        }
-    }
+    create_default_cube(zeroV,my_mass,true,true);
 
-    const float other_y_offset = -20.0f;
-    for (int i=0; i<n; ++i) {
-        for (int j=0; j<m; ++j) {
-            const v3 position(scaleFactor*(seperator*(float)i-n/2), other_y_offset, scaleFactor*(seperator*(float)j-m/2));
-            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, 5.0f, 5.0f, false, true);
-            world.insert(floorpiece);
-        }
-    }
+    world.insert(
+            new Actor(default_g_cube,
+                &vertices,
+                v3(4.0f,1.0f,4.0f),
+                v3(10.0f,0.0f,5.0f),
+                cube1_mass,
+                5.0f,
+                true,
+                true)
+            );
+    create_default_cube(v3(8.0f,0.0f,3.0f),cube2_mass,true,true);
+    create_default_cube(v3(2.0f,3.0f,3.0f),cube3_mass,true,true);
 
-    const float other_other_y_offset = -30.0f;
-    for (int i=0; i<n; ++i) {
-        for (int j=0; j<m; ++j) {
-            const v3 position(scaleFactor*(seperator*(float)i-n/2), other_other_y_offset, scaleFactor*(seperator*(float)j-m/2));
-            Actor* floorpiece = new Actor(&vertices, "shaders/vertex.shader",
-                    "shaders/fragment.shader", v3(0.0f,0.5f,0.0f), scale,
-                    position, 25.0f, 5.0f, false, true);
-            world.insert(floorpiece);
-        }
-    }
+    spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
+    spawn_cubes(v3(0.0f,-10.0f,0.0f),25,10,false,false,true);
+    spawn_cubes(v3(0.0f,-20.0f,0.0f),25,10,true,false,true);
 
     set_keyboard(inputs,window,world);
 
     static int frame = 0;
 
-    float fps = 60.0f;
-    float f_time = 1e6f / fps;
+    //float fps = 60.0f;
+    //float f_time = 1e6f / fps;
+    double rate = 60.0;
+    double frame_time = 1e6 / rate;
 
+    long temp = timeNow();
+
+    while (!glfwWindowShouldClose(window)) {
+        ++frame;
+        long frameStart = timeNow();
+
+            // process inputs, change world
+            inputs.processInput(); // polls input and executes action based on that
+
+            const v2 mouseDelta = inputs.cursorDelta();
+            //bool gf = inputs.window_gained_focus();
+            //bool lf = inputs.window_lost_focus();
+            // these functions reset a bool, should be called every frame really
+            const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
+            world.apply_force(world.actors().selected(),Force(mouse_torque,Force::Type::Torque,false,false));
+
+            static const float normalize = 1.0f / 1e4f;
+            const float t_normalized = t * normalize;
+            const float dt_normalized = dt * normalize;
+
+            temp = timeNow();
+            world.simulate(t_normalized,dt_normalized);
+            std::cout << "Time for sim " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+
+            temp = timeNow();
+            world.collisions();
+            std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+
+        // Render -- -- --
+        // local space -> world space -> view space -> clip space -> screen space
+        //          model matrix   view matrix  projection matrix   viewport transform
+        gl_loop_start();
+
+        //temp = timeNow();
+        world.render();
+        //std::cout << "Time for render " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+        inputs.swapBuffers(); // swaps buffers
+
+        // sleep if fps would be > fps_max
+        //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
+
+        long thisFrameTime_u = timeNow() - frameStart;
+        std::cout << "This frame " << thisFrameTime_u << "u \n";
+        std::cout << "Max pos " << frame_time << "u \n";
+        long spare_time_u = (long)frame_time - thisFrameTime_u;
+        std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
+        std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spare_time_u)));
+    }
+
+    /*
     while (!glfwWindowShouldClose(window)) {
         ++frame;
         std::stringstream print_buffer;
@@ -203,10 +240,9 @@ int main() {
             inputs.processInput(); // polls input and executes action based on that
 
             const v2 mouseDelta = inputs.cursorDelta();
-            /*bool gf = inputs.window_gained_focus();
-            bool lf = inputs.window_lost_focus();
+            //bool gf = inputs.window_gained_focus();
+            //bool lf = inputs.window_lost_focus();
             // these functions reset a bool, should be called every frame really
-            */
             const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
             world.apply_force(world.actors().selected(),Force(mouse_torque,Force::Type::Torque,false,false));
 
@@ -255,6 +291,7 @@ int main() {
             //std::cout << "This frame: " << frame << ", frametime: " << thisFrameTime << "ms\n";
         }
     }
+    */
 
     inputs.close();
 }

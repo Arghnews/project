@@ -28,7 +28,6 @@ struct Derivative {
     v3 dx; // dx/dt = velocity
     v3 dp; // dp/dt = force (change in momentum)
     v3 dL; // dL/dt = change in angular momentum
-    fq dq; // dq/dt = spin = change in orientation with respect to time
     Derivative () {
     }
 };

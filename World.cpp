@@ -21,6 +21,7 @@
 #include "Util.hpp"
 #include <cmath>
 #include <algorithm>
+#include <deque>
 
 #include "MTV.hpp"
 #include "World.hpp"
@@ -404,40 +405,105 @@ void World::apply_force(const Id& id, const Force& force) {
 void World::render() {
     const Actor& selectedActor = actors_.selectedActor();
     const m4 view = selectedActor.viewMatrix();
-    const G_Cuboid& cam_graphical_cube = selectedActor.graphical_cuboid();
+    //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
+    const int& cam_g_cub = selectedActor.graphical_cuboid();
+    assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
+    const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
     const float aspectRatio = windowSize.x / windowSize.y;
-    const GLuint viewLoc = glGetUniformLocation(cam_graphical_cube.shaderProgram(), "view");
+    const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
 
-    for (const auto& a: actors_.underlying()) {
-        const G_Cuboid& graphical_cube = (*a.second).graphical_cuboid();
-        const Actor& actor = (*a.second);
+    const m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
 
-        //if (true) {
-        if (!actor.invis()) {
+    long temp = timeNowMicros();
 
-            graphical_cube.bindBuffers();
-            graphical_cube.useShader();
+    static std::map<int,std::deque<Id>> graphics_id;
 
-            m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-            GLuint projectionLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "projection");
+    for (const auto& pai: actors_.underlying()) {
+        const Id& id = pai.first;
+        const int g_id = pai.second->graphical_cuboid();
+        if (!contains(graphics_id,g_id)) {
+            graphics_id.emplace(g_id,std::deque<Id>());
+        }
+        graphics_id[g_id].push_back(id);
+    }
+
+    for (const auto& pai: graphics_id) {
+        const int& g_id = pai.first;
+        const std::deque<Id>& ids = pai.second;
+        if (!ids.empty()) {
+            const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
+
+            graphical_cuboid.bindBuffers();
+            graphical_cuboid.useShader();
+
+            GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
 
             glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-            glBindVertexArray(graphical_cube.VAO);
+            glBindVertexArray(graphical_cuboid.VAO);
 
-            m4 model = actor.modelMatrix();
-            GLuint modelLoc = glGetUniformLocation(graphical_cube.shaderProgram(), "model");
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glDrawArrays(GL_TRIANGLES, 0, graphical_cube.drawSize());
 
+            // bind buffers
+            for (const auto& id: ids) {
+                const Actor& actor = actors_[id];
+
+                if (!actor.invis()) {
+                    // render this shape
+                    m4 model = actor.modelMatrix();
+                    GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
+                    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                    glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
+
+                }
+            }
             glBindVertexArray(0);
             glUseProgram(0);
-            // Render end -- -- --
         }
     }
+    // Render end -- -- --
 
-    // 5 minute crosshair
+    // honestly if can be bothered an easy optim is just to build this once
+    // and only affect changes to it
+    graphics_id.clear();
+
+    /*
+    for (const auto& pai: g_cubs) {
+        const int& g_cub_index = pai.first;
+        const G_Cuboid& graphical_cuboid = g_cubs.second;
+        for (const auto& a: actors_.underlying()) {
+            const G_Cuboid& graphical_cuboid = g_cubs.find((*a.second).graphical_cuboid())->second;
+            const Actor& actor = (*a.second);
+
+            //if (true) {
+            if (!actor.invis()) {
+
+                graphical_cuboid.bindBuffers();
+                graphical_cuboid.useShader();
+
+                GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
+
+                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+                glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+                glBindVertexArray(graphical_cuboid.VAO);
+
+                m4 model = actor.modelMatrix();
+                GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
+                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
+
+                glBindVertexArray(0);
+                glUseProgram(0);
+                // Render end -- -- --
+            }
+        }
+    }
+    */
+
+    std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
+
+    // 10 minute crosshair
     // An array of 3 vectors which represents 3 vertices
     v2 normed = glm::normalize(windowSize);
     float rat = normed.y/normed.x;
@@ -475,5 +541,4 @@ void World::render() {
     // Draw the triangle !
     glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
     glDisableVertexAttribArray(0);
-
 }

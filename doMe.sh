@@ -44,7 +44,7 @@ main() {
     "Address.cpp"
 	)
 
-	cppFiles=( 
+	BcppFiles=( 
     "Archive.cpp"
 	)
 

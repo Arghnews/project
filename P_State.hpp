@@ -28,8 +28,6 @@ class P_State {
         // secondary
         v3 velocity;
 
-        // spin = quat angular rotation
-        fq spin; // 0.5*ang_velocity*orient
         v3 ang_velocity;
 
         const float mass;
