@@ -51,6 +51,7 @@
 void gl_loop_start();
 void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
 void select_cube(Window_Inputs& inputs, World& world);
+void draw_crosshair(Window_Inputs& inputs);
 
 static const float my_mass = 1.0f;
 static const float cube1_mass = 10.0f;
@@ -162,7 +163,7 @@ int main() {
 
     //float fps = 60.0f;
     //float f_time = 1e6f / fps;
-    const double rate = 100.0;
+    const double rate = 80.0;
     const long dt = (1e6l)/100.0; // run at tickrate 100
     double frame_time = 1e6 / rate;
 
@@ -195,12 +196,12 @@ int main() {
             world.collisions();
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
-            world.apply_forces(world.forces());
-            world.clear_forces();
+            const Forces& forces = world.forces();
+            world.apply_forces(forces);
             // actually applies forces and moves the world
             
-            world.fire_shots(world.shots());
-            world.clear_shots();
+            const Shots& shots = world.shots();
+            world.fire_shots(shots);
             // actually fires the shots
 
         // Render -- -- --
@@ -209,9 +210,13 @@ int main() {
         gl_loop_start();
 
         //temp = timeNow();
-        world.render();
+        world.render(); // render renders current state - so if rendering shots, must clear after rendering
+        draw_crosshair(inputs);
         //std::cout << "Time for render " << (double)(timeNow()-temp)/1000.0 << "ms\n";
         inputs.swapBuffers(); // swaps buffers
+
+            world.clear_forces();
+            world.clear_shots();
 
         // sleep if fps would be > fps_max
         //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
@@ -373,4 +378,45 @@ void select_cube(Window_Inputs& inputs, World& world) {
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
             world.apply_force(Force(world.actors().selected(),small*DOWN,Force::Type::Force));
     });
+}
+
+void draw_crosshair(Window_Inputs& inputs) {
+    // 10 minute crosshair
+    // An array of 3 vectors which represents 3 vertices
+    v2 normed = glm::normalize(inputs.windowSize());
+    float rat = normed.y/normed.x;
+    static GLfloat g_vertex_buffer_data[] = {
+        -0.5f*rat, 0.0f, 0.0f,
+        0.5f*rat, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,
+        0.0f, -0.5f, 0.0f
+    };
+
+    bool once = false;
+    // This will identify our vertex buffer
+    static GLuint vertexbuffer;
+    if (!once) {
+        // Generate 1 buffer, put the resulting identifier in vertexbuffer
+        glGenBuffers(1, &vertexbuffer);
+        once = true;
+    }
+    // The following commands will talk about our 'vertexbuffer' buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    // Give our vertices to OpenGL.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+            );
+    // Draw the triangle !
+    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
+    glDisableVertexAttribArray(0);
 }
