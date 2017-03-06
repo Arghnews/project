@@ -198,6 +198,40 @@ void World::simulate(const float& t, const float& dt) {
     }
 }
 
+void World::blow_up(const Id& id) {
+    const auto collidingInto = colliding_with(id);
+    for (const auto& a_id: collidingInto) {
+        // push others away
+    }
+}
+
+std::vector<MTV> World::colliding_with(const Id& id) {
+    std::vector<MTV> collidingWith;
+    const Actor& actor = actors_[id];
+    const L_Cuboid& l_cub = actor.logical_cuboid();
+    const P_State& phys = actor.p_state();
+    const vId nearby = tree_.queryRange(phys.position, l_cub.furthestVertex);
+    for (const auto& id_nearby: nearby) {
+        // collision with self
+        if (id_nearby == id) {
+            continue;
+        }
+        const Actor& actor_nearby = actors_[id_nearby];
+        // both actors immobile - ie. worldly blocks that don't move
+        if (!actor.mobile && !actor_nearby.mobile) {
+            continue;
+        }
+        const L_Cuboid& l_cub_nearby = actor_nearby.logical_cuboid();
+        MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
+        const bool areColliding = mtv.colliding;
+        // should move above collision check
+        if (areColliding) {
+            collidingWith.emplace_back(mtv);
+        }
+    }
+    return collidingWith;
+}
+
 void World::collisions() {
 
     std::set<MTV> collidingPairs; // stuff that just started colliding
@@ -249,13 +283,13 @@ void World::collisions() {
                 // if not already colliding
                 // add to justColliding
                 collidingPairs.insert(mtv);
-               //std::coutout << "Now colliding inserting" << mtv << "\n";
+                //std::coutout << "Now colliding inserting" << mtv << "\n";
             } else {
                 // if not colliding, erase from already colliding set
                 if (contains(alreadyColliding, mtv)) {
                     auto size = alreadyColliding.size();
                     alreadyColliding.erase(mtv);
-                   //std::coutout << "No longer colliding deleting " << mtv << "\n";
+                    //std::coutout << "No longer colliding deleting " << mtv << "\n";
                     assert(alreadyColliding.size() + 1 == size);
                 }
             }
@@ -271,9 +305,9 @@ void World::collisions() {
     auto time_first_bit = (double)taken/1000.0;
     //std::cout << "Other time " << time_first_bit - a_time - c_time << "ms\n";
     //std::cout << "Time taken " << time_first_bit << "ms for finding collisions" << "\n";
-    
+
     std::map<Id,std::vector<Force>> forceQueue;
-    
+
     taken = timeNowMicros();
     for (const auto& mtv_original: collidingPairs) {
         MTV mtv = mtv_original;
@@ -286,7 +320,7 @@ void World::collisions() {
         const P_State& p1 = a1.p_state();
         const P_State& p2 = a2.p_state();
 
-       //std::coutout << id1 << " colliding with " << id2 << "\n";
+        //std::coutout << id1 << " colliding with " << id2 << "\n";
 
         // -------------------------------------------------------- READ ME :
         // maybe consider case just using momentum resolve and solving sticking
@@ -333,7 +367,7 @@ void World::collisions() {
         }
 
         v3 f = mtv.axis * overlap;
-        
+
         const float total_mass = m1+m2;
         const float total_mass_i = 1.0f/total_mass;
         const float m1_ratio = m1 * total_mass_i;
@@ -369,7 +403,7 @@ void World::collisions() {
         forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));
 
         //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
-        
+
 
         // NOTE : can swap m1 and m2 in the forces to cause a light thing flying into a heavy thing
         // to have the light thing fly back proportional to mass of the other
@@ -387,14 +421,14 @@ void World::collisions() {
                 force.force = force.force + forces[i].force; // sum
                 // can decide what to do with multiple forces on object here
             }
-           //std::coutout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
-           //std::coutout << "Divided force now " << printV(force.force) << "\n";
+            //std::coutout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
+            //std::coutout << "Divided force now " << printV(force.force) << "\n";
         }
         actors_.apply_force(id, force);
     }
 
     for (const auto& mtv: collidingPairs) {
-       //std::coutout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
+        //std::coutout << "Copying " << a.id1 << "," << a.id2 << " to alreadyColliding\n";
         if (contains(alreadyColliding, mtv)) {
             alreadyColliding[mtv] = ++alreadyColliding[mtv];
         } else {
@@ -403,92 +437,47 @@ void World::collisions() {
     }
 
     if (collidingPairs.size() > 0) {
-       //std::coutout << "\n";
+        //std::coutout << "\n";
     } else {
     }
     //long taken = timeNowMicros() - t;
     //std::cout << "Time taken for collision resolving " << (double)(timeNowMicros() - taken)/1000.0 << "ms" << "\n";
-}
-
-void World::apply_force(const Id& id, const Force& force) {
-    actors_.apply_force(id,force);
-}
-
-void World::render() {
-    const Actor& selectedActor = actors_.selectedActor();
-    const m4 view = selectedActor.viewMatrix();
-    //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
-    const int& cam_g_cub = selectedActor.graphical_cuboid();
-    assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
-    const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
-    const float aspectRatio = windowSize.x / windowSize.y;
-    const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
-
-    const m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
-
-    long temp = timeNowMicros();
-
-    static std::map<int,std::deque<Id>> graphics_id;
-
-    for (const auto& pai: actors_.underlying()) {
-        const Id& id = pai.first;
-        const int g_id = pai.second->graphical_cuboid();
-        if (!contains(graphics_id,g_id)) {
-            graphics_id.emplace(g_id,std::deque<Id>());
-        }
-        graphics_id[g_id].push_back(id);
     }
 
-    for (const auto& pai: graphics_id) {
-        const int& g_id = pai.first;
-        const std::deque<Id>& ids = pai.second;
-        if (!ids.empty()) {
-            const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
+    void World::apply_force(const Id& id, const Force& force) {
+        actors_.apply_force(id,force);
+    }
 
-            graphical_cuboid.bindBuffers();
-            graphical_cuboid.useShader();
+    void World::render() {
+        const Actor& selectedActor = actors_.selectedActor();
+        const m4 view = selectedActor.viewMatrix();
+        //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
+        const int& cam_g_cub = selectedActor.graphical_cuboid();
+        assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
+        const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
+        const float aspectRatio = windowSize.x / windowSize.y;
+        const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
 
-            GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
+        const m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
 
-            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        long temp = timeNowMicros();
 
-            glBindVertexArray(graphical_cuboid.VAO);
+        static std::map<int,std::deque<Id>> graphics_id;
 
-
-            // bind buffers
-            for (const auto& id: ids) {
-                const Actor& actor = actors_[id];
-
-                if (!actor.invis()) {
-                    // render this shape
-                    m4 model = actor.modelMatrix();
-                    GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
-                    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                    glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
-
-                }
+        for (const auto& pai: actors_.underlying()) {
+            const Id& id = pai.first;
+            const int g_id = pai.second->graphical_cuboid();
+            if (!contains(graphics_id,g_id)) {
+                graphics_id.emplace(g_id,std::deque<Id>());
             }
-            glBindVertexArray(0);
-            glUseProgram(0);
+            graphics_id[g_id].push_back(id);
         }
-    }
-    // Render end -- -- --
 
-    // honestly if can be bothered an easy optim is just to build this once
-    // and only affect changes to it
-    graphics_id.clear();
-
-    /*
-    for (const auto& pai: g_cubs) {
-        const int& g_cub_index = pai.first;
-        const G_Cuboid& graphical_cuboid = g_cubs.second;
-        for (const auto& a: actors_.underlying()) {
-            const G_Cuboid& graphical_cuboid = g_cubs.find((*a.second).graphical_cuboid())->second;
-            const Actor& actor = (*a.second);
-
-            //if (true) {
-            if (!actor.invis()) {
+        for (const auto& pai: graphics_id) {
+            const int& g_id = pai.first;
+            const std::deque<Id>& ids = pai.second;
+            if (!ids.empty()) {
+                const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
 
                 graphical_cuboid.bindBuffers();
                 graphical_cuboid.useShader();
@@ -500,57 +489,102 @@ void World::render() {
 
                 glBindVertexArray(graphical_cuboid.VAO);
 
-                m4 model = actor.modelMatrix();
-                GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
-                glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
 
+                // bind buffers
+                for (const auto& id: ids) {
+                    const Actor& actor = actors_[id];
+
+                    if (!actor.invis()) {
+                        // render this shape
+                        m4 model = actor.modelMatrix();
+                        GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
+                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                        glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
+
+                    }
+                }
                 glBindVertexArray(0);
                 glUseProgram(0);
-                // Render end -- -- --
             }
         }
+        // Render end -- -- --
+
+        // honestly if can be bothered an easy optim is just to build this once
+        // and only affect changes to it
+        graphics_id.clear();
+
+        /*
+           for (const auto& pai: g_cubs) {
+           const int& g_cub_index = pai.first;
+           const G_Cuboid& graphical_cuboid = g_cubs.second;
+           for (const auto& a: actors_.underlying()) {
+           const G_Cuboid& graphical_cuboid = g_cubs.find((*a.second).graphical_cuboid())->second;
+           const Actor& actor = (*a.second);
+
+        //if (true) {
+        if (!actor.invis()) {
+
+        graphical_cuboid.bindBuffers();
+        graphical_cuboid.useShader();
+
+        GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
+
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        glBindVertexArray(graphical_cuboid.VAO);
+
+        m4 model = actor.modelMatrix();
+        GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
+
+        glBindVertexArray(0);
+        glUseProgram(0);
+        // Render end -- -- --
+        }
+        }
+        }
+        */
+
+        //std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
+
+        // 10 minute crosshair
+        // An array of 3 vectors which represents 3 vertices
+        v2 normed = glm::normalize(windowSize);
+        float rat = normed.y/normed.x;
+        static GLfloat g_vertex_buffer_data[] = {
+            -0.5f*rat, 0.0f, 0.0f,
+            0.5f*rat, 0.0f, 0.0f,
+            0.0f, 0.5f, 0.0f,
+            0.0f, -0.5f, 0.0f
+        };
+
+        bool once = false;
+        // This will identify our vertex buffer
+        static GLuint vertexbuffer;
+        if (!once) {
+            // Generate 1 buffer, put the resulting identifier in vertexbuffer
+            glGenBuffers(1, &vertexbuffer);
+            once = true;
+        }
+        // The following commands will talk about our 'vertexbuffer' buffer
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        // Give our vertices to OpenGL.
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+        // 1st attribute buffer : vertices
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(
+                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                3,                  // size
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                0,                  // stride
+                (void*)0            // array buffer offset
+                );
+        // Draw the triangle !
+        glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
+        glDisableVertexAttribArray(0);
     }
-    */
-
-    //std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
-
-    // 10 minute crosshair
-    // An array of 3 vectors which represents 3 vertices
-    v2 normed = glm::normalize(windowSize);
-    float rat = normed.y/normed.x;
-    static GLfloat g_vertex_buffer_data[] = {
-        -0.5f*rat, 0.0f, 0.0f,
-        0.5f*rat, 0.0f, 0.0f,
-        0.0f, 0.5f, 0.0f,
-        0.0f, -0.5f, 0.0f
-    };
-
-    bool once = false;
-    // This will identify our vertex buffer
-    static GLuint vertexbuffer;
-    if (!once) {
-        // Generate 1 buffer, put the resulting identifier in vertexbuffer
-        glGenBuffers(1, &vertexbuffer);
-        once = true;
-    }
-    // The following commands will talk about our 'vertexbuffer' buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    // Give our vertices to OpenGL.
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    // 1st attribute buffer : vertices
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glVertexAttribPointer(
-            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-            3,                  // size
-            GL_FLOAT,           // type
-            GL_FALSE,           // normalized?
-            0,                  // stride
-            (void*)0            // array buffer offset
-            );
-    // Draw the triangle !
-    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
-    glDisableVertexAttribArray(0);
-}

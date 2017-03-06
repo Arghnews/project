@@ -42,6 +42,8 @@ class World {
         void collisions();
         void firedShot(const Id& id);
 
+        void blow_up(const Id& id);
+        std::vector<MTV> colliding_with(const Id& id);
         Hit hit_face(const vv3& verts24, const v3& org, const v3& dir, const int& i);
         Hit hit_actor(const v3& org, const v3& dir, const Id& id);
 };

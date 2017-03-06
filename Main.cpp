@@ -332,6 +332,9 @@ void select_cube(Window_Inputs& inputs, World& world) {
     inputs.setFunc1(GLFW_KEY_P,[&] () {
         inputs.toggle_cursor();
     });
+    inputs.setFunc1(GLFW_KEY_SPACE,[&] () {
+        world.blow_up(world.actors().selected());
+    });
 
     inputs.setFunc2(GLFW_KEY_R,[&] () {
             world.apply_force(world.actors().selected(),Force(LEFT,Force::Type::Torque,false,true));
