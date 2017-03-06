@@ -23,7 +23,7 @@ class Actors {
         Actors();
         ~Actors();
 
-        void apply_force(const Id& id, const Force& force);
+        void apply_force(const Force& force);
 
         bool insert(const Id& id, Actor* a);
 

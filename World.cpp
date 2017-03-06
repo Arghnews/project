@@ -25,12 +25,13 @@
 
 #include "MTV.hpp"
 #include "World.hpp"
+#include "Shot.hpp"
 
 World::World(float worldSize, v2 windowSize, float restitution) :
     tree_(zeroV,worldSize),
     windowSize(windowSize),
     restitution(restitution) {
-}
+    }
 
 Actors& World::actors() {
     return actors_;
@@ -42,8 +43,8 @@ void World::insert(Actor* a) {
     actors_.insert(id, a);
 }
 
-Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int& i) {
-    Hit hit;
+Shot World::shot_face(const vv3& verts24, const v3& org, const v3& dir, const int& i) {
+    Shot shot;
     const auto plane_v1 = verts24[i+1] - verts24[i+0];
     const auto plane_v2 = verts24[i+2] - verts24[i+0];
     const auto n = glm::cross(plane_v1,plane_v2);
@@ -61,7 +62,7 @@ Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int&
     } else {
         const float d = upper / lower;
         if (d < 0.0f) {
-            // face hit is behind - shooting out your bum
+            // face shot is behind - shooting out your bum
         } else {
             const v3 M = d * dir + org;
             //std::cout << "Intersection at (d:" << d << ") " << printV(M) << "\n";
@@ -80,9 +81,9 @@ Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int&
             bool proj_AD = 0.0f <= AMAD && AMAD <= ADAD;
             // intersect at intersection -> true
             if (proj_AB && proj_AD) {
-                hit.hit = true;
-                hit.pos = M;
-                //std::cout << "Hit at " << printV(M) << "\n";
+                shot.hit = true;
+                shot.hit_pos = M;
+                //std::cout << "Shot at " << printV(M) << "\n";
                 // inside the rectangle
             } else {
                 // intersects with plane outside face
@@ -90,10 +91,11 @@ Hit World::hit_face(const vv3& verts24, const v3& org, const v3& dir, const int&
             }
         }
     }
-    return hit;
+    return shot;
 }
 
-Hit World::hit_actor(const v3& org, const v3& dir, const Id& id) {
+// checks if a shot fired by an guy at org facing dir hits id
+Shot World::shot_actor(const v3& org, const v3& dir, const Id& id) {
     const auto& l_cub = actors_[id].logical_cuboid();
     const vv3& verts24 = l_cub.verts24;
     const int size = verts24.size();
@@ -101,40 +103,40 @@ Hit World::hit_actor(const v3& org, const v3& dir, const Id& id) {
 
     // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
 
-    Hit closest;
+    Shot closest;
 
-    // test each face for hits
+    // test each face for shots
     // now need to try and not test against every other shape
     // first try to use octree to get blocks in front?
-    // then compare dist of nearest hit
+    // then compare dist of nearest shot
     float dist(std::numeric_limits<float>::max());
     for (int i=0; i<size; i+=4) {
-        const Hit hit = hit_face(verts24, org, dir, i);
-        const v3& hit_pos = hit.pos;
-        if (hit.hit) {
-            const v3 diff = hit_pos - org;
+        const Shot shot = shot_face(verts24, org, dir, i);
+        const v3& shot_pos = shot.hit_pos;
+        if (shot.hit) {
+            const v3 diff = shot.hit_pos - org;
             const float dist_away = glm::dot(diff,diff);
             if (dist_away < dist) {
                 // find closest point
                 dist = dist_away;
-                closest = hit;
+                closest = shot;
             }
         }
     }
-    // face func doesn't care about id of actor hit
-    closest.id = id;
+    // face func doesn't care about id of actor shot
+    closest.target = id;
     return closest;
 }
 
-void World::firedShot(const Id& id) {
+void World::fire_shot(const Id& id) {
     const v3 org = actors_[id].p_state().position;
     const v3 dir = glm::normalize(actors_[id].p_state().facing());
-    
+
     long now = timeNowMicros();
     // for now just checking against every other actor, seems to take only 1.5ms max, sometimes 0.5ms
-    
+
     float dist(std::numeric_limits<float>::max());
-    Hit closest;
+    Shot closest;
 
     for (const auto& a: actors_.underlying()) {
         const Id& a_id = a.first;
@@ -151,13 +153,13 @@ void World::firedShot(const Id& id) {
         const float nearest_dist = glm::dot(diff,diff) - max_width*max_width;
         if (nearest_dist > dist) {
             // no need to bother
-            // even at closest possible hit could not be closer than "closest"
+            // even at closest possible shot could not be closer than "closest"
             continue;
         }
 
-        Hit h = hit_actor(org, dir, a_id);
+        Shot h = shot_actor(org, dir, a_id);
         if (h.hit) {
-            const v3 diff = h.pos - org;
+            const v3 diff = h.hit_pos - org;
             const float dist_away = glm::dot(diff,diff);
             if (dist_away < dist) {
                 dist = dist_away;
@@ -165,16 +167,29 @@ void World::firedShot(const Id& id) {
             }
         }
     }
-    
-    if (closest.hit) {
-        std::cout << id << " fired and hit " << closest.id << " at " << printV(closest.pos) << "\n";
-    } else {
-        std::cout << id << " fired and missed" << "\n";
-    }
+
+    closest.shooter = id;
+    // target and hit_pos set in above loop
+    closest.org = org;
+    closest.dir = dir;
+
+    shot_queue_.emplace_back(closest);
 
     long taken = timeNowMicros() - now;
-    //std::cout << "Hit checking took " << (double)taken/1000.0 << "ms\n";
-    
+    //std::cout << "Shot checking took " << (double)taken/1000.0 << "ms\n";
+
+}
+
+void World::fire_shots() {
+    for (const auto& shot: shot_queue_) {
+        std::cout << shot.shooter << " fired from " << printV(shot.org) << " toward " << printV(shot.dir);
+        if (shot.hit) {
+            std::cout << " and hit " << shot.target << " at " << printV(shot.hit_pos) << "\n";
+        } else {
+            std::cout << " and missed\n";
+        }
+    }
+    shot_queue_.clear();
 }
 
 void World::simulate(const float& t, const float& dt) {
@@ -342,7 +357,6 @@ void World::collisions() {
         P_State& p_2 = a2.state_to_change();
         const v3 mom1 = m1 * v1;
         const v3 mom2 = m2 * v2;
-        //if (contains(alreadyColliding, mtv)) {
         //std::coutout << "Already colliding " << mtv.id1 << " and " << mtv.id2 << "\n";
         //std::coutout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
         //std::coutout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
@@ -399,8 +413,8 @@ void World::collisions() {
         p_2.set_momentum(mom2);
 
         //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
-        forceQueue[id1].push_back(Force(f1,Force::Type::Force,false,true));
-        forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));
+        forceQueue[id1].emplace_back(Force(id1,f1,Force::Type::Force,false,true));
+        forceQueue[id2].emplace_back(Force(id2,f2,Force::Type::Force,false,true));
 
         //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
 
@@ -424,7 +438,7 @@ void World::collisions() {
             //std::coutout << "Dividing force - " << printV(force.force) << " on " << id << " by " << forces.size() << "\n";
             //std::coutout << "Divided force now " << printV(force.force) << "\n";
         }
-        actors_.apply_force(id, force);
+        this->apply_force(force);
     }
 
     for (const auto& mtv: collidingPairs) {
@@ -435,18 +449,18 @@ void World::collisions() {
             alreadyColliding.insert(std::make_pair(mtv,0));
         }
     }
+}
 
-    if (collidingPairs.size() > 0) {
-        //std::coutout << "\n";
-    } else {
-    }
-    //long taken = timeNowMicros() - t;
-    //std::cout << "Time taken for collision resolving " << (double)(timeNowMicros() - taken)/1000.0 << "ms" << "\n";
+    void World::apply_force(const Force& force) {
+        force_queue_.emplace_back(force);
     }
 
-    void World::apply_force(const Id& id, const Force& force) {
-        actors_.apply_force(id,force);
+    void World::apply_forces() {
+    for (const auto& force: force_queue_) {
+        actors_.apply_force(force);
     }
+    force_queue_.clear();
+}
 
     void World::render() {
         const Actor& selectedActor = actors_.selectedActor();

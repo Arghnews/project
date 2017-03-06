@@ -29,6 +29,7 @@
 #include "Actors.hpp"
 #include "World.hpp"
 #include "Force.hpp"
+#include "Shot.hpp"
 
 //#include <xmmintrin.h>
 //#include <pmmintrin.h>
@@ -41,7 +42,7 @@
  - Consider octree reimplement with ordered maps
  - Consider merging P_State and L_Cuboid, they are becoming too dependent on each other
  - Collisions resolve
- - Collision where they hit
+ - Collision where they shot
  - Gravity
  - Perhaps camera?
  - Movement caching
@@ -52,9 +53,9 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
 void select_cube(Window_Inputs& inputs, World& world);
 
 static const float my_mass = 1.0f;
-static const float cube1_mass = 1.0f;
+static const float cube1_mass = 10.0f;
 static const float cube2_mass = 2.0f;
-static const float cube3_mass = 10.0f;
+static const float cube3_mass = 0.1f;
 static const float default_mass = 1.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
@@ -69,7 +70,7 @@ int main() {
 
     Window_Inputs inputs;
 
-    GLFWwindow* window = inputs.init_window(1440, 1024);
+    GLFWwindow* window = inputs.init_window(1280, 800);
 
     const long fps_max = 60l;
     
@@ -131,7 +132,7 @@ int main() {
                 position += where;
                 create_default_cube(position,default_mass,selectable,mobile);
                 if (rotated) {
-                    world.apply_force(std::max(world.actors().size()-1,0),Force(v3(i,0.0f,j),Force::Type::Torque));
+                    world.apply_force(Force(std::max(world.actors().size()-1,0),v3(i,0.0f,j),Force::Type::Torque));
                 }
             }
         }
@@ -180,7 +181,7 @@ int main() {
             //bool lf = inputs.window_lost_focus();
             // these functions reset a bool, should be called every frame really
             const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
-            world.apply_force(world.actors().selected(),Force(mouse_torque,Force::Type::Torque,false,false));
+            world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
 
             static const float normalize = 1.0f / 1e4f;
             const float t_normalized = t * normalize;
@@ -193,6 +194,12 @@ int main() {
             temp = timeNow();
             world.collisions();
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+
+            world.apply_forces();
+            // actually applies forces and moves the world
+            
+            world.fire_shots();
+            // actually fires the shots
 
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
@@ -214,6 +221,9 @@ int main() {
         //std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spare_time_u)));
     }
+
+    inputs.close();
+}
 
     /*
     while (!glfwWindowShouldClose(window)) {
@@ -294,9 +304,6 @@ int main() {
     }
     */
 
-    inputs.close();
-}
-
 void gl_loop_start() {
     // Clear the colorbufer
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -314,7 +321,7 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world) {
     inputs.setFunc(GLFW_MOUSE_BUTTON_LEFT, GLFW_PRESS, [&] () {
         const Id id = world.actors().selected();
         //std::cout << "Actor firing " << id << " " << world.actors().selectedActor().id << "\n";
-        world.firedShot(id);
+        world.fire_shot(id);
     });
 
     // must be capture by value here
@@ -337,31 +344,31 @@ void select_cube(Window_Inputs& inputs, World& world) {
     });
 
     inputs.setFunc2(GLFW_KEY_R,[&] () {
-            world.apply_force(world.actors().selected(),Force(LEFT,Force::Type::Torque,false,true));
+            world.apply_force(Force(world.actors().selected(),LEFT,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Y,[&] () {
-            world.apply_force(world.actors().selected(),Force(UP,Force::Type::Torque,false,true));
+            world.apply_force(Force(world.actors().selected(),UP,Force::Type::Torque,false,true));
     });
     inputs.setFunc2(GLFW_KEY_Z,[&] () {
-            world.apply_force(world.actors().selected(),Force(FORWARD,Force::Type::Torque,false,true));
+            world.apply_force(Force(world.actors().selected(),FORWARD,Force::Type::Torque,false,true));
     });
 
     inputs.setFunc2(GLFW_KEY_W,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*FORWARD,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*FORWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_S,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*BACKWARD,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*BACKWARD,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_A,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*LEFT,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*LEFT,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_D,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*RIGHT,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*RIGHT,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_UP,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*UP,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*UP,Force::Type::Force));
     });
     inputs.setFunc2(GLFW_KEY_DOWN,[&] () {
-            world.apply_force(world.actors().selected(),Force(small*DOWN,Force::Type::Force));
+            world.apply_force(Force(world.actors().selected(),small*DOWN,Force::Type::Force));
     });
 }

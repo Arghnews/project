@@ -15,8 +15,8 @@ const std::map<Id, Actor*>& Actors::underlying() const {
 
 Actors::Actors() : selected_index(0) {}
 
-void Actors::apply_force(const Id& id, const Force& force) {
-    actors[id]->apply_force(force);
+void Actors::apply_force(const Force& force) {
+    actors[force.id]->apply_force(force);
 }
 
 bool Actors::insert(const Id& id, Actor* a) {

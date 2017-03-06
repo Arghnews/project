@@ -104,6 +104,10 @@ main() {
 				;;
             -v|--v|-verbose|--verbose)
                 ;;
+            -q|--q|-quick|--quick)
+                compilerFlags=$(echo "$compilerFlags" | sed -E "s/( -O[0-3])|(-O[0-3] )//g")
+                v "Removing compiler optimisation options if any"
+                ;;
 			*)
                 args+=("$arg")
                 # add args passed to script to arg array
