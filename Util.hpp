@@ -18,6 +18,7 @@
 #include <math.h>
 #include <cmath>
 #include <set>
+#include <deque>
 
 typedef int Id;
 
@@ -35,7 +36,9 @@ typedef std::vector<v3Id> vv3Id;
 typedef std::vector<Id> vId;
 
 struct Force;
-typedef std::vector<Force> Forces;
+struct Shot;
+typedef std::deque<Force> Forces;
+typedef std::deque<Shot> Shots;
 
 static const v3 FORWARD(0.0f,0.0f,-1.0f);
 static const v3 BACKWARD(0.0f,0.0f,1.0f);

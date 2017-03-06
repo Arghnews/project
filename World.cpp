@@ -131,65 +131,11 @@ Shot World::shot_actor(const v3& org, const v3& dir, const Id& id) {
 void World::fire_shot(const Id& id) {
     const v3 org = actors_[id].p_state().position;
     const v3 dir = glm::normalize(actors_[id].p_state().facing());
-
-    long now = timeNowMicros();
-    // for now just checking against every other actor, seems to take only 1.5ms max, sometimes 0.5ms
-
-    float dist(std::numeric_limits<float>::max());
-    Shot closest;
-
-    for (const auto& a: actors_.underlying()) {
-        const Id& a_id = a.first;
-        Actor& actor = *a.second;
-        const auto& l_cub = actor.logical_cuboid();
-        if (id == a_id) {
-            continue;
-        }
-        // early exit if could not possibly be closer than dist
-        // basically max diagonal distance across shape
-        const float max_width = l_cub.furthestVertex * 0.5f;
-        const v3 diff = actor.p_state().position - org;
-        // closest possible corner/edge/face/point on shape
-        const float nearest_dist = glm::dot(diff,diff) - max_width*max_width;
-        if (nearest_dist > dist) {
-            // no need to bother
-            // even at closest possible shot could not be closer than "closest"
-            continue;
-        }
-
-        Shot h = shot_actor(org, dir, a_id);
-        if (h.hit) {
-            const v3 diff = h.hit_pos - org;
-            const float dist_away = glm::dot(diff,diff);
-            if (dist_away < dist) {
-                dist = dist_away;
-                closest = h;
-            }
-        }
-    }
-
-    closest.shooter = id;
-    // target and hit_pos set in above loop
-    closest.org = org;
-    closest.dir = dir;
-
-    shot_queue_.emplace_back(closest);
-
-    long taken = timeNowMicros() - now;
-    //std::cout << "Shot checking took " << (double)taken/1000.0 << "ms\n";
-
+    return this->fire_shot(Shot(id,org,dir));
 }
 
-void World::fire_shots() {
-    for (const auto& shot: shot_queue_) {
-        std::cout << shot.shooter << " fired from " << printV(shot.org) << " toward " << printV(shot.dir);
-        if (shot.hit) {
-            std::cout << " and hit " << shot.target << " at " << printV(shot.hit_pos) << "\n";
-        } else {
-            std::cout << " and missed\n";
-        }
-    }
-    shot_queue_.clear();
+void World::fire_shot(const Shot& shot) {
+    shot_queue_.emplace_back(shot);
 }
 
 void World::simulate(const float& t, const float& dt) {
@@ -451,154 +397,192 @@ void World::collisions() {
     }
 }
 
-    void World::apply_force(const Force& force) {
-        force_queue_.emplace_back(force);
-    }
+void World::apply_force(const Force& force) {
+    force_queue_.emplace_back(force);
+}
 
-    void World::apply_forces() {
-    for (const auto& force: force_queue_) {
-        actors_.apply_force(force);
-    }
+void World::clear_forces() {
     force_queue_.clear();
 }
 
-    void World::render() {
-        const Actor& selectedActor = actors_.selectedActor();
-        const m4 view = selectedActor.viewMatrix();
-        //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
-        const int& cam_g_cub = selectedActor.graphical_cuboid();
-        assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
-        const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
-        const float aspectRatio = windowSize.x / windowSize.y;
-        const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
+void World::clear_shots() {
+    shot_queue_.clear();
+}
 
-        const m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+const Forces& World::forces() const {
+    return force_queue_;
+}
 
-        long temp = timeNowMicros();
+const Shots& World::shots() const {
+    return shot_queue_;
+}
 
-        static std::map<int,std::deque<Id>> graphics_id;
-
-        for (const auto& pai: actors_.underlying()) {
-            const Id& id = pai.first;
-            const int g_id = pai.second->graphical_cuboid();
-            if (!contains(graphics_id,g_id)) {
-                graphics_id.emplace(g_id,std::deque<Id>());
-            }
-            graphics_id[g_id].push_back(id);
-        }
-
-        for (const auto& pai: graphics_id) {
-            const int& g_id = pai.first;
-            const std::deque<Id>& ids = pai.second;
-            if (!ids.empty()) {
-                const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
-
-                graphical_cuboid.bindBuffers();
-                graphical_cuboid.useShader();
-
-                GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
-
-                glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-                glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-                glBindVertexArray(graphical_cuboid.VAO);
-
-
-                // bind buffers
-                for (const auto& id: ids) {
-                    const Actor& actor = actors_[id];
-
-                    if (!actor.invis()) {
-                        // render this shape
-                        m4 model = actor.modelMatrix();
-                        GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
-                        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-                        glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
-
-                    }
-                }
-                glBindVertexArray(0);
-                glUseProgram(0);
-            }
-        }
-        // Render end -- -- --
-
-        // honestly if can be bothered an easy optim is just to build this once
-        // and only affect changes to it
-        graphics_id.clear();
-
-        /*
-           for (const auto& pai: g_cubs) {
-           const int& g_cub_index = pai.first;
-           const G_Cuboid& graphical_cuboid = g_cubs.second;
-           for (const auto& a: actors_.underlying()) {
-           const G_Cuboid& graphical_cuboid = g_cubs.find((*a.second).graphical_cuboid())->second;
-           const Actor& actor = (*a.second);
-
-        //if (true) {
-        if (!actor.invis()) {
-
-        graphical_cuboid.bindBuffers();
-        graphical_cuboid.useShader();
-
-        GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
-
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
-
-        glBindVertexArray(graphical_cuboid.VAO);
-
-        m4 model = actor.modelMatrix();
-        GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
-
-        glBindVertexArray(0);
-        glUseProgram(0);
-        // Render end -- -- --
-        }
-        }
-        }
-        */
-
-        //std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
-
-        // 10 minute crosshair
-        // An array of 3 vectors which represents 3 vertices
-        v2 normed = glm::normalize(windowSize);
-        float rat = normed.y/normed.x;
-        static GLfloat g_vertex_buffer_data[] = {
-            -0.5f*rat, 0.0f, 0.0f,
-            0.5f*rat, 0.0f, 0.0f,
-            0.0f, 0.5f, 0.0f,
-            0.0f, -0.5f, 0.0f
-        };
-
-        bool once = false;
-        // This will identify our vertex buffer
-        static GLuint vertexbuffer;
-        if (!once) {
-            // Generate 1 buffer, put the resulting identifier in vertexbuffer
-            glGenBuffers(1, &vertexbuffer);
-            once = true;
-        }
-        // The following commands will talk about our 'vertexbuffer' buffer
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        // Give our vertices to OpenGL.
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-        // 1st attribute buffer : vertices
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void*)0            // array buffer offset
-                );
-        // Draw the triangle !
-        glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
-        glDisableVertexAttribArray(0);
+void World::apply_forces(const Forces& forces) {
+    for (const auto& force: forces) {
+        actors_.apply_force(force);
     }
+}
+
+void World::fire_shots(const Shots& shots) {
+    for (const auto& shot: shots) {
+        const Id& id = shot.shooter;
+        const v3& org = shot.org;
+        const v3& dir = shot.dir;
+        long now = timeNowMicros();
+        // for now just checking against every other actor, seems to take only 1.5ms max, sometimes 0.5ms
+
+        float dist(std::numeric_limits<float>::max());
+        Shot closest;
+
+        for (const auto& a: actors_.underlying()) {
+            const Id& a_id = a.first;
+            Actor& actor = *a.second;
+            const auto& l_cub = actor.logical_cuboid();
+            if (id == a_id) {
+                continue;
+            }
+            // early exit if could not possibly be closer than dist
+            // basically max diagonal distance across shape
+            const float max_width = l_cub.furthestVertex * 0.5f;
+            const v3 diff = actor.p_state().position - org;
+            // closest possible corner/edge/face/point on shape
+            const float nearest_dist = glm::dot(diff,diff) - max_width*max_width;
+            if (nearest_dist > dist) {
+                // no need to bother
+                // even at closest possible shot could not be closer than "closest"
+                continue;
+            }
+
+            Shot h = shot_actor(org, dir, a_id);
+            if (h.hit) {
+                const v3 diff = h.hit_pos - org;
+                const float dist_away = glm::dot(diff,diff);
+                if (dist_away < dist) {
+                    dist = dist_away;
+                    closest = h;
+                }
+            }
+        }
+
+        closest.shooter = id;
+        // target and hit_pos set in above loop
+        closest.org = org;
+        closest.dir = dir;
+
+        long taken = timeNowMicros() - now;
+        //std::cout << "Shot checking took " << (double)taken/1000.0 << "ms\n";
+        std::cout << closest.shooter << " fired from " << printV(closest.org) << " toward " << printV(closest.dir);
+        if (closest.hit) {
+            std::cout << " and hit " << closest.target << " at " << printV(closest.hit_pos) << "\n";
+        } else {
+            std::cout << " and missed\n";
+        }
+    }
+}
+
+void World::render() {
+    const Actor& selectedActor = actors_.selectedActor();
+    const m4 view = selectedActor.viewMatrix();
+    //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
+    const int& cam_g_cub = selectedActor.graphical_cuboid();
+    assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
+    const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
+    const float aspectRatio = windowSize.x / windowSize.y;
+    const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
+
+    const m4 projection = glm::perspective(glm::radians(90.0f), aspectRatio, 0.1f, 200.0f);
+
+    long temp = timeNowMicros();
+
+    static std::map<int,std::deque<Id>> graphics_id;
+
+    for (const auto& pai: actors_.underlying()) {
+        const Id& id = pai.first;
+        const int g_id = pai.second->graphical_cuboid();
+        if (!contains(graphics_id,g_id)) {
+            graphics_id.emplace(g_id,std::deque<Id>());
+        }
+        graphics_id[g_id].push_back(id);
+    }
+
+    for (const auto& pai: graphics_id) {
+        const int& g_id = pai.first;
+        const std::deque<Id>& ids = pai.second;
+        if (!ids.empty()) {
+            const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
+
+            graphical_cuboid.bindBuffers();
+            graphical_cuboid.useShader();
+
+            GLuint projectionLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "projection");
+
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+            glBindVertexArray(graphical_cuboid.VAO);
+
+
+            // bind buffers
+            for (const auto& id: ids) {
+                const Actor& actor = actors_[id];
+
+                if (!actor.invis()) {
+                    // render this shape
+                    m4 model = actor.modelMatrix();
+                    GLuint modelLoc = glGetUniformLocation(graphical_cuboid.shaderProgram(), "model");
+                    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+                    glDrawArrays(GL_TRIANGLES, 0, graphical_cuboid.drawSize());
+
+                }
+            }
+            glBindVertexArray(0);
+            glUseProgram(0);
+        }
+    }
+    // Render end -- -- --
+
+    // honestly if can be bothered an easy optim is just to build this once
+    // and only affect changes to it
+    graphics_id.clear();
+
+    //std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
+
+    // 10 minute crosshair
+    // An array of 3 vectors which represents 3 vertices
+    v2 normed = glm::normalize(windowSize);
+    float rat = normed.y/normed.x;
+    static GLfloat g_vertex_buffer_data[] = {
+        -0.5f*rat, 0.0f, 0.0f,
+        0.5f*rat, 0.0f, 0.0f,
+        0.0f, 0.5f, 0.0f,
+        0.0f, -0.5f, 0.0f
+    };
+
+    bool once = false;
+    // This will identify our vertex buffer
+    static GLuint vertexbuffer;
+    if (!once) {
+        // Generate 1 buffer, put the resulting identifier in vertexbuffer
+        glGenBuffers(1, &vertexbuffer);
+        once = true;
+    }
+    // The following commands will talk about our 'vertexbuffer' buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    // Give our vertices to OpenGL.
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    // 1st attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+            3,                  // size
+            GL_FLOAT,           // type
+            GL_FALSE,           // normalized?
+            0,                  // stride
+            (void*)0            // array buffer offset
+            );
+    // Draw the triangle !
+    glDrawArrays(GL_LINES, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangles
+    glDisableVertexAttribArray(0);
+}

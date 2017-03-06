@@ -25,8 +25,8 @@ class World {
         Octree tree_;
         float restitution;
         std::map<Id, v3> positions_;
-        std::deque<Force> force_queue_;
-        std::deque<Shot> shot_queue_;
+        Forces force_queue_;
+        Shots shot_queue_;
     public:
         std::map<int,G_Cuboid> g_cubs;
         World(float worldSize, v2 windowSize, float restitution);
@@ -34,12 +34,19 @@ class World {
         Actors& actors();
         void insert(Actor* a);
         void simulate(const float& t, const float& dt);
+
         void apply_force(const Force& force);
-        void apply_forces();
+        void apply_forces(const Forces& forces);
+        void clear_forces();
+        void clear_shots();
+        const Forces& forces() const;
+        const Shots& shots() const;
+        void fire_shot(const Id& id);
+        void fire_shot(const Shot& shot);
+        void fire_shots(const Shots& shots);
+
         void render();
         void collisions();
-        void fire_shot(const Id& id);
-        void fire_shots();
 
         void blow_up(const Id& id);
         std::vector<MTV> colliding_with(const Id& id);

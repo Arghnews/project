@@ -72,10 +72,10 @@ int main() {
 
     GLFWwindow* window = inputs.init_window(1280, 800);
 
-    const long fps_max = 60l;
+    //const long fps_max = 60l;
     
-    const long tickrate = 100l;
-    const long dt = (1e6l)/tickrate; // run at tickrate 100
+    //const long tickrate = 100l;
+    //const long dt = (1e6l)/tickrate; // run at tickrate 100
 
     long t = 0l;
     long lastFrameStart = timeNow();
@@ -155,7 +155,6 @@ int main() {
 
     spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
     spawn_cubes(v3(0.0f,-10.0f,0.0f),25,10,false,false,true);
-    spawn_cubes(v3(0.0f,-20.0f,0.0f),25,10,true,false,true);
 
     set_keyboard(inputs,window,world);
 
@@ -163,7 +162,8 @@ int main() {
 
     //float fps = 60.0f;
     //float f_time = 1e6f / fps;
-    double rate = 100.0;
+    const double rate = 100.0;
+    const long dt = (1e6l)/100.0; // run at tickrate 100
     double frame_time = 1e6 / rate;
 
     long temp = timeNow();
@@ -195,10 +195,12 @@ int main() {
             world.collisions();
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
-            world.apply_forces();
+            world.apply_forces(world.forces());
+            world.clear_forces();
             // actually applies forces and moves the world
             
-            world.fire_shots();
+            world.fire_shots(world.shots());
+            world.clear_shots();
             // actually fires the shots
 
         // Render -- -- --
