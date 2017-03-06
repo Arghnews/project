@@ -12,6 +12,7 @@ struct Force {
     Type t;
     bool relative; // motion all relative to actor or absolute
     bool affected; // ie. affected by air_res
+    Force() {}
     Force(const Id& id, const v3& force, Type t) :
         Force(id,force,t,true,true) {
     }

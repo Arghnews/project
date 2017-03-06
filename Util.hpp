@@ -20,7 +20,7 @@
 #include <set>
 #include <deque>
 
-typedef int Id;
+typedef uint16_t Id;
 
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;

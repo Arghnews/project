@@ -15,6 +15,8 @@
 #include <iostream>
 #include "asio.hpp"
 #include <unistd.h>
+#include "Archiver.hpp"
+#include "Force.hpp"
 
 using asio::ip::udp;
 
@@ -33,6 +35,7 @@ class Server {
                     {
                         if (!ec && bytes_recvd > 0) {
                             std::cout << "Server sending back start\n";
+                            std::cout << "Server Received message of size " << bytes_recvd << "\n";
                             do_send(bytes_recvd);
                             std::cout << "Server sending back end\n";
                         } else {
@@ -45,17 +48,17 @@ class Server {
             socket_.async_send_to(
                     asio::buffer(data_, length),
                     sender_endpoint_,
-                    [this](std::error_code /*ec*/, std::size_t /*bytes_sent*/)
+                    [this](std::error_code /*ec*/, std::size_t bs/*bytes_sent*/)
                     {
-                        std::cout << "Server do_send\n";
+                        std::cout << "Server do_send size " << " and " << bs << "\n";
                     });
         }
 
     private:
         udp::socket socket_;
         udp::endpoint sender_endpoint_;
-        enum { max_length = 1024 };
-        char data_[max_length];
+        enum { max_length = 65000 };
+        unsigned char data_[max_length];
 };
 
 int main(int argc, char* argv[]) {
@@ -69,18 +72,19 @@ int main(int argc, char* argv[]) {
 
         Server s(io_service, std::atoi(argv[1]));
 
-
         std::cout << "Ioservice run\n";
         s.do_receive();
         io_service.run();
         io_service.reset();
         std::cout << "Ioservice run done\n";
 
+        /*
         std::cout << "Ioservice run\n";
         s.do_send(10);
         io_service.run();
         io_service.reset();
         std::cout << "Ioservice run done\n";
+        */
 
     }
     catch (std::exception& e) {

@@ -11,108 +11,103 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <iostream>
 #include <sstream>
 #include <string>
-#include <cereal/types/vector.hpp>
+#include <cereal/types/deque.hpp>
 #include "cereal/archives/portable_binary.hpp"
-
-// Portable binary checks endianness etc, for small overhead
-
-namespace cereal {
-    template<class Archive>
-        void serialize(Archive& archive, glm::vec3& v) {
-            archive(v.x, v.y, v.z);
-        }
-}
-
-struct Classy {
-   int x;
-   glm::vec3 y;
-   std::vector<glm::vec3> vec;
-
-    template <class Archive>
-    void serialize(Archive& archive) {
-        archive(x, y, vec);
-    }
-    friend class cereal::access;
-
-};
+#include "Util.hpp"
+#include "Force.hpp"
+#include "Archiver.hpp"
 
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <string>
 #include "asio.hpp"
+#include <unistd.h>
+#include <vector>
+
+typedef asio::ip::udp::socket udp_socket;
+typedef asio::ip::udp::endpoint udp_endpoint;
+typedef std::vector<udp_endpoint> udp_endpoints;
 
 using asio::ip::udp;
 
-enum { max_length = 1024 };
+template <typename Serializable>
+void send(const udp_endpoint& endpoint, udp_socket& s, const std::deque<Serializable>& items) {
+    send(udp_endpoints{endpoint},s,items);
+}
+
+// serializes and sends data to udp endpoint (eg. server)
+template <typename Serializable>
+void send(const udp_endpoints& udp_endpoints, udp_socket& s, const std::deque<Serializable>& items) {
+    std::stringstream ss; // any stream can be used
+
+    {
+        cereal::PortableBinaryOutputArchive oarchive(ss); // Create an output archive
+        oarchive(items); // Write the data to the archive
+    } // archive goes out of scope, ensuring all contents are flushed
+
+    const std::string& tmp = ss.str();
+    const char* cstr = tmp.c_str();
+
+    const std::vector<char> request(cstr, cstr+tmp.size());
+    int request_length = request.size();
+    for (auto& endpoint: udp_endpoints) {
+        s.send_to(asio::buffer(request.data(), request_length), endpoint);
+    }
+}
+
+template <typename Serializable>
+std::deque<Serializable> receive(udp_socket& s) {
+    int reply_size = s.available();
+    std::deque<Serializable> items;
+
+    if (reply_size > 0) {
+
+        std::vector<char> reply(reply_size);
+        udp_endpoint sender_endpoint;
+
+        int reply_length = s.receive_from(
+                asio::buffer(reply.data(), reply_size), sender_endpoint);
+
+        std::stringstream ss; // any stream can be used
+        ss.write(reply.data(), reply_length); // reply data to stream
+
+        {
+            cereal::PortableBinaryInputArchive iarchive(ss); // Create an input archive
+            iarchive(items); // Read the data from the archive
+        } // flush
+
+    } else {
+        ;
+    }
+
+    return items;
+}
 
 int main(int argc, char* argv[]) {
   try {
-    if (argc != 3) {
-      std::cerr << "Usage: blocking_udp_echo_client <host> <port>\n";
-      return 1;
-    }
+
+    std::string host = "127.0.0.1";
+    std::string port = "2000";
 
     asio::io_service io_service;
 
     udp::socket s(io_service, udp::endpoint(udp::v4(), 0));
 
     udp::resolver resolver(io_service);
-    udp::endpoint endpoint = *resolver.resolve({udp::v4(), argv[1], argv[2]});
+    udp::endpoint endpoint = *resolver.resolve({udp::v4(), host, port});
+    
+    Forces fs;
+    fs.emplace_back(Force(69,v3(69.0f,72.0f,0.0f),Force::Type::Force));
 
+    send(endpoint,s,fs);
 
-    std::stringstream ss; // any stream can be used
-
-    {
-        cereal::PortableBinaryOutputArchive oarchive(ss); // Create an output archive
-        Classy c1_in;
-        c1_in.x = 0.0f;
-        c1_in.y.x = 71.0f;
-        c1_in.vec.push_back(glm::vec3(97.0f));
-        oarchive(c1_in); // Write the data to the archive
-    } // archive goes out of scope, ensuring all contents are flushed
-
-
-    std::cout << "Enter message: ";
-    //char request[max_length];
-    //std::cin.getline(request, max_length);
-    //size_t request_length = std::strlen(request);
-    //std::vector<char> request = {'a','b'};
-    const std::string& tmp = ss.str();
-    const char* cstr = tmp.c_str();
-    std::vector<char> request(cstr, cstr+tmp.size());
-    size_t request_length = request.size();
-    std::cout << "Size of req back " << request_length << "\n";
-    s.send_to(asio::buffer(request.data(), request_length), endpoint);
-
-    char reply[max_length];
-    udp::endpoint sender_endpoint;
-    size_t reply_length = s.receive_from(
-        asio::buffer(reply, max_length), sender_endpoint);
-
-
-    std::stringstream ss_out; // any stream can be used
-    /*
-    std::cout << "Reply is: \n";
-    std::cout.write(reply, reply_length);
-    std::cout << "\n";
-    */
-    for (const auto& c: reply) {
-        ss_out << c;
-    }
-
-    // insert networked magic here
-    Classy c2_in;
-    {
-        cereal::PortableBinaryInputArchive iarchive(ss_out); // Create an input archive
-        iarchive(c2_in); // Read the data from the archive
-    }
-
-    std::cout << c2_in.y.x << "\n";
-    for (const auto& v: c2_in.vec) {
-        std::cout << "vec " << v.x << "," << v.y << "," << v.z << "\n";
+    usleep(1000000);
+    std::deque<Force> items(receive<Force>(s)); // non-blocking receive
+    for (auto& i: items) {
+        std::cout << i.id << "\n";
     }
 
   }
@@ -120,6 +115,6 @@ int main(int argc, char* argv[]) {
       std::cerr << "Exception: " << e.what() << "\n";
   }
 
-
   return 0;
 }
+
