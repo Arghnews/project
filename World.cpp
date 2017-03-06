@@ -264,13 +264,13 @@ void World::collisions() {
     }
     auto a_time = ((double)a_total)/1000.0;
     auto c_time = ((double)c_total)/1000.0;
-    std::cout << "Total time of a - octree lookup " << a_time << "ms" << "\n";
+    //std::cout << "Total time of a - octree lookup " << a_time << "ms" << "\n";
     //std::cout << "Total time of b " << ((double)b_total)/1000.0 << "ms" << "\n";
-    std::cout << "Total time of c - colliding calc " << c_time << "ms" << "\n";
+    //std::cout << "Total time of c - colliding calc " << c_time << "ms" << "\n";
     long taken = timeNowMicros() - t_earlier;
     auto time_first_bit = (double)taken/1000.0;
-    std::cout << "Other time " << time_first_bit - a_time - c_time << "ms\n";
-    std::cout << "Time taken " << time_first_bit << "ms for finding collisions" << "\n";
+    //std::cout << "Other time " << time_first_bit - a_time - c_time << "ms\n";
+    //std::cout << "Time taken " << time_first_bit << "ms for finding collisions" << "\n";
     
     std::map<Id,std::vector<Force>> forceQueue;
     
@@ -313,23 +313,24 @@ void World::collisions() {
         //std::coutout << "From " << id1 << " mom:" << printV(m1*u1) << " and " << id2 << " mom:" << printV(m2*u2) << "\n";
         //std::coutout << "To " << id1 << " mom:" << printV(mom1) << " and " << id2 << " mom:" << printV(mom2) << "\n";
         const float small = 0.0001f;
-        const float d1 = glm::length(glm::distance(p_1.position + mtv.axis * small, p_2.position));
-        const float d2 = glm::length(glm::distance(p_1.position - mtv.axis * small, p_2.position));
+        const float d1 = glm::length(glm::distance(p1.position + mtv.axis * small, p_2.position));
+        const float d2 = glm::length(glm::distance(p1.position - mtv.axis * small, p_2.position));
         if (d2 < d1) {
             mtv.axis = -1.0f * mtv.axis;
             //std::coutout << "Inverting axis\n";
         }
 
-        p_1.set_momentum(mom1);
-        p_2.set_momentum(mom2);
-
         float overlap = mtv.overlap;
         assert(mtv.overlap >= 0.0f);
 
         //std::cout << mtv.overlap << "\n";
-        if (mtv.overlap <= 0.03f) continue;
+        if (mtv.overlap <= 0.0001f) continue;
 
-        overlap *= 0.35f;
+        overlap *= 0.4f;
+
+        if (id1 == 0) {
+            std::cout << overlap << "\n";
+        }
 
         v3 f = mtv.axis * overlap;
         
@@ -359,7 +360,11 @@ void World::collisions() {
 
         v3 f1 = f * f1_m_mul;
         v3 f2 = -f * f2_m_mul;
-       //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
+
+        p_1.set_momentum(mom1);
+        p_2.set_momentum(mom2);
+
+        //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
         forceQueue[id1].push_back(Force(f1,Force::Type::Force,false,true));
         forceQueue[id2].push_back(Force(f2,Force::Type::Force,false,true));
 
@@ -508,7 +513,7 @@ void World::render() {
     }
     */
 
-    std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
+    //std::cout << "Time for render " << (double)(timeNowMicros()-temp)/1000.0 << "ms\n";
 
     // 10 minute crosshair
     // An array of 3 vectors which represents 3 vertices

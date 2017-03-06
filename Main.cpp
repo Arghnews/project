@@ -137,20 +137,20 @@ int main() {
         }
     };
 
-    create_default_cube(zeroV,my_mass,true,true);
+    create_default_cube(v3(0.0f,-0.4f,10.0f),my_mass,true,true);
 
     world.insert(
             new Actor(default_g_cube,
                 &vertices,
                 v3(4.0f,1.0f,4.0f),
-                v3(10.0f,0.0f,5.0f),
+                v3(15.0f,2.0f,0.0f),
                 cube1_mass,
                 5.0f,
                 true,
                 true)
             );
-    create_default_cube(v3(8.0f,0.0f,3.0f),cube2_mass,true,true);
-    create_default_cube(v3(2.0f,3.0f,3.0f),cube3_mass,true,true);
+    create_default_cube(v3(20.0f,2.0f,3.0f),cube2_mass,true,true);
+    create_default_cube(v3(-20.0f,2.0f,3.0f),cube3_mass,true,true);
 
     spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
     spawn_cubes(v3(0.0f,-10.0f,0.0f),25,10,false,false,true);
@@ -188,11 +188,11 @@ int main() {
 
             temp = timeNow();
             world.simulate(t_normalized,dt_normalized);
-            std::cout << "Time for sim " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+            //std::cout << "Time for sim " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
             temp = timeNow();
             world.collisions();
-            std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
+            //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
         // Render -- -- --
         // local space -> world space -> view space -> clip space -> screen space
@@ -208,10 +208,10 @@ int main() {
         //std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spareFrameTime)));
 
         long thisFrameTime_u = timeNow() - frameStart;
-        std::cout << "This frame " << thisFrameTime_u << "u \n";
-        std::cout << "Max pos " << frame_time << "u \n";
+        //std::cout << "This frame " << thisFrameTime_u << "u \n";
+        //std::cout << "Max pos " << frame_time << "u \n";
         long spare_time_u = (long)frame_time - thisFrameTime_u;
-        std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
+        //std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spare_time_u)));
     }
 
