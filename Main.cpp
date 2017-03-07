@@ -15,9 +15,11 @@
 #include <thread>
 #include <algorithm>
 #include <string>
+#include <sstream>
 #include <map>
 #include <iterator>
 #include <sstream>
+#include <deque>
 
 #include "Util.hpp"
 #include "Shader.hpp"
@@ -30,6 +32,13 @@
 #include "World.hpp"
 #include "Force.hpp"
 #include "Shot.hpp"
+
+#include "Archiver.hpp"
+#include "cereal/types/deque.hpp"
+#include "cereal/types/vector.hpp"
+#include "cereal/archives/portable_binary.hpp"
+#include "Receiver.hpp"
+#include "Sender.hpp"
 
 //#include <xmmintrin.h>
 //#include <pmmintrin.h>
@@ -60,13 +69,58 @@ static const float cube3_mass = 0.1f;
 static const float default_mass = 1.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
+static bool server = false;
+static bool client = false;
+
+unsigned short listen_port;
+std::vector<std::pair<std::string,std::string>> addresses; // address, port
+
+static Receiver* receiver;
+std::vector<Sender> senders;
 
 long static timeNow() {
     return timeNowMicros() - program_start_time;
 }
 
-int main() {
-//_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+int main(int argc, char* argv[]) {
+
+    if (argc < 2) {
+        std::cout << "Not enough arguments - please provide client/server as first param\n";
+        exit(1);
+    }
+
+    // host, port
+    std::string type(argv[1]);
+    if (type == "server") {
+        server = true;
+        if (argc < 5) {
+            std::cout << "To run server: ./server server [server_receive_port] [client_addr] [client_port]... - at least is needed\n";
+            exit(1);
+        }
+
+        listen_port = std::stoi(argv[2]);
+        for (int i=3; i<argc; i+=2) {
+            std::string addr = argv[i];
+            std::string port = argv[i+1];
+            auto address = std::make_pair(addr,port);
+            addresses.push_back(address);
+        }
+    } else if (type == "client") {
+        client = true;
+        if (argc < 5) {
+            std::cout << "To run client: ./server client [client_receive_port] [server_host] [server_port] - at least is needed\n";
+            exit(1);
+        }
+        listen_port = std::stoi(argv[2]);
+        std::string addr = argv[3];
+        std::string port = argv[4];
+        auto address = std::make_pair(addr,port);
+        addresses.push_back(address);
+    }
+
+    receiver = new
+
+    //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
     Window_Inputs inputs;
@@ -230,6 +284,8 @@ int main() {
     }
 
     inputs.close();
+
+    delete receiver;
 }
 
     /*

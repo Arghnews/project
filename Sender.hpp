@@ -16,6 +16,7 @@
 #include "asio.hpp"
 
 class Sender {
+
     private:
         io_service& io;
         unsigned short local_port;
@@ -23,6 +24,7 @@ class Sender {
         std::string port;
         udp_socket socket;
         udp_endpoint endpoint;
+
     public:
         Sender(io_service& io, unsigned short local_port, std::string host, std::string port);
 
