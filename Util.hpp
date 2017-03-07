@@ -20,6 +20,9 @@
 #include <set>
 #include <deque>
 
+#define ASIO_STANDALONE
+#include "asio.hpp"
+
 typedef uint16_t Id;
 
 typedef glm::fvec2 v2;
@@ -39,6 +42,11 @@ struct Force;
 struct Shot;
 typedef std::deque<Force> Forces;
 typedef std::deque<Shot> Shots;
+
+typedef asio::io_service io_service;
+typedef asio::ip::udp::socket udp_socket;
+typedef asio::ip::udp::endpoint udp_endpoint;
+typedef std::vector<udp_endpoint> udp_endpoints;
 
 static const v3 FORWARD(0.0f,0.0f,-1.0f);
 static const v3 BACKWARD(0.0f,0.0f,1.0f);

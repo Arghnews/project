@@ -1,99 +1,101 @@
-#define ASIO_STANDALONE
 
-
-//
-// async_udp_echo_Server.cpp
-// ~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// Copyright (c) 2003-2015 Christopher M. Kohlhoff (chris at kohlhoff dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <sstream>
+#include <string>
+#include <cereal/types/deque.hpp>
+#include "cereal/archives/portable_binary.hpp"
+#include "Util.hpp"
+#include "Force.hpp"
+#include "Archiver.hpp"
 
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
+#include <string>
+#define ASIO_STANDALONE
 #include "asio.hpp"
 #include <unistd.h>
-#include "Archiver.hpp"
-#include "Force.hpp"
-#include <string>
+#include <vector>
 
-using asio::ip::udp;
+class Receiver {
+    private:
+        io_service& io;
+        unsigned short port;
+        udp_socket socket;
+        std::stringstream read(int reply_size) {
+            std::vector<char> reply(reply_size);
+            udp_endpoint sender_endpoint;
 
-class Server {
+            int reply_length = socket.receive_from(
+                    asio::buffer(reply.data(), reply_size), sender_endpoint);
+
+            auto addr = sender_endpoint.address();
+            auto port = sender_endpoint.port();
+            std::cout << addr << ":" << port << "\n";
+
+            std::stringstream ss; // any stream can be used
+            ss.write(reply.data(), reply_length); // reply data to stream
+            return ss;
+        }
+
     public:
-        Server(asio::io_service& io_service, unsigned short port)
-            : socket_(io_service, udp::endpoint(udp::v4(), port)) {
-                std::cout << "Server constructed\n";
+        Receiver(io_service& io, unsigned short port) :
+            io(io),
+            port(port),
+            socket(io, udp_endpoint(asio::ip::udp::v4(), port))
+    {
+
+    }
+        bool available() {
+            return socket.available() > 0;
+        }
+        template <typename Serializable_Items>
+            Serializable_Items static deserialize(std::stringstream& ss) {
+                Serializable_Items items;
+                {
+                    cereal::PortableBinaryInputArchive iarchive(ss); // Create an input archive
+                    iarchive(items); // Read the data from the archive
+                } // flush
+                return items;
             }
 
-        void do_receive() {
-            socket_.async_receive_from(
-                    asio::buffer(data_, max_length),
-                    sender_endpoint_,
-                    [this](std::error_code ec, std::size_t bytes_recvd)
-                    {
-                        if (!ec && bytes_recvd > 0) {
-                            //std::cout << "Server sending back start\n";
-                            std::cout << "Server Received message of size " << bytes_recvd << "\n";
-                            //do_send(bytes_recvd);
-                            //std::cout << "Server sending back end\n";
-                            do_receive();
-                        } else {
-                            std::cout << "Server no more messages\n";
-                        }
-                        std::cout << "Server done receiving\n";
-                    });
-        }
+        template <typename Serializable_Items>
+            Serializable_Items receive() {
+                Serializable_Items items;
+                int reply_size = socket.available();
+                //std::deque<Serializable> items;
 
-        void do_send(std::size_t length) {
-            socket_.async_send_to(
-                    asio::buffer(data_, length),
-                    sender_endpoint_,
-                    [this](std::error_code /*ec*/, std::size_t bs/*bytes_sent*/)
-                    {
-                        std::cout << "Server do_send size " << " and " << bs << "\n";
-                    });
-        }
+                if (reply_size > 0) {
 
-    private:
-        udp::socket socket_;
-        udp::endpoint sender_endpoint_;
-        enum { max_length = 65000 };
-        unsigned char data_[max_length];
+                    std::stringstream ss = read(reply_size);
+
+                    items = deserialize<Serializable_Items>(ss);
+
+                } else {
+                    ;
+                }
+
+                return items;
+            }
+
 };
 
 int main(int argc, char* argv[]) {
-    try {
-
-        asio::io_service io_service;
-
-        unsigned short port = 2000;
-
-        Server s(io_service, port);
-
-        usleep(1000*1000* 5);
-        std::cout << "Do receive bound\n";
-        s.do_receive();
-        std::cout << "Ioservice run\n";
-        io_service.run();
-        io_service.reset();
-        std::cout << "Ioservice run done\n";
-
-        /*
-        std::cout << "Ioservice run\n";
-        s.do_send(10);
-        io_service.run();
-        io_service.reset();
-        std::cout << "Ioservice run done\n";
-        */
-
+    io_service io;
+    Receiver receiver(io,2000);
+    usleep(5 * 1000 * 1000);
+    while (1) {
+        if (receiver.available()) {
+            Forces fs;
+            fs = receiver.receive<Forces>();
+            std::cout << "Server received:\n";
+            for (const auto& f: fs) {
+                std::cout << "Server reads " << f.id << "\n";
+            }
+            std::cout << "Server receive end\n";
+        }
     }
-    catch (std::exception& e) {
-        std::cerr << "Exception: " << e.what() << "\n";
-    }
-
-    return 0;
+  return 0;
 }
 
