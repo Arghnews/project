@@ -17,7 +17,7 @@ class Receiver {
         io_service& io;
         unsigned short port;
         udp_socket socket;
-        std::stringstream read(int reply_size);
+        void read(std::stringstream& ss, int reply_size);
 
     public:
         Receiver(io_service& io, unsigned short port);
@@ -41,7 +41,8 @@ class Receiver {
 
                 if (reply_size > 0) {
 
-                    std::stringstream ss = read(reply_size);
+                    std::stringstream ss;
+                    read(ss,reply_size);
 
                     items = deserialize<Serializable_Items>(ss);
 

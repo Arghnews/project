@@ -8,7 +8,7 @@
 #include <vector>
 #include "Receiver.hpp"
 
-std::stringstream Receiver::read(int reply_size) {
+void Receiver::read(std::stringstream& ss, int reply_size) {
     std::vector<char> reply(reply_size);
     udp_endpoint sender_endpoint;
 
@@ -19,9 +19,7 @@ std::stringstream Receiver::read(int reply_size) {
     auto port = sender_endpoint.port();
     std::cout << addr << ":" << port << "\n";
 
-    std::stringstream ss; // any stream can be used
     ss.write(reply.data(), reply_length); // reply data to stream
-    return ss;
 }
 
 Receiver::Receiver(io_service& io, unsigned short port) :
