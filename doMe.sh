@@ -37,6 +37,8 @@ main() {
     "Octree.cpp"
     "Actors.cpp"
     "World.cpp"
+    "Sender.cpp"
+    "Receiver.cpp"
     )
 
     client=(

@@ -20,6 +20,7 @@
 #include <iterator>
 #include <sstream>
 #include <deque>
+#include <memory>
 
 #include "Util.hpp"
 #include "Shader.hpp"
@@ -32,6 +33,8 @@
 #include "World.hpp"
 #include "Force.hpp"
 #include "Shot.hpp"
+#define ASIO_STANDALONE
+#include "asio.hpp"
 
 #include "Archiver.hpp"
 #include "cereal/types/deque.hpp"
@@ -72,11 +75,12 @@ static const long program_start_time = timeNowMicros();
 static bool server = false;
 static bool client = false;
 
-unsigned short listen_port;
-std::vector<std::pair<std::string,std::string>> addresses; // address, port
+static unsigned short listen_port;
+static std::vector<std::pair<std::string,std::string>> addresses; // address, port
+static io_service io;
 
-static Receiver* receiver;
-std::vector<Sender> senders;
+static std::unique_ptr<Receiver> receiver;
+static std::vector<Sender> senders;
 
 long static timeNow() {
     return timeNowMicros() - program_start_time;
@@ -118,7 +122,16 @@ int main(int argc, char* argv[]) {
         addresses.push_back(address);
     }
 
-    receiver = new
+    /*
+    std::cout << "Listenport: " << listen_port << "\n";
+    receiver = make_unique<Receiver>(io,listen_port);
+
+    for (const auto& address: addresses) {
+        // first:address, second:port
+        std::cout << "Listeport: " << listen_port << " and address " << address.first << " and port " << address.second << "\n";
+        senders.emplace_back(io, listen_port, address.first, address.second);
+    }
+    */
 
     //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
@@ -285,7 +298,6 @@ int main(int argc, char* argv[]) {
 
     inputs.close();
 
-    delete receiver;
 }
 
     /*

@@ -65,6 +65,12 @@ static const v3 PI_V3(M_PI,M_PI,M_PI);
 
 static const double EPSILON = 1.0f / 1e6f;
 
+// note: this implementation does not disable this overload for array types
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 bool static hasNan(const v3& v) {
     return std::isnan(v.x) || std::isnan(v.y) || std::isnan(v.z);
 }
