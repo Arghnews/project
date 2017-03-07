@@ -320,11 +320,7 @@ void World::collisions() {
         //std::cout << mtv.overlap << "\n";
         if (mtv.overlap <= 0.00005f) continue;
 
-        overlap *= 0.4f;
-
-        if (id1 == 0) {
-            std::cout << overlap << "\n";
-        }
+        overlap *= 0.3f;
 
         v3 f = mtv.axis * overlap;
 

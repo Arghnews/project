@@ -86,7 +86,7 @@ int main() {
 
     const float restitution = 0.05f;
 
-    World world(areaSize, inputs.windowSize() * 0.6f, restitution);
+    World world(areaSize, inputs.windowSize(), restitution);
     
     // make default cube with index in map 0
     int default_g_cube = 0;
