@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "Compress.hpp"
 
 #define ASIO_STANDALONE
 #include "asio.hpp"
@@ -15,7 +16,6 @@ Sender::Sender(io_service& io, const std::shared_ptr<udp_socket>& socket, std::s
     endpoint(*asio::ip::udp::resolver(io).resolve({asio::ip::udp::v4(), host, port}))
 {
 }
-
 
 void Sender::send(std::vector<char>& data) {
     int request_length = data.size();

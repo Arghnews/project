@@ -7,6 +7,7 @@
 #include "asio.hpp"
 #include <vector>
 #include "Receiver.hpp"
+#include "Compress.hpp"
 #include <memory>
 
 void Receiver::read(std::stringstream& ss, int reply_size) {

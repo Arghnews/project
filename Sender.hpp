@@ -15,6 +15,7 @@
 #include "cereal/archives/portable_binary.hpp"
 #define ASIO_STANDALONE
 #include "asio.hpp"
+#include "Compress.hpp"
 
 class Sender {
 
@@ -42,8 +43,9 @@ class Sender {
                     oarchive(items); // Write the data to the archive
                 } // archive goes out of scope, ensuring all contents are flushed
 
-                const std::string& tmp = ss.str();
-                const char* cstr = tmp.c_str();
+                const std::string tmp(ss.str());
+                const std::string compressed = compress_string(tmp, 1);
+                const char* cstr = compressed.c_str();
 
                 return std::vector<char>(cstr, cstr+tmp.size());
             }

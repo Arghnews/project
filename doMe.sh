@@ -55,6 +55,10 @@ main() {
     "Sender.cpp"
     )
 
+    Test=(
+    "Test.cpp"
+    )
+
     cppFiles=("${game[@]}")
 
 	compiler="g++"
@@ -64,7 +68,7 @@ main() {
     #libraries="-lGLEW -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi"
 #g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi
     # at least on my home ubuntu, glfw -> dynamic/shared, glfw3 static
-    libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi"
+    libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lz"
     # older version of glm
     # glew, glfw libs (dynamic) in your LIBRARY_PATH/LD_LIBRARY_PATH
     # glew, glfw, glm headers in your CPATH
@@ -128,6 +132,10 @@ main() {
             --network)
                 cppFiles=("${network[@]}")
                 executable="network"
+                ;;
+            --test)
+                cppFiles=("${Test[@]}")
+                executable="Test"
                 ;;
 			*)
                 args+=("$arg")

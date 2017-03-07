@@ -8,6 +8,7 @@
 #include <string>
 #include <memory>
 
+#include "Compress.hpp"
 #include "Archiver.hpp"
 #include "cereal/types/deque.hpp"
 #include "cereal/types/vector.hpp"
@@ -27,9 +28,12 @@ class Receiver {
 
         template <typename Serializable_Items>
             Serializable_Items static deserialize(std::stringstream& ss) {
+                const std::string decomp(decompress_string(ss.str()));
+                std::stringstream sss;
+                sss.str(decomp);
                 Serializable_Items items;
                 {
-                    cereal::PortableBinaryInputArchive iarchive(ss); // Create an input archive
+                    cereal::PortableBinaryInputArchive iarchive(sss); // Create an input archive
                     iarchive(items); // Read the data from the archive
                 } // flush
                 return items;
