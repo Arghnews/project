@@ -19,9 +19,11 @@ main() {
     # when compiling lots of files and one errors, silently continue
     # recompiling all the files that worked
 
-	executable="game.exec"
+    # for now if run ./doMe.sh --client --clean will remove all objects
 
-    cppFiles=(
+	executable="game" # .exec will be appeneded
+
+    game=(
     "Physics.cpp"
     "Shader.cpp"
     "Camera.cpp"
@@ -37,16 +39,15 @@ main() {
     "World.cpp"
     )
 
-    #"Archive.cpp"
-	AcppFiles=( 
-    "Net.cpp"
-    "Socket.cpp"
-    "Address.cpp"
-	)
+    client=(
+    "echo_client.cpp"
+    )
 
-	BcppFiles=( 
-    "Archive.cpp"
-	)
+    server=(
+    "echo_server.cpp"
+    )
+
+    cppFiles=("${game[@]}")
 
 	compiler="g++"
 
@@ -108,6 +109,14 @@ main() {
                 compilerFlags=$(echo "$compilerFlags" | sed -E "s/( -O[0-3])|(-O[0-3] )//g")
                 v "Removing compiler optimisation options if any"
                 ;;
+            --client)
+                cppFiles=("${client[@]}")
+                executable="client"
+                ;;
+            --server)
+                cppFiles=("${server[@]}")
+                executable="server"
+                ;;
 			*)
                 args+=("$arg")
                 # add args passed to script to arg array
@@ -122,6 +131,10 @@ main() {
     argsStr="${args[@]}"
 
     v "${#args[@]} argument(s) to be passed to program: $argsStr"
+
+
+
+    executable="$executable"'.exec'
 
     # changes /usr/lib//bla/blabla/// -> /usr/lib/bla/blabla/
     objectDir=$(echo "$objectDir" | sed -E "s:/{1,}:/:g")

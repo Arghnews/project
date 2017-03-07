@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
     send(endpoint,s,fs);
 
-    usleep(1000000);
+    //usleep(1000000);
     std::deque<Force> items(receive<Force>(s)); // non-blocking receive
     for (auto& i: items) {
         std::cout << i.id << "\n";

@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include "Archiver.hpp"
 #include "Force.hpp"
+#include <string>
 
 using asio::ip::udp;
 
@@ -33,14 +34,13 @@ class Server {
                     sender_endpoint_,
                     [this](std::error_code ec, std::size_t bytes_recvd)
                     {
-                        if (!ec && bytes_recvd > 0) {
-                            std::cout << "Server sending back start\n";
+                        while (!ec && bytes_recvd > 0) {
+                            //std::cout << "Server sending back start\n";
                             std::cout << "Server Received message of size " << bytes_recvd << "\n";
-                            do_send(bytes_recvd);
-                            std::cout << "Server sending back end\n";
-                        } else {
-                            std::cout << "Server received nothing\n";
+                            //do_send(bytes_recvd);
+                            //std::cout << "Server sending back end\n";
                         }
+                        std::cout << "Server done receiving\n";
                     });
         }
 
@@ -63,17 +63,17 @@ class Server {
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc != 2) {
-            std::cerr << "Usage: async_udp_echo_Server <port>\n";
-            return 1;
-        }
 
         asio::io_service io_service;
 
-        Server s(io_service, std::atoi(argv[1]));
+        unsigned short port = 2000;
 
-        std::cout << "Ioservice run\n";
+        Server s(io_service, port);
+
+        usleep(1000*1000* 5);
+        std::cout << "Do receive bound\n";
         s.do_receive();
+        std::cout << "Ioservice run\n";
         io_service.run();
         io_service.reset();
         std::cout << "Ioservice run done\n";
