@@ -7,30 +7,32 @@
 #include "asio.hpp"
 #include <vector>
 #include "Receiver.hpp"
+#include <memory>
 
 void Receiver::read(std::stringstream& ss, int reply_size) {
     std::vector<char> reply(reply_size);
     udp_endpoint sender_endpoint;
 
-    int reply_length = socket.receive_from(
+    int reply_length = socket->receive_from(
             asio::buffer(reply.data(), reply_size), sender_endpoint);
 
     auto addr = sender_endpoint.address();
     auto port = sender_endpoint.port();
-    std::cout << addr << ":" << port << "\n";
+    std::cout << "Received " << reply_length << " on " << addr << ":" << port << "\n";
 
     ss.write(reply.data(), reply_length); // reply data to stream
 }
 
-Receiver::Receiver(io_service& io, unsigned short port) :
+Receiver::Receiver(io_service& io, const std::shared_ptr<udp_socket>& socket) :
     io(io),
     port(port),
-    socket(io, udp_endpoint(asio::ip::udp::v4(), port))
+    socket(socket)
+    //socket(io, udp_endpoint(asio::ip::udp::v4(), port))
 {
 
 }
 bool Receiver::available() {
-    return socket.available() > 0;
+    return socket->available() > 0;
 }
 
 /*

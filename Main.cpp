@@ -122,7 +122,6 @@ int main(int argc, char* argv[]) {
         addresses.push_back(address);
     }
 
-    /*
     std::cout << "Listenport: " << listen_port << "\n";
     receiver = make_unique<Receiver>(io,listen_port);
 
@@ -131,7 +130,6 @@ int main(int argc, char* argv[]) {
         std::cout << "Listeport: " << listen_port << " and address " << address.first << " and port " << address.second << "\n";
         senders.emplace_back(io, listen_port, address.first, address.second);
     }
-    */
 
     //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);

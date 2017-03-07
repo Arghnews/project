@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 #include "Archiver.hpp"
 #include "cereal/types/deque.hpp"
@@ -22,11 +23,11 @@ class Sender {
         unsigned short local_port;
         std::string host;
         std::string port;
-        udp_socket socket;
+        std::shared_ptr<udp_socket> socket;
         udp_endpoint endpoint;
 
     public:
-        Sender(io_service& io, unsigned short local_port, std::string host, std::string port);
+        Sender(io_service& io, const std::shared_ptr<udp_socket>& socket, std::string host, std::string port);
 
         template <typename Serializable_Items>
             void send(Serializable_Items& items) {

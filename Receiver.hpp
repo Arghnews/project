@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "Archiver.hpp"
 #include "cereal/types/deque.hpp"
@@ -16,11 +17,11 @@ class Receiver {
     private:
         io_service& io;
         unsigned short port;
-        udp_socket socket;
+        std::shared_ptr<udp_socket> socket;
         void read(std::stringstream& ss, int reply_size);
 
     public:
-        Receiver(io_service& io, unsigned short port);
+        Receiver(io_service& io, const std::shared_ptr<udp_socket>& socket);
 
         bool available();
 
@@ -37,7 +38,7 @@ class Receiver {
         template <typename Serializable_Items>
             Serializable_Items receive() {
                 Serializable_Items items;
-                int reply_size = socket.available();
+                int reply_size = socket->available();
 
                 if (reply_size > 0) {
 
