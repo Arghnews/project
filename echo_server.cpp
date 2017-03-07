@@ -34,11 +34,14 @@ class Server {
                     sender_endpoint_,
                     [this](std::error_code ec, std::size_t bytes_recvd)
                     {
-                        while (!ec && bytes_recvd > 0) {
+                        if (!ec && bytes_recvd > 0) {
                             //std::cout << "Server sending back start\n";
                             std::cout << "Server Received message of size " << bytes_recvd << "\n";
                             //do_send(bytes_recvd);
                             //std::cout << "Server sending back end\n";
+                            do_receive();
+                        } else {
+                            std::cout << "Server no more messages\n";
                         }
                         std::cout << "Server done receiving\n";
                     });
