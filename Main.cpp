@@ -76,6 +76,7 @@ static bool server = false;
 static bool client = false;
 
 static unsigned short listen_port;
+static std::shared_ptr<udp_socket> socket_ptr;
 static std::vector<std::pair<std::string,std::string>> addresses; // address, port
 static io_service io;
 
@@ -122,13 +123,15 @@ int main(int argc, char* argv[]) {
         addresses.push_back(address);
     }
 
+    socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), listen_port));
+
     std::cout << "Listenport: " << listen_port << "\n";
-    receiver = make_unique<Receiver>(io,listen_port);
+    receiver = make_unique<Receiver>(io,socket_ptr);
 
     for (const auto& address: addresses) {
         // first:address, second:port
-        std::cout << "Listeport: " << listen_port << " and address " << address.first << " and port " << address.second << "\n";
-        senders.emplace_back(io, listen_port, address.first, address.second);
+        std::cout << "Listenport: " << listen_port << " and address " << address.first << " and port " << address.second << "\n";
+        senders.emplace_back(io, socket_ptr, address.first, address.second);
     }
 
     //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);

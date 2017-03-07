@@ -23,7 +23,7 @@ int main() {
 
     unsigned short port = 2000;
 
-    auto socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), port));
+    std::shared_ptr<udp_socket> socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), port));
 
     Receiver receiver(io,socket_ptr);
 
