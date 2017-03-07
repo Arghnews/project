@@ -23,13 +23,12 @@ class World {
         Actors actors_;
         Physics phys_;
         Octree tree_;
-        float restitution;
         std::map<Id, v3> positions_;
         Forces force_queue_;
         Shots shot_queue_;
     public:
         std::map<int,G_Cuboid> g_cubs;
-        World(float worldSize, v2 windowSize, float restitution);
+        World(float worldSize, v2 windowSize);
         v2 windowSize;
         Actors& actors();
         void insert(Actor* a);
@@ -39,8 +38,8 @@ class World {
         void apply_forces(const Forces& forces);
         void clear_forces();
         void clear_shots();
-        const Forces& forces() const;
-        const Shots& shots() const;
+        Forces& forces();
+        Shots& shots();
         void fire_shot(const Id& id);
         void fire_shot(const Shot& shot);
         void fire_shots(const Shots& shots);

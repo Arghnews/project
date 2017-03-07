@@ -6,6 +6,7 @@
 #include "Util.hpp"
 #include "Window_Inputs.hpp"
 #include <deque>
+#include <string>
 
 // handles mouse buttons and keyboard
 static std::deque<Key_Input> key_inputs;
@@ -92,7 +93,7 @@ v2 Window_Inputs::windowSize() {
     return v2(width, height);
 }
 
-GLFWwindow* Window_Inputs::init_window(int x, int y) {
+GLFWwindow* Window_Inputs::init_window(std::string window_name, int x, int y) {
     glfwSetErrorCallback(error_callback);
 
     if (!glfwInit()) {
@@ -103,7 +104,7 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(x, y, "Sick window here", NULL, NULL);
+    window = glfwCreateWindow(x, y, window_name.c_str(), NULL, NULL);
 
     if (!window) {
         // Window or OpenGL context creation failed
@@ -139,7 +140,7 @@ GLFWwindow* Window_Inputs::init_window(int x, int y) {
     cursor_pos.x = xpos;
     cursor_pos.y = ypos;
 
-    disable_cursor();
+    enable_cursor();
 
     // turn off v-sync
     // do sleeping myself

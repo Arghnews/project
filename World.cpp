@@ -27,10 +27,9 @@
 #include "World.hpp"
 #include "Shot.hpp"
 
-World::World(float worldSize, v2 windowSize, float restitution) :
+World::World(float worldSize, v2 windowSize) :
     tree_(zeroV,worldSize),
-    windowSize(windowSize),
-    restitution(restitution) {
+    windowSize(windowSize) {
     }
 
 Actors& World::actors() {
@@ -405,11 +404,11 @@ void World::clear_shots() {
     shot_queue_.clear();
 }
 
-const Forces& World::forces() const {
+Forces& World::forces() {
     return force_queue_;
 }
 
-const Shots& World::shots() const {
+Shots& World::shots() {
     return shot_queue_;
 }
 
