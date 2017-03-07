@@ -27,34 +27,6 @@
 #include <unistd.h>
 #include <vector>
 
-template <typename Serializable>
-std::deque<Serializable> receive(udp_socket& s) {
-    int reply_size = s.available();
-    std::deque<Serializable> items;
-
-    if (reply_size > 0) {
-
-        std::vector<char> reply(reply_size);
-        udp_endpoint sender_endpoint;
-
-        int reply_length = s.receive_from(
-                asio::buffer(reply.data(), reply_size), sender_endpoint);
-
-        std::stringstream ss; // any stream can be used
-        ss.write(reply.data(), reply_length); // reply data to stream
-
-        {
-            cereal::PortableBinaryInputArchive iarchive(ss); // Create an input archive
-            iarchive(items); // Read the data from the archive
-        } // flush
-
-    } else {
-        ;
-    }
-
-    return items;
-}
-
 class Sender {
     private:
         io_service& io;

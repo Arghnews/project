@@ -40,11 +40,17 @@ main() {
     )
 
     client=(
-    "echo_client.cpp"
+    "Sender.cpp"
     )
 
     server=(
-    "echo_server.cpp"
+    "Receiver.cpp"
+    )
+
+    network=(
+    "Network_Test.cpp"
+    "Receiver.cpp"
+    "Sender.cpp"
     )
 
     cppFiles=("${game[@]}")
@@ -116,6 +122,10 @@ main() {
             --server)
                 cppFiles=("${server[@]}")
                 executable="server"
+                ;;
+            --network)
+                cppFiles=("${network[@]}")
+                executable="network"
                 ;;
 			*)
                 args+=("$arg")
