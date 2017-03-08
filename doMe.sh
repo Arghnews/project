@@ -68,6 +68,7 @@ main() {
     #libraries="-lGLEW -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi"
 #g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi
     # at least on my home ubuntu, glfw -> dynamic/shared, glfw3 static
+    # lz for compression - zlib
     libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lz"
     # older version of glm
     # glew, glfw libs (dynamic) in your LIBRARY_PATH/LD_LIBRARY_PATH
@@ -136,6 +137,9 @@ main() {
             --test)
                 cppFiles=("${Test[@]}")
                 executable="Test"
+                ;;
+            *.cc|*.cpp)
+                echo "Found $arg as cpp"
                 ;;
 			*)
                 args+=("$arg")
@@ -229,7 +233,8 @@ main() {
         local link="$compiler $compilerFlags $includes"
         local objectlist=""
         for f in ${cppFiles[@]}; do
-            local objectFile="$(echo $f | sed -E "s/^(.*)\.c(pp)?$/\1.o/g")"
+            #local objectFile="$(echo $f | sed -E "s/^(.*)\.c(pp)?$/\1.o/g")"
+            local objectFile="$(echo $f | sed -E "s/^(.*)\.c(pp|c|)$/\1.o/g")"
             local obj=$(objectify "$objectFile")
             objectlist="$objectlist $obj"
         done
@@ -287,7 +292,6 @@ function needsCompile() {
     for item in ${deps[@]}; do
         if [ $i -eq 0 ]; then
             obj=$(echo "$item" | sed -E "s/^(.*):.*$/\1/g")
-            # turns A.c / A.cpp -> A.o
             obj=$(objectify "$obj")
             let i=$i+1 # only want to find object on first line
         elif [ "$item" == \\ ]; then
