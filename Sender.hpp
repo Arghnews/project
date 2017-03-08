@@ -47,7 +47,7 @@ class Sender {
                 const std::string compressed = compress_string(tmp, 1);
                 const char* cstr = compressed.c_str();
 
-                return std::vector<char>(cstr, cstr+tmp.size());
+                return std::vector<char>(cstr, cstr+compressed.size());
             }
 
         void send(std::vector<char>& data);

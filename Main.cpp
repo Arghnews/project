@@ -204,14 +204,14 @@ int main(int argc, char* argv[]) {
                     auto serial = Sender::serialize(forces);
                     assert(senders.size() == 1);
                     for (auto& sender: senders) {
-                        std::cout << "Client sending force\n";
+                        //std::cout << "Client sending force\n";
                         sender.send(serial);
                     }
                 }
 
                 // if server has sent reply, apply that to world
                 while (receiver_ptr->available()) {
-                    std::cout << "Client receiving force\n";
+                    //std::cout << "Client receiving force\n";
                     Forces fs;
                     fs = receiver_ptr->receive<Forces>();
                     world.apply_forces(fs);
@@ -223,13 +223,13 @@ int main(int argc, char* argv[]) {
                 // then send them to all clients - currently doing this immediately
                 Forces forces;
                 while (receiver_ptr->available()) {
-                    std::cout << "Server receiving force\n";
+                    //std::cout << "Server receiving force\n";
                     Forces forces_in = receiver_ptr->receive<Forces>();
                     forces.insert(forces.begin(), forces_in.begin(), forces_in.end());
                 }
                 // in real thing obv send update every frame!
                 if (forces.size() > 0) {
-                    std::cout << "Server sending force\n";
+                    //std::cout << "Server sending force\n";
                     // apply force to world
                     world.apply_forces(forces);
                     // send forces to clients

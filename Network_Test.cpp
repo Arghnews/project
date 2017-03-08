@@ -17,38 +17,92 @@
 #include "Receiver.hpp"
 #include "Sender.hpp"
 
-int main() {
+static std::string type;
+static std::string server = "server";
+static std::string client = "client";
 
-    io_service io;
+static unsigned short local_port; // port that the socket_ptr binds to
+// ie port that stuff gets sent from and read from
+static std::shared_ptr<udp_socket> socket_ptr;
+static std::vector<std::pair<std::string,std::string>> addresses; // address, port
 
-    unsigned short port = 2000;
+static io_service io;
+static std::unique_ptr<Receiver> receiver_ptr;
+static std::vector<Sender> senders;
+static std::string my_id;
 
-    std::shared_ptr<udp_socket> socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), port));
+int main(int argc, char* argv[]) {
 
-    Receiver receiver(io,socket_ptr);
-
-    std::vector<Sender> senders;
-    // send from port 2001 to address:port
-    senders.emplace_back(Sender(io, socket_ptr, "127.0.0.1", "2000"));
-
-    Forces fs;
-    fs.emplace_back(Force(69,v3(69.0f,72.0f,0.0f),Force::Type::Force));
-    fs.emplace_back(Force(71,v3(69.0f,72.0f,0.0f),Force::Type::Force));
-
-    auto serial = Sender::serialize(fs);
-    for (auto& sender: senders) {
-        sender.send(serial);
+    if (argc < 2) {
+        std::cout << "Not enough arguments - please provide client/server as first param\n";
+        exit(1);
     }
 
-    while (1) {
-        if (receiver.available()) {
-            Forces fs;
-            fs = receiver.receive<Forces>();
-            std::cout << "Server received:\n";
-            for (const auto& f: fs) {
-                std::cout << "Server reads " << f.id << "\n";
+    // host, port
+    type = std::string(argv[1]);
+    if (type == server) {
+        if (argc < 5 || argc % 2 == 0) {
+            std::cout << "To run server: ./server server [server_receive_port] [client_addr] [client_port]... - at least is needed\n";
+            exit(1);
+        }
+
+        local_port = std::stoi(argv[2]);
+        for (int i=3; i<argc; i+=2) {
+            std::string addr = argv[i];
+            std::string port = argv[i+1];
+            auto address = std::make_pair(addr,port);
+            addresses.push_back(address);
+        }
+    } else if (type == client) {
+        if (argc != 5) {
+            std::cout << "To run client: ./client client [client_receive_port] [server_host] [server_port] at least is needed\n";
+            exit(1);
+        }
+        local_port = std::stoi(argv[2]);
+        std::string addr = argv[3];
+        std::string port = argv[4];
+        auto address = std::make_pair(addr,port);
+        addresses.push_back(address);
+        my_id = local_port;
+    } else {
+        std::cout << "Did not recognise type, choose from either " << server << " or " << client << "\n";
+        exit(1);
+    }
+
+    socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), local_port));
+
+    std::cout << "Local port: " << local_port << "\n";
+    receiver_ptr = make_unique<Receiver>(io,socket_ptr);
+
+    for (const auto& address: addresses) {
+        // first:address, second:port
+        std::cout << "Local port: " << local_port << " and address " << address.first << " and port " << address.second << "\n";
+        senders.emplace_back(io, socket_ptr, address.first, address.second);
+    }
+
+    if (type == "server") {
+        while (1) {
+            if (receiver_ptr->available()) {
+                Forces fs;
+                fs = receiver_ptr->receive<Forces>();
+                std::cout << "Server received message:\n";
+                for (const auto& f: fs) {
+                    std::cout << "" << f.id << "\n";
+                }
             }
-            std::cout << "Server receive end\n";
+        }
+    } else if (type == "client") {
+        // send from port 2001 to address:port
+
+        Forces fs;
+        fs.emplace_back(Force(69,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+        fs.emplace_back(Force(71,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+
+        auto serial = Sender::serialize(fs);
+        for (auto& sender: senders) {
+            sender.send(serial);
         }
     }
+
+
 }
