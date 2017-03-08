@@ -99,6 +99,8 @@ main() {
 
     # special case for verbose, eg. want to run ./script clean -v won't work without this
 
+    executable="$executable"'.exec'
+
 	for arg in "$@"; do
 		case $arg in
             -v|--v|-verbose|--verbose)
@@ -107,6 +109,11 @@ main() {
                 ;;
 		esac
     done
+
+    # if want to only check if these files needs recompile
+    # to short circuit dcs's slow as crap file new/old lookup tests
+    onlyRecompileThese=(
+    )
 
 	for arg in "$@"; do
 		case $arg in
@@ -138,8 +145,9 @@ main() {
                 cppFiles=("${Test[@]}")
                 executable="Test"
                 ;;
-            *.cc|*.cpp)
-                echo "Found $arg as cpp"
+            *.c|*.cc|*.cpp)
+                v "Argument recognised as src file as $arg, will check recompile on only this and other src files"
+                onlyRecompileThese+=("$arg")
                 ;;
 			*)
                 args+=("$arg")
@@ -155,10 +163,6 @@ main() {
     argsStr="${args[@]}"
 
     v "${#args[@]} argument(s) to be passed to program: $argsStr"
-
-
-
-    executable="$executable"'.exec'
 
     # changes /usr/lib//bla/blabla/// -> /usr/lib/bla/blabla/
     objectDir=$(echo "$objectDir" | sed -E "s:/{1,}:/:g")
@@ -185,7 +189,12 @@ main() {
 
     # Build dependency lists for all cpp files in cppFiles
     # And add them to recompiles list
-    for f in ${cppFiles[@]}; do
+    local compileFiles="${cppFiles[@]}"
+    if [ "${#onlyRecompileThese[@]}" -gt 0 ]; then
+        compileFiles="${onlyRecompileThese[@]}"
+    fi
+    #for f in ${cppFiles[@]}; do
+    for f in ${compileFiles[@]}; do
         v "Generating dependencies for $f using $genDependencies"
         local dependencies="$($genDependencies $f)"
         v "Generated dependencies"
@@ -235,6 +244,10 @@ main() {
         for f in ${cppFiles[@]}; do
             #local objectFile="$(echo $f | sed -E "s/^(.*)\.c(pp)?$/\1.o/g")"
             local objectFile="$(echo $f | sed -E "s/^(.*)\.c(pp|c|)$/\1.o/g")"
+            if [ "$objectFile" == "$f" ]; then
+                # ie. bla.cp -> bla.cp, could not objectify ie. it has a dumb name
+                echoErr "Could not create a new object file name from $f, it should be of form bla.(c|cc|cpp)"
+            fi
             local obj=$(objectify "$objectFile")
             objectlist="$objectlist $obj"
         done
