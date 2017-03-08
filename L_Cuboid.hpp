@@ -21,9 +21,9 @@ typedef std::pair<float, float> Projection;
 
 class L_Cuboid {
     private:
-        vv3 originalVertices_; // don't change
+        const vv3* originalVertices_; // don't change
         vv3 static getAxes(const vv3& edges1, const vv3& edges2);
-        vv3 static calcVertices(const vv3& vertices, const v3& pos, const fq& ori, const v3& scale);
+        vv3 calcVertices(const vv3* vertices_ptr_in, const v3& pos, const fq& ori, const v3& scale);
         vv3 static calcEdges(const vv3& v);
         float static overlapAmount(const Projection& p1, const Projection& p2);
         std::pair<float, float> static project(const v3& axis_in, const vv3& verts);
@@ -34,12 +34,11 @@ class L_Cuboid {
         void recalc(const v3& pos, const fq& ori);
 
         const v3 scale;
-        L_Cuboid(const fv* points, v3 scale, v3 startPos);
-        //vv3 faces; // 24 vertices
+        L_Cuboid(const vv3* face_verts_ptr, const v3 scale, v3 startPos);
         vv3 verts24; // 24 non-unique vertices, 4 per face, 6 faces
         vv3 vertices; // 8 vertices unique
-        vv3 edges; // 24 edges, between vertices
-        vv3 uniqEdges; // 3 edges
+        //vv3 edges; // 24 edges, between vertices
+        vv3 uniqEdges; // 3>= edges unique
         float furthestVertex;
         friend std::ostream& operator<<(std::ostream&, const L_Cuboid&);
 };

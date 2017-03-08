@@ -77,6 +77,7 @@ static const long program_start_time = timeNowMicros();
 static std::string type;
 static std::string server = "server";
 static std::string client = "client";
+static std::string type_local = "local"; // no networking
 
 static unsigned short local_port; // port that the socket_ptr binds to
 // ie port that stuff gets sent from and read from
@@ -125,6 +126,7 @@ int main(int argc, char* argv[]) {
         auto address = std::make_pair(addr,port);
         addresses.push_back(address);
         my_id = local_port;
+    } else if (type == type_local) {
     } else {
         std::cout << "Did not recognise type, choose from either " << server << " or " << client << "\n";
         exit(1);
@@ -238,11 +240,15 @@ int main(int argc, char* argv[]) {
                         sender.send(serial);
                     }
                 }
+            } else if (type == type_local) {
+                // assumed testing non networking aspect
+                world.apply_forces(world.forces());
+                world.fire_shots(world.shots());
             }
 
             // actually applies forces and moves the world
 
-            Shots& shots = world.shots();
+            //Shots& shots = world.shots();
             //world.fire_shots(shots);
             // actually fires the shots
 
@@ -277,7 +283,7 @@ int main(int argc, char* argv[]) {
         //std::cout << "This frame " << thisFrameTime_u << "u \n";
         //std::cout << "Max pos " << frame_time << "u \n";
         long spare_time_u = (long)frame_time - thisFrameTime_u;
-        //std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
+        std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spare_time_u)));
     }
 
@@ -395,10 +401,44 @@ void draw_crosshair(Window_Inputs& inputs) {
     glDisableVertexAttribArray(0);
 }
 
+// turns 108 GLfloat data floats into 24 glm::vec3s that correspond to faces
+// eg. 4 verts per face, 6 faces
+vv3 face_verts_from_fv(const fv* points_in) {
+    const fv& points = *points_in;
+    // first calc the faces
+    const int size = points.size(); // 3d
+    // 108 points -> faces
+    vv3 faces; // 24 vertices
+    assert(size == 108);
+    for (int i=0; i<size; i+=18) {
+        vv3 square;
+        square.reserve(6);
+        square.push_back(v3(points[i+0], points[i+1], points[i+2]));
+        square.push_back(v3(points[i+3], points[i+4], points[i+5]));
+        square.push_back(v3(points[i+6], points[i+7], points[i+8]));
+        square.push_back(v3(points[i+9], points[i+10], points[i+11]));
+        square.push_back(v3(points[i+12], points[i+13], points[i+14]));
+        square.push_back(v3(points[i+15], points[i+16], points[i+17]));
+        square = unique(square);
+        concat(faces, square);
+    }
+    assert(faces.size() == 24);
+
+    // all the unique points in the faces are the verts, size 8
+    //originalVertices_ = faces;
+    return faces;
+}
+
 Forces setup_cubes(World& world) {
     Forces forces;
     // make default cube with index in map 0
     int default_g_cube = 0;
+    int default_l_face_verts = 0;
+
+    world.l_cub_face_verts.emplace(
+            std::make_pair(default_l_face_verts,
+                face_verts_from_fv(&vertices))
+    );
 
     world.g_cubs.emplace(
             std::make_pair(default_g_cube,
@@ -423,7 +463,7 @@ Forces setup_cubes(World& world) {
     auto create_default_cube = [&] (v3 start_pos, float mass, bool selectable, bool mobile) {
         world.insert(
                 new Actor(default_g_cube,
-                    &vertices,
+                    &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
                     mass,
@@ -452,7 +492,7 @@ Forces setup_cubes(World& world) {
 
     world.insert(
             new Actor(default_g_cube,
-                &vertices,
+                &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                 v3(4.0f,1.0f,4.0f),
                 v3(15.0f,2.0f,0.0f),
                 cube1_mass,

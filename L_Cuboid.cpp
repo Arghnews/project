@@ -21,6 +21,7 @@
  * This is effectively a cache, the flag must be set elsewhere though
  */
 
+// returns normalized axises between edges
 vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
     // "The axes you must test are the normals of each shape’s edges."
     assert(edges1.size() <= 9);
@@ -30,9 +31,9 @@ vv3 L_Cuboid::getAxes(const vv3& edges1, const vv3& edges2) {
     vv3 normals;
     for (const auto& e1: edges1) {
         for (const auto& e2: edges2) {
-            const auto t = glm::normalize(glm::cross(e1,e2));
-            if (!std::isnan(t.x) && !std::isnan(t.y) && !std::isnan(t.z)) {
-                normals.push_back(t);
+            const auto axis = glm::normalize(glm::cross(e1,e2));
+            if (!std::isnan(axis.x) && !std::isnan(axis.y) && !std::isnan(axis.z)) {
+                normals.push_back(axis);
             }
         }
     }
@@ -53,8 +54,8 @@ MTV L_Cuboid::colliding(const L_Cuboid& s1, const L_Cuboid& s2) {
     };
 
     for (const auto& axis: allAxes) {
-        Projection p1 = project(axis, s1.vertices);
-        Projection p2 = project(axis, s2.vertices);
+        Projection p1(project(axis, s1.vertices));
+        Projection p2(project(axis, s2.vertices));
         if (!overlap(p1,p2)) {
             MTV mtv;
             mtv.colliding = false;
@@ -90,28 +91,34 @@ float L_Cuboid::overlapAmount(const Projection& p1, const Projection& p2) {
     return ret;
 }
 
-Projection L_Cuboid::project(const v3& axis_in, const vv3& verts) {
-    const v3 axis = glm::normalize(axis_in);
+// NOTE: the axis must be normalized to get accurate projections
+// allAxes returns normalized axes
+Projection L_Cuboid::project(const v3& axis, const vv3& verts) {
+    assert(verts.size() == 8);
     float min = glm::dot(axis,verts[0]);
     float max = min;
-    for (int i = 1; i < verts.size(); i++) {
-        // NOTE: the axis must be normalized to get accurate projections
+    for (int i = 1; i < verts.size(); ++i) {
         float p = glm::dot(axis,verts[i]);
+        min = std::min(p,min);
+        max = std::max(p,max);
+        /*
         if (p < min) {
             min = p;
         }
         if (p > max) {
             max = p;
         }
+        */
     }
-    Projection proj = std::make_pair(min, max);
-    return proj;
+    return std::make_pair(min, max);
 }
 
 // builds a cuboid that matches the graphical coordinates
-L_Cuboid::L_Cuboid(const fv* points_in, const v3 scale, v3 startPos) :
+L_Cuboid::L_Cuboid(const vv3* face_verts_ptr, const v3 scale, v3 startPos) :
+    originalVertices_(face_verts_ptr),
     scale(scale),
     furthestVertex(0.0f) {
+    /*
     const fv& points = *points_in;
     // first calc the faces
     const int size = points.size(); // 3d
@@ -133,6 +140,7 @@ L_Cuboid::L_Cuboid(const fv* points_in, const v3 scale, v3 startPos) :
 
     // all the unique points in the faces are the verts, size 8
     originalVertices_ = faces;
+    */
 
     recalc(startPos,fq());
 
@@ -144,7 +152,8 @@ L_Cuboid::L_Cuboid(const fv* points_in, const v3 scale, v3 startPos) :
     furthestVertex *= 2.0f;
 }
 
-vv3 L_Cuboid::calcVertices(const vv3& vertices, const v3& pos, const fq& ori, const v3& scale) {
+vv3 L_Cuboid::calcVertices(const vv3* vertices_ptr_in, const v3& pos, const fq& ori, const v3& scale) {
+    const vv3& vertices = *vertices_ptr_in;
     const int verticesSize = vertices.size();
     vv3 world_vertices(verticesSize);
     for (int i=0; i<verticesSize; ++i) {
@@ -162,15 +171,10 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
     const int size = v.size();
     vv3 e(size);
     for (int i=0; i<size; i+=4) {
-        vv3 face(4);
-        face[0] = v[i+0];
-        face[1] = v[i+1];
-        face[2] = v[i+2];
-        face[3] = v[i+3];
-        const int faceSize = face.size();
-        for (int j=0; j<faceSize; ++j) {
-            e[i+j] = ((face[j] - face[(j+1)%faceSize]));
-        }
+        e[i+0] = v[i+0] - v[i+1];
+        e[i+1] = v[i+1] - v[i+2];
+        e[i+2] = v[i+2] - v[i+3];
+        e[i+3] = v[i+3] - v[i+0];
     }
     return e;
 }
@@ -179,9 +183,9 @@ vv3 L_Cuboid::calcEdges(const vv3& v) {
 void L_Cuboid::recalc(const v3& pos, const fq& ori) {
     verts24 = calcVertices(originalVertices_,pos,ori,scale);
     assert(verts24.size() == 24);
-    edges = calcEdges(verts24);
+    //edges = calcEdges(verts24);
     vertices = unique(verts24);
-    uniqEdges = unique(edges,true);
+    uniqEdges = unique(calcEdges(verts24),true);
 }
 
 std::ostream& operator<<(std::ostream& stream, const L_Cuboid& c) {

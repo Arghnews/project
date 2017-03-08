@@ -4,7 +4,7 @@ int Actor::num_actors = 0;
 
 Actor::Actor(
     int g_cub,
-    const fv* vertexData,
+    const vv3* face_verts,
     v3 scale,
     v3 startPos,
     float mass,
@@ -12,7 +12,7 @@ Actor::Actor(
     bool selectable,
     bool mobile
     ) :
-    l_cuboid(vertexData, scale, startPos),
+    l_cuboid(face_verts, scale, startPos),
     g_cuboid(g_cub),
     p_state_(mass, inertia, startPos),
     changed_state_(false),

@@ -141,7 +141,7 @@ bool static areSame(N a, N b) {
     return fabs(a - b) < EPSILON;
 }
 
-bool static areSame(const v3& a,const v3& b) {
+bool static inline areSame(const v3& a,const v3& b) {
     return areSame(a.x,b.x)&&areSame(a.y,b.y)&&areSame(a.z,b.z);
 }
 
@@ -168,7 +168,7 @@ vv3 static unique(const vv3& vec_in, const bool& ignoreSign) {
             }
         }
         if (!has) {
-            uniq.push_back(elem);
+            uniq.emplace_back(elem);
         }
     }
     return uniq;

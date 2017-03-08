@@ -12,7 +12,6 @@
 #include "P_State.hpp"
 #include "G_Cuboid.hpp"
 #include "L_Cuboid.hpp"
-#include "Camera.hpp"
 #include "Force.hpp"
 
 #include <string>
@@ -21,6 +20,7 @@ class Actor {
     private:
         L_Cuboid l_cuboid;
         int g_cuboid;
+        int l_cub_face_vert;
         P_State p_state_;
         bool changed_state_;
         bool invisible_;
@@ -46,7 +46,7 @@ class Actor {
         void apply_force(const Force& force);
         Actor(
         int g_cub,
-        const fv* vertexData,
+        const vv3* face_verts,
         v3 scale,
         v3 startPos,
         float mass,

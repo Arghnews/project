@@ -28,6 +28,7 @@ class World {
         Shots shot_queue_;
     public:
         std::map<int,G_Cuboid> g_cubs;
+        std::map<int,vv3> l_cub_face_verts;
         World(float worldSize, v2 windowSize);
         v2 windowSize;
         Actors& actors();

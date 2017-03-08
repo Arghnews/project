@@ -55,6 +55,9 @@ class Packet {
     uint16_t sequence_number;
     uint16_t ack_number;
     uint32_t ack_bitfield; // corresponds to prior 32
+    uint32_t tick; // initially tied to seq number
+    // application level number, so can tell at what tick this was sent on
+    // can tell if too old or not etc
     
     // payload
     Forces forces;
