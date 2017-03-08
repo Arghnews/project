@@ -10,9 +10,6 @@
 
 #include "Compress.hpp"
 #include "Archiver.hpp"
-#include "cereal/types/deque.hpp"
-#include "cereal/types/vector.hpp"
-#include "cereal/archives/portable_binary.hpp"
 
 class Receiver {
     private:

@@ -13,7 +13,9 @@
 #include <string>
 #include <memory>
 
+#include "Archiver.hpp"
 #include "Force.hpp"
+#include "Shot.hpp"
 #include "Receiver.hpp"
 #include "Sender.hpp"
 
@@ -31,7 +33,52 @@ static std::unique_ptr<Receiver> receiver_ptr;
 static std::vector<Sender> senders;
 static std::string my_id;
 
+// returns true when s1 is a more recent sequence number than s2
+// where seq numbers are like ids that go up
+bool sequence_more_recent(const uint16_t& s1, const uint16_t& s2,
+        const uint16_t& max=uint16_t(-1))
+{
+    return (s1 > s2) && (s1 - s2 <= max/2) ||
+        (s2 > s1) && (s2 - s1 > max/2);
+}
+
+void write_bit(uint32_t& bitfield, const int& index, const bool& value) {
+    bitfield ^= (-value ^ bitfield) & (1 << index);
+}
+
+bool read_bit(const uint32_t& bitfield, const int& index) {
+    return (bitfield >> index) & 1;
+}
+
+class Packet {
+    // header
+    uint16_t sequence_number;
+    uint16_t ack_number;
+    uint32_t ack_bitfield; // corresponds to prior 32
+    
+    // payload
+    Forces forces;
+    Shots shots;
+    template<class Archive>
+        void serialize(Archive& archive) {
+            archive(sequence_number, ack_number,
+                ack_bitfield, forces, shots);
+        }
+};
+
 int main(int argc, char* argv[]) {
+
+    /*
+    uint32_t val = 17;
+    std::cout << "Before " << val << "\n";
+    write_bit(val, 1, true); // now 19
+    std::cout << "After " << val << "\n";
+    */
+    /*
+    uint32_t val = 63;
+    for (int i=0; i<32; ++i) {
+        std::cout << read_bit(val, i) << "\n";
+    }*/
 
     if (argc < 2) {
         std::cout << "Not enough arguments - please provide client/server as first param\n";

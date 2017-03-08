@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include "cereal/archives/portable_binary.hpp"
+#include "Archiver.hpp"
 #include "Util.hpp"
 
 struct Force {
@@ -23,6 +25,10 @@ struct Force {
         relative(relative),
         affected(affected)
         {
+        }
+    template<class Archive>
+        void serialize(Archive& archive) {
+            archive(id, force, t, relative, affected);       
         }
 };
 

@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+#include "cereal/archives/portable_binary.hpp"
+#include "Archiver.hpp"
 #include "Util.hpp"
 
 struct Shot {
@@ -15,6 +17,11 @@ struct Shot {
     v3 dir; // id's direction of shot
     v3 hit_pos; // world coord of the shot's position
     bool hit;
+    template<class Archive>
+        void serialize(Archive& archive) {
+            archive(shooter, target,
+                org, dir, hit_pos, hit);
+        }
 };
 
 #endif
