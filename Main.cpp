@@ -115,16 +115,19 @@ int main(int argc, char* argv[]) {
             addresses.push_back(address);
         }
     } else if (type == client) {
-        if (argc != 6) {
+        if (argc != 5) {
             std::cout << "To run client: ./client client [client_receive_port] [server_host] [server_port] at least is needed\n";
             exit(1);
         }
-        local_port = std::stoi(argv[1]);
-        std::string addr = argv[2];
-        std::string port = argv[3];
+        local_port = std::stoi(argv[2]);
+        std::string addr = argv[3];
+        std::string port = argv[4];
         auto address = std::make_pair(addr,port);
         addresses.push_back(address);
         my_id = local_port;
+    } else {
+        std::cout << "Did not recognise type, choose from either " << server << " or " << client << "\n";
+        exit(1);
     }
 
     socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), local_port));
