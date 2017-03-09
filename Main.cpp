@@ -72,9 +72,9 @@ static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
 
 static std::string type;
-static std::string server = "server";
-static std::string client = "client";
-static std::string type_local = "local"; // no networking
+static const std::string type_server = "server";
+static const std::string type_client = "client";
+static const std::string type_local = "local"; // no networking
 
 static unsigned short local_port; // port that the socket_ptr binds to
 // ie port that stuff gets sent from and read from
@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
     // host, port
     type = std::string(argv[1]);
-    if (type == server) {
+    if (type == type_server) {
         if (argc < 5 || argc % 2 == 0) {
             std::cout << "To run server: ./server server [server_receive_port] [client_addr] [client_port]... - at least is needed\n";
             exit(1);
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
             auto address = std::make_pair(addr,port);
             addresses.push_back(address);
         }
-    } else if (type == client) {
+    } else if (type == type_client) {
         if (argc != 5) {
             std::cout << "To run client: ./client client [client_receive_port] [server_host] [server_port] at least is needed\n";
             exit(1);
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
         my_id = local_port;
     } else if (type == type_local) {
     } else {
-        std::cout << "Did not recognise type, choose from either " << server << " or " << client << "\n";
+        std::cout << "Did not recognise type, choose from either " << type_server << " or " << type_client << "\n";
         exit(1);
     }
 
@@ -186,8 +186,8 @@ int main(int argc, char* argv[]) {
             //bool gf = inputs.window_gained_focus();
             //bool lf = inputs.window_lost_focus();
             // these functions reset a bool, should be called every frame really
-            const v3 mouse_torque = 10.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
-            if (mouse_torque.x != 0.0f && mouse_torque.y != 0.0f) {
+            const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
+            if (!(mouse_torque.x == 0.0f && mouse_torque.y == 0.0f)) {
                 world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
             }
 
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
             world.collisions();
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
-            if (type == client) {
+            if (type == type_client) {
 
                 // process forces and send to server
                 Forces& forces = world.forces();
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
                     world.apply_forces(fs);
                 }
 
-            } else if (type == server) {
+            } else if (type == type_server) {
 
                 // if clients have sent any forces process them and affect world state
                 // then send them to all clients - currently doing this immediately
@@ -464,7 +464,7 @@ Forces setup_cubes(World& world) {
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
                     mass,
-                    50.0f,
+                    3.0f,
                     selectable,
                     mobile)
                 );

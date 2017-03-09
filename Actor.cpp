@@ -12,14 +12,14 @@ Actor::Actor(
     bool selectable,
     bool mobile
     ) :
+    id(num_actors++),
     l_cuboid(face_verts, scale, startPos),
     g_cuboid(g_cub),
-    p_state_(mass, inertia, startPos),
+    p_state_(mass, inertia, startPos, id),
     changed_state_(false),
     invisible_(false),
     selectable(selectable),
-    mobile(mobile),
-    id(num_actors++)
+    mobile(mobile)
     {
     }
 

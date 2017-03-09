@@ -17,7 +17,8 @@ class P_State {
     private:
         Forces forces;
     public:
-        P_State(float m, float inertia, v3 pos);
+        P_State(float m, float inertia, v3 pos, Id id);
+        Id id;
         // primary
         v3 position;
         v3 momentum;
@@ -47,6 +48,14 @@ class P_State {
         m4 viewMatrix(const v3& scale) const;
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
+
+        // please note that when serialized the mass/inertia are not encoded
+        // intended use is to set the object's state according to the serialised
+        // object's state, not replace the object with the serialised one
+        template<class Archive>
+            void serialize(Archive& archive) {
+                archive(position, momentum, orient, ang_momentum, id);       
+            }
 };
 
 #endif
