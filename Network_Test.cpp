@@ -49,7 +49,7 @@ struct Packet_Header {
     bool static read_bit(const uint32_t& bitfield, const int& index) {
         return (bitfield >> index) & 1;
     }
-    
+
     //Packet_Header() : Packet_Header(1, 0, short_max) {}
     Packet_Header(
             const uint16_t& sequence_number,
@@ -64,42 +64,83 @@ struct Packet_Header {
         }
 };
 
-struct Payload {
-    enum class Packet_Type : uint8_t {
+class Packet_Payload {
+
+    enum class Type : uint8_t {
         Input, State
     };
 
-    uint32_t tick; // initially tied to seq number
-    // application level number, so can tell at what tick this was sent on
-    // can tell if too old or not etc // think I need this? maybe not really
-    
-    Packet_Type instance_type;
-    
-    Forces forces;
-    Shots shots;
-    
-    P_States p_states;
+    private:
 
-    template<class Archive>
-        void serialize(Archive& archive) {
-            archive(tick, forces, shots, p_states, instance_type);
+        Packet_Payload(
+                const uint32_t& tick,
+                const Forces& forces,
+                const Shots& shots,
+                const P_States& p_states,
+                const Type& packet_type) :
+            tick(tick),
+            forces(forces),
+            shots(shots),
+            p_states(p_states),
+            packet_type(packet_type)
+    {
+        if (packet_type == Type::Input &&
+                p_states.size() > 0) {
+            std::cerr << "Packet_Payload has type Input but has absolute data\n";
+        } else if (packet_type == Type::State &&
+                forces.size() > 0) {
+            std::cerr << "Packet_Payload has type State but has input data\n";
+        } else if (forces.size() == 0 &&
+                shots.size() == 0 &&
+                p_states.size() == 0) {
+            std::cerr << "Packet_Payload no data\n";
         }
+    }
+
+    public:
+        // Input Packet
+        Packet_Payload(
+                const uint32_t& tick,
+                const Forces& forces,
+                const Shots& shots) :
+            Packet_Payload(tick,forces,shots,
+                    P_States(),Type::Input) {
+            }
+
+        // Stately packet
+        Packet_Payload(
+                const uint32_t& tick,
+                const P_States& p_states,
+                const Shots& shots=Shots()) :
+            Packet_Payload(tick,Forces(),shots,
+                    p_states,Type::State) {
+            }
+
+        uint32_t tick; // initially tied to seq number
+        // application level number, so can tell at what tick this was sent on
+        // can tell if too old or not etc // think I need this? maybe not really
+
+        Type packet_type;
+
+        Forces forces;
+        Shots shots;
+
+        P_States p_states;
+
+        template<class Archive>
+            void serialize(Archive& archive) {
+                archive(tick, forces, shots, p_states, packet_type);
+            }
 };
 
 struct Packet {
     Packet_Header header;
-    std::vector<Payload> payloads;
+    std::vector<Packet_Payload> payloads;
     template<class Archive>
         void serialize(Archive& archive) {
             archive(header, payloads);       
         }
 };
-
-
-
-
-
-
 
 static std::string instance_type; // server/client etc.
 static Instance_Id instance_id; // 0-255, server usually 0
@@ -195,10 +236,12 @@ int main(int argc, char* argv[]) {
         std::cout << read_bit(val, i) << "\n";
     }*/
 
-    if (instance_type== type_server) {
+    if (instance_type == type_server) {
     
-    } else if (instance_type== type_client) {
-        Packet_Header packet(1, 0, uint16_t_max, 1);
+    } else if (instance_type == type_client) {
+        int tick = 0;
+        Packet_Header header(1, 0, uint16_t_max, instance_id);
+        //Packet_Payload payload(
     }
 
     /*
