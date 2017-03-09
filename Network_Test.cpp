@@ -55,6 +55,7 @@ class Packet_Header {
     uint16_t sequence_number;
     uint16_t ack_number;
     uint32_t ack_bitfield; // corresponds to prior 32
+    // packets
 
 };
 
