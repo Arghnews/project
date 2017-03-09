@@ -17,6 +17,8 @@ class P_State {
     private:
         Forces forces;
     public:
+        // just here so that serialize can do it's thing
+        P_State();
         P_State(float m, float inertia, v3 pos, Id id);
         Id id;
         // primary

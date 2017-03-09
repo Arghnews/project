@@ -62,7 +62,12 @@ struct Packet_Header {
         ack_bitfield(ack_bitfield),
         sender_id(sender_id) {
         }
+    Packet_Header() {}
 };
+
+std::ostream& operator<<(std::ostream& stream, const Packet_Header& h) {
+    stream << "Seq:" << h.sequence_number << ", ack:" << h.ack_number << ", sender_id:" << int(h.sender_id) << " and bitfield:" << h.ack_bitfield;
+}
 
 class Packet_Payload {
 
@@ -98,11 +103,12 @@ class Packet_Payload {
     }
 
     public:
+        Packet_Payload() {}
         // Input Packet
         Packet_Payload(
                 const uint32_t& tick,
                 const Forces& forces,
-                const Shots& shots) :
+                const Shots& shots=Shots()) :
             Packet_Payload(tick,forces,shots,
                     P_States(),Type::Input) {
             }
@@ -136,6 +142,19 @@ class Packet_Payload {
 struct Packet {
     Packet_Header header;
     std::vector<Packet_Payload> payloads;
+    Packet() {}
+    Packet(Packet_Header& header,
+            std::vector<Packet_Payload>& payloads) :
+        header(header), payloads(payloads) {
+            std::cout << "Copy constructor called\n";
+
+    }
+    Packet(Packet_Header&& header,
+            std::vector<Packet_Payload>&& payloads) :
+        header(header), payloads(payloads) {
+            std::cout << "Move constructor called\n";
+
+    }
     template<class Archive>
         void serialize(Archive& archive) {
             archive(header, payloads);       
@@ -194,7 +213,7 @@ int main(int argc, char* argv[]) {
         if (instance_id >= addresses.size()) {
             std::cerr << "Instance id must be 0 to number of different addresses-1\n";
             exit(1);
-        } else if (!(instance_id == 0 && instance_type == type_server)) {
+        } else if ((instance_id == 0) && (!(instance_type == type_server))) {
             std::cerr << "Server instance id must be 0\n";
             exit(1);
         }
@@ -237,11 +256,41 @@ int main(int argc, char* argv[]) {
     }*/
 
     if (instance_type == type_server) {
-    
+        while (1) {
+            if (receiver_ptr->available()) {
+                std::cout << "Server receiving\n";
+                Packet p(receiver_ptr->receive<Packet>());
+                std::cout << "Server received message:\n";
+                Packet_Header& header = p.header;
+                std::cout << "Received packet:" << header << "\n";
+            }
+        }
     } else if (instance_type == type_client) {
         int tick = 0;
-        Packet_Header header(1, 0, uint16_t_max, instance_id);
-        //Packet_Payload payload(
+        uint16_t sequence_number = 0;
+        uint16_t ack_number = 0;
+        Packet_Header header(sequence_number, ack_number, uint16_t_max, instance_id);
+        std::cout << "Instance id being encoded " << instance_id << "\n";
+
+        Forces fs;
+        fs.emplace_back(Force(69,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+        fs.emplace_back(Force(71,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+
+        std::vector<Packet_Payload> payloads;
+        Packet_Payload payload(tick, fs);
+        payloads.emplace_back(payload);
+
+        // header and payloads now invalid -- move cons
+        //Packet packet(std::move(header), std::move(payloads));
+
+        // copy cons
+        Packet packet(header, payloads);
+
+        auto serial = Sender::serialize(packet);
+        std::cout << serial.size() << " is size of serial " << sizeof(serial) << "\n";
+        for (auto& sender: senders) {
+            sender.send(serial);
+        }
     }
 
     /*

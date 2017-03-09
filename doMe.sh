@@ -52,6 +52,7 @@ main() {
     "Network_Test.cpp"
     "Receiver.cpp"
     "Sender.cpp"
+    "P_State.cpp"
     )
 
     Test=(
