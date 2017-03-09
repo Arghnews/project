@@ -19,12 +19,13 @@ class Sender {
     private:
         io_service& io;
         unsigned short local_port;
-        std::string host;
-        std::string port;
         std::shared_ptr<udp_socket> socket;
         udp_endpoint endpoint;
 
     public:
+        std::string host;
+        std::string port;
+
         Sender(io_service& io, const std::shared_ptr<udp_socket>& socket, std::string host, std::string port);
 
         template <typename Serializable_Items>

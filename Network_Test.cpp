@@ -4,9 +4,6 @@
 #include <string>
 #include <vector>
 #include <deque>
-#include "cereal/instance_type/deque.hpp"
-#include "cereal/instance_type/vector.hpp"
-#include "cereal/archives/portable_binary.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <sstream>
@@ -76,7 +73,7 @@ struct Payload {
     // application level number, so can tell at what tick this was sent on
     // can tell if too old or not etc // think I need this? maybe not really
     
-    Packet_Type instance_type
+    Packet_Type instance_type;
     
     Forces forces;
     Shots shots;
@@ -85,7 +82,7 @@ struct Payload {
 
     template<class Archive>
         void serialize(Archive& archive) {
-            archive(tick, forces, shots, p_states, instance_type;
+            archive(tick, forces, shots, p_states, instance_type);
         }
 };
 
@@ -111,8 +108,6 @@ static const std::string type_server = "server";
 static const std::string type_client = "client";
 static const std::string type_local = "local"; // no networking
 
-static unsigned short local_port; // port that the socket_ptr binds to
-// ie port that stuff gets sent from and read from
 static std::shared_ptr<udp_socket> socket_ptr;
 static std::vector<std::pair<std::string,std::string>> addresses; // address, port
 
@@ -122,7 +117,7 @@ static std::vector<Sender> senders;
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 2 || (argc > 2 && argc % 2 + 1 != 0)) {
+    if (argc < 2 || (argc > 2 && argc % 2 + 1 == 0)) {
         std::cerr << "Args of form: ./exec instance_type id (addr port){2,}\n";
         std::cerr << "instance_type is " << type_server << "," << type_client;
         std::cerr << " or " << type_local << " and id 0-255" << "\n";
@@ -139,23 +134,53 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    int potential_id = std::stoi(argv[2]);
-    if (potential_id < 0 || potential_id > 255) {
-        std::cerr << "Id must be from 0 to num instances-1 and must be in byte range (it's an array index\n";
-        exit(1);
-    }
-    instance_id = potential_id;
+    if (instance_type == type_local) {
+    } else {
 
+        int potential_id = std::stoi(argv[2]);
+        if (potential_id < 0 || potential_id > 255) {
+            std::cerr << "Id must be from 0 to num instances-1 and must be in byte range (it's an array index\n";
+            exit(1);
+        }
+        instance_id = potential_id;
 
-    socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), std::stoi(addresses[instance_id].second)));
+        for (int i=3; i<argc; i+=2) {
+            // argv[i] = address // eg localhost
+            unsigned short port = std::stoi(argv[i+1]);
+            addresses.emplace_back(argv[i], argv[i+1]);
+        }
 
-    std::cout << "Local port: " << local_port << "\n";
-    receiver_ptr = make_unique<Receiver>(io,socket_ptr);
+        if (instance_id >= addresses.size()) {
+            std::cerr << "Instance id must be 0 to number of different addresses-1\n";
+            exit(1);
+        } else if (!(instance_id == 0 && instance_type == type_server)) {
+            std::cerr << "Server instance id must be 0\n";
+            exit(1);
+        }
 
-    for (const auto& address: addresses) {
-        // first:address, second:port
-        std::cout << "Local port: " << local_port << " and address " << address.first << " and port " << address.second << "\n";
-        senders.emplace_back(io, socket_ptr, address.first, address.second);
+        uint16_t local_port = std::stoi(addresses[instance_id].second);
+        std::cout << "My local_port " << local_port << "\n";
+        socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),local_port));
+
+        receiver_ptr = make_unique<Receiver>(io,socket_ptr);
+
+        if (instance_type == type_server) {
+            for (int i=0; i<addresses.size(); ++i) {
+                auto& address = addresses[i];
+                if (i == instance_id) {
+                    continue;
+                    // don't send stuff to myself, that would be dumb
+                }
+                // first:address, second:port
+                senders.emplace_back(io, socket_ptr, address.first, address.second);
+            }
+        } else if (instance_type == type_client) {
+            senders.emplace_back(io, socket_ptr, addresses[0].first, addresses[0].second);
+        }
+
+        for (auto& s: senders) {
+            std::cout << "In senders: " << s.host << "," << s.port << "\n";
+        }
     }
 
     /*
