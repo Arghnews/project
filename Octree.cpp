@@ -140,7 +140,7 @@ vId Octree::queryRange(const AABB& range) const {
         // Check objects at this quad level
         for (const auto& p: points) {
             if (range.containsPoint(p.first)) {
-                idsInRange.push_back(p.second);
+                idsInRange.emplace_back(p.second);
             }
         }
     }
@@ -159,14 +159,14 @@ void Octree::makeKids() {
     auto h = boundary.halfDimension / 2.0f;
 
     int i = 0;
-    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z + h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z - h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z + h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z + h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x + h, c.y + h, c.z - h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x - h, c.y - h, c.z + h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x - h, c.y + h, c.z - h),h,depth+1 ));
-    kids.push_back( Octree( v3(c.x + h, c.y - h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x + h, c.y + h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x - h, c.y - h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x - h, c.y + h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x + h, c.y - h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x + h, c.y + h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x - h, c.y - h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x - h, c.y + h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree( v3(c.x + h, c.y - h, c.z - h),h,depth+1 ));
     
     // remove all objects at this level, insert into kids...
     for (const auto& p: points) {

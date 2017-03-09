@@ -226,9 +226,11 @@ void World::collisions() {
             }
             ++nearbys;
             const L_Cuboid& l_cub_nearby = actor_nearby.logical_cuboid();
+            //long c_start = timeNowMicros();
             long c_start = timeNowMicros();
             MTV mtv = L_Cuboid::colliding(l_cub,l_cub_nearby);
             c_total += timeNowMicros() - c_start;
+            //c_total += timeNowMicros() - c_start;
             const bool areColliding = mtv.colliding;
             mtv.id1 = std::min(id, id_nearby);
             mtv.id2 = std::max(id, id_nearby);
@@ -266,7 +268,7 @@ void World::collisions() {
     //std::cout << "Other time " << time_first_bit - a_time - c_time << "ms\n";
     //std::cout << "Time taken " << time_first_bit << "ms for finding collisions" << "\n";
 
-    std::map<Id,std::vector<Force>> forceQueue;
+    std::map<Id,Forces> forceQueue;
 
     taken = timeNowMicros();
     for (const auto& mtv_original: collidingPairs) {
@@ -354,11 +356,10 @@ void World::collisions() {
         p_2.set_momentum(mom2);
 
         //std::coutout << "ids/forces " << id1 << " " << printV(f1) << ", " << id2 << " " << printV(f2) << "\n";
-        forceQueue[id1].emplace_back(Force(id1,f1,Force::Type::Force,false,true));
-        forceQueue[id2].emplace_back(Force(id2,f2,Force::Type::Force,false,true));
+        forceQueue[id1].emplace_back(id1,f1,Force::Type::Force,false,true);
+        forceQueue[id2].emplace_back(id2,f2,Force::Type::Force,false,true);
 
         //std::cout << "Mtv: " << printV(mtv.axis) << " and overlap " << mtv.overlap << "\n";
-
 
         // NOTE : can swap m1 and m2 in the forces to cause a light thing flying into a heavy thing
         // to have the light thing fly back proportional to mass of the other
@@ -368,7 +369,7 @@ void World::collisions() {
 
     for (const auto& id_force: forceQueue) {
         const Id& id = id_force.first;
-        const std::vector<Force>& forces = id_force.second;
+        const Forces& forces = id_force.second;
         // all the forces on that actor
         Force force(forces[0]);
         if (forces.size() > 1) {
@@ -497,7 +498,7 @@ void World::render() {
         if (!contains(graphics_id,g_id)) {
             graphics_id.emplace(g_id,std::deque<Id>());
         }
-        graphics_id[g_id].push_back(id);
+        graphics_id[g_id].emplace_back(id);
     }
 
     for (const auto& pai: graphics_id) {

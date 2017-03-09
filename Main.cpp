@@ -37,9 +37,6 @@
 #include "asio.hpp"
 
 #include "Archiver.hpp"
-#include "cereal/types/deque.hpp"
-#include "cereal/types/vector.hpp"
-#include "cereal/archives/portable_binary.hpp"
 #include "Receiver.hpp"
 #include "Sender.hpp"
 
@@ -266,12 +263,12 @@ int main(int argc, char* argv[]) {
         //          model matrix   view matrix  projection matrix   viewport transform
         gl_loop_start();
 
-        //temp = timeNow();
+        temp = timeNow();
         world.render(); // render renders current state -
         // -- NOTE -- so if rendering shots, must clear after rendering
         draw_crosshair(inputs);
-        //std::cout << "Time for render " << (double)(timeNow()-temp)/1000.0 << "ms\n";
         inputs.swapBuffers(); // swaps buffers
+        //std::cout << "Time for render " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
             world.clear_forces();
             world.clear_shots();
@@ -283,7 +280,7 @@ int main(int argc, char* argv[]) {
         //std::cout << "This frame " << thisFrameTime_u << "u \n";
         //std::cout << "Max pos " << frame_time << "u \n";
         long spare_time_u = (long)frame_time - thisFrameTime_u;
-        std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
+        //std::cout << "Spare time " << (double)spare_time_u/1000.0 << "ms" << "\n";
         std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,spare_time_u)));
     }
 
@@ -482,7 +479,7 @@ Forces setup_cubes(World& world) {
                 position += where;
                 create_default_cube(position,default_mass,selectable,mobile);
                 if (rotated) {
-                    forces.emplace_back(Force(std::max(world.actors().size()-1,0),v3(i,0.0f,j),Force::Type::Torque));
+                    forces.emplace_back(std::max(world.actors().size()-1,0),v3(i,0.0f,j),Force::Type::Torque);
                 }
             }
         }
@@ -503,8 +500,10 @@ Forces setup_cubes(World& world) {
     create_default_cube(v3(20.0f,2.0f,3.0f),cube2_mass,true,true);
     create_default_cube(v3(-20.0f,2.0f,3.0f),cube3_mass,true,true);
 
-    spawn_cubes(v3(0.0f,-1.0f,0.0f),10,10,true,false,true);
-    spawn_cubes(v3(0.0f,-10.0f,0.0f),10,10,false,false,true);
+    spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
+    spawn_cubes(v3(0.0f,-10.0f,0.0f),25,10,false,false,true);
+    spawn_cubes(v3(0.0f,-20.0f,0.0f),25,10,false,false,true);
+    spawn_cubes(v3(0.0f,-30.0f,0.0f),25,10,false,false,true);
     return forces;
 }
 

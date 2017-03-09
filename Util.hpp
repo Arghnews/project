@@ -40,8 +40,8 @@ typedef std::vector<Id> vId;
 
 struct Force;
 struct Shot;
-typedef std::deque<Force> Forces;
-typedef std::deque<Shot> Shots;
+typedef std::vector<Force> Forces;
+typedef std::vector<Shot> Shots;
 
 typedef asio::io_service io_service;
 typedef asio::ip::udp::socket udp_socket;
@@ -96,8 +96,15 @@ bool static isZero(const v3& v) {
     return fabs(v.x) < TINY && fabs(v.y) < TINY && fabs(v.z) < TINY;
 }
 
+/*
 template <class T>
 void static concat(std::vector<T>& grower, const std::vector<T>& added) {
+    grower.insert( grower.end(), added.begin(), added.end() );
+}
+*/
+
+template <class T_container>
+void static concat(T_container& grower, const T_container& added) {
     grower.insert( grower.end(), added.begin(), added.end() );
 }
 

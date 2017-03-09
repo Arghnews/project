@@ -15,7 +15,7 @@
 
 class P_State {
     private:
-        std::vector<Force> forces;
+        Forces forces;
     public:
         P_State(float m, float inertia, v3 pos);
         // primary
@@ -40,7 +40,7 @@ class P_State {
         void apply_force(const Force& force);
         void clear_forces();
         void recalc();
-        const std::vector<Force>& net_forces() const;
+        const Forces& net_forces() const;
         v3 facing() const;
 
         m4 modelMatrix(const v3& scale) const;

@@ -68,7 +68,7 @@ void P_State::apply_force(const Force& f) {
     forces.push_back(f);
 }
 
-const std::vector<Force>& P_State::net_forces() const {
+const Forces& P_State::net_forces() const {
     return forces;
 }
 

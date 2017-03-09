@@ -87,11 +87,11 @@ badd +1 Shot.hpp
 badd +19 echo_client.cpp
 badd +17 echo_server.cpp
 badd +1 Archiver.hpp
-badd +0 Receiver.cpp
-badd +0 Receiver.hpp
-badd +0 Sender.cpp
-badd +0 Sender.hpp
-badd +0 Network_Test.cpp
+badd +1 Receiver.cpp
+badd +1 Receiver.hpp
+badd +1 Sender.cpp
+badd +1 Sender.hpp
+badd +1 Network_Test.cpp
 argglobal
 silent! argdel *
 argadd Main.cpp
@@ -338,12 +338,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 197 - ((29 * winheight(0) + 30) / 60)
+let s:l = 482 - ((29 * winheight(0) + 30) / 60)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-197
-normal! 0
+482
+normal! 0110|
 tabedit Network_Test.cpp
 set splitbelow splitright
 set nosplitbelow
@@ -467,7 +467,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 47
-normal! 05|
+normal! 0
 tabedit Sender.hpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -1346,11 +1346,11 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 34 - ((8 * winheight(0) + 4) / 9)
+let s:l = 36 - ((8 * winheight(0) + 4) / 9)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-34
+36
 normal! 014|
 wincmd w
 argglobal
@@ -1466,12 +1466,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 71 - ((21 * winheight(0) + 24) / 49)
+let s:l = 360 - ((24 * winheight(0) + 24) / 49)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-71
-normal! 0
+360
+normal! 038|
 wincmd w
 exe '1resize ' . ((&lines * 9 + 31) / 62)
 exe '2resize ' . ((&lines * 49 + 31) / 62)
@@ -2729,12 +2729,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 23 - ((22 * winheight(0) + 30) / 60)
+let s:l = 40 - ((39 * winheight(0) + 30) / 60)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-23
-normal! 09|
+40
+normal! 0
 tabedit Actor.cpp
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -3876,7 +3876,7 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 133
-normal! 022|
+normal! 0
 wincmd w
 argglobal
 edit Window_Inputs.hpp
@@ -4377,7 +4377,7 @@ exe s:l
 normal! zt
 53
 normal! 05|
-tabnext 3
+tabnext 2
 set stal=1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
