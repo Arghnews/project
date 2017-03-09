@@ -43,6 +43,7 @@ class Sender {
                 const std::string tmp(ss.str());
                 const std::string compressed = compress_string(tmp, 1);
                 const char* cstr = compressed.c_str();
+                //std::cout << "Compression ratio " << (float)compressed.size()/(float)tmp.size() << " orig size " << tmp.size() << "\n";
 
                 return std::vector<char>(cstr, cstr+compressed.size());
             }

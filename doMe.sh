@@ -26,7 +26,6 @@ main() {
     game=(
     "Physics.cpp"
     "Shader.cpp"
-    "Camera.cpp"
     "G_Cuboid.cpp"
     "L_Cuboid.cpp"
     "P_State.cpp"

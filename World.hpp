@@ -23,9 +23,10 @@ class World {
         Actors actors_;
         Physics phys_;
         Octree tree_;
-        std::map<Id, v3> positions_;
         Forces force_queue_;
         Shots shot_queue_;
+        Shot shot_face(const vv3& verts24, const v3& org, const v3& dir, const int& i);
+        Shot shot_actor(const v3& org, const v3& dir, const Id& id);
     public:
         std::map<int,G_Cuboid> g_cubs;
         std::map<int,vv3> l_cub_face_verts;
@@ -50,8 +51,6 @@ class World {
 
         void blow_up(const Id& id);
         std::vector<MTV> colliding_with(const Id& id);
-        Shot shot_face(const vv3& verts24, const v3& org, const v3& dir, const int& i);
-        Shot shot_actor(const v3& org, const v3& dir, const Id& id);
 };
 
 #endif

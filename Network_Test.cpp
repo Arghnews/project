@@ -50,16 +50,35 @@ bool read_bit(const uint32_t& bitfield, const int& index) {
     return (bitfield >> index) & 1;
 }
 
-class Packet {
+class Packet_Header {
     // header
     uint16_t sequence_number;
     uint16_t ack_number;
     uint32_t ack_bitfield; // corresponds to prior 32
+
+};
+
+class Packet_Payload {
     uint32_t tick; // initially tied to seq number
     // application level number, so can tell at what tick this was sent on
     // can tell if too old or not etc
     
+    // plan is really to union absolute with relative and have a byte to
+    // say whether one, other or both beforehand ie. Id -> 2 = [abs],[delta]
+    
+    vId ids; // ids that the following relate to
+    std::vector<uint8_t> types;
+    // 1->pos,
+    // 2->mom
+    // 4->orient // store fq as v3, using x^2+y^2+z^2+w^2 = 1, for len 1 quat
+    // 8->ang_mom
+    // summation tells you what is in the data
+    // assert(ids.size() == types.size());
+    vv3 data; // length of this can be > ids, as if types[0]=3, then data
+    // will have a pos and mom component
+    
     // payload
+    /*
     Forces forces;
     Shots shots;
     template<class Archive>
@@ -67,6 +86,12 @@ class Packet {
             archive(sequence_number, ack_number,
                 ack_bitfield, forces, shots);
         }
+    */
+};
+
+class Packet {
+    Packet_Header header;
+    Packet_Payload payload;
 };
 
 int main(int argc, char* argv[]) {

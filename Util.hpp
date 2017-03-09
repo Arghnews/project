@@ -144,8 +144,8 @@ std::string static printQ(const fq v) {
 }
 
 template <typename N>
-bool static areSame(N a, N b) {
-    return fabs(a - b) < EPSILON;
+bool static areSame(N a, N b, const double epsilon=EPSILON) {
+    return fabs(a - b) < epsilon;
 }
 
 bool static inline areSame(const v3& a,const v3& b) {

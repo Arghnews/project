@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
             //bool gf = inputs.window_gained_focus();
             //bool lf = inputs.window_lost_focus();
             // these functions reset a bool, should be called every frame really
-            const v3 mouse_torque = v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
+            const v3 mouse_torque = 10.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
             if (mouse_torque.x != 0.0f && mouse_torque.y != 0.0f) {
                 world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
             }
@@ -464,7 +464,7 @@ Forces setup_cubes(World& world) {
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
                     mass,
-                    5.0f,
+                    50.0f,
                     selectable,
                     mobile)
                 );
