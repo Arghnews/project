@@ -77,7 +77,11 @@ main() {
     #export LIBRARY_PATH=$LIBRARY_PATH:$HOME/lib
     #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib
 
-	includes="-Icereal/include -Iasio/include -I/usr/local/include/freetype2"
+    ubuntu_include_dir="/usr/local/include/freetype2"
+
+    chosen_dir="$ubuntu_include_dir"
+
+	includes="-Icereal/include -Iasio/include -Ichosen_dir"
 
     #verbose=true # if "true" will print
     verbose=false
