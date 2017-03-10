@@ -36,10 +36,11 @@ Actors& World::actors() {
     return actors_;
 }
 
-void World::insert(Actor* a) {
-    const Id id = a->id;
-    tree_.insert(a->p_state().position,id);
-    actors_.insert(id, a);
+void World::insert(Actor a) {
+    const Id id = a.id;
+    tree_.insert(a.p_state().position,id);
+    bool worked = actors_.insert(id, a);
+    assert(worked && "Must have id == size on insert");
 }
 
 Shot World::shot_face(const vv3& verts24, const v3& org, const v3& dir, const int& i) {
@@ -139,14 +140,17 @@ void World::fire_shot(const Shot& shot) {
 
 void World::simulate(const float& t, const float& dt) {
     // whenever move need to update octree
-    for (const auto& a: actors_.underlying()) {
-        const Id& id = a.first;
-        Actor& actor = *a.second;
+    auto& actors = actors_.underlying();
+    const int size = actors.size();
+    //for (const auto& a: actors) {
+    for (int i=0; i<size; ++i) {
+        const Id& id = i;
+        Actor& actor = actors[i];
         // don't similate immobile objects
-        if (!a.second->mobile) {
+        if (!actor.mobile) {
             continue;
         }
-        P_State& cube_phys = (*a.second).state_to_change();
+        P_State& cube_phys = actor.state_to_change();
         const bool deleted = tree_.del(cube_phys.position);
         assert(deleted && "Should always be able to delete last cube position");
         const bool changed = phys_.integrate(cube_phys, t, dt);
@@ -203,9 +207,12 @@ void World::collisions() {
     long a_total = 0l;
     long b_total = 0l;
     long c_total = 0l;
-    for (const auto& a: actors_.underlying()) {
-        const Id& id = a.first;
-        const Actor& actor = *a.second;
+    auto& actors = actors_.underlying();
+    const int size = actors.size();
+    for (int i=0; i<size; ++i) {
+        const Id& id = i;
+        //const Actor& actor = *a.second;
+        const Actor& actor = actors[i];
         const L_Cuboid& l_cub = actor.logical_cuboid();
         const P_State& phys = actor.p_state();
         long a_start = timeNowMicros();
@@ -329,8 +336,8 @@ void World::collisions() {
         const float total_mass_i = 1.0f/total_mass;
         const float m1_ratio = m1 * total_mass_i;
         const float m2_ratio = m2 * total_mass_i;
-        float f1_m_mul = total_mass * m2_ratio;
-        float f2_m_mul = total_mass * m1_ratio;
+        float f1_m_mul = total_mass * m2_ratio * std::max(0.01f,glm::length(v2));
+        float f2_m_mul = total_mass * m1_ratio * std::max(0.01f,glm::length(v1));
 
         auto velo_changer = [&] (const v3& u, const v3& v) -> float {
             float velo_change = glm::dot(glm::normalize(u),glm::normalize(v));
@@ -430,9 +437,11 @@ void World::fire_shots(const Shots& shots) {
         float dist(std::numeric_limits<float>::max());
         Shot closest;
 
-        for (const auto& a: actors_.underlying()) {
-            const Id& a_id = a.first;
-            Actor& actor = *a.second;
+        auto& actors = actors_.underlying();
+        const int size = actors.size();
+        for (int i=0; i<size; ++i) {
+            const Id& a_id = i;
+            Actor& actor = actors[i];
             const auto& l_cub = actor.logical_cuboid();
             if (id == a_id) {
                 continue;
@@ -481,8 +490,8 @@ void World::render() {
     const m4 view = selectedActor.viewMatrix();
     //const G_Cuboid& cam_graphical_cuboid = g_cubs[selectedActor.graphical_cuboid()];
     const int& cam_g_cub = selectedActor.graphical_cuboid();
-    assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
-    const G_Cuboid& cam_graphical_cuboid = g_cubs.find(cam_g_cub)->second;
+    //assert(contains(g_cubs,cam_g_cub) && "Could not graphical cuboid for viewed/camera");
+    const G_Cuboid& cam_graphical_cuboid = *(g_cubs.find(cam_g_cub)->second);
     const float aspectRatio = windowSize.x / windowSize.y;
     const GLuint viewLoc = glGetUniformLocation(cam_graphical_cuboid.shaderProgram(), "view");
 
@@ -490,22 +499,26 @@ void World::render() {
 
     long temp = timeNowMicros();
 
-    static std::map<int,std::deque<Id>> graphics_id;
+    static std::map<int,std::vector<Id>> graphics_id;
 
-    for (const auto& pai: actors_.underlying()) {
-        const Id& id = pai.first;
-        const int g_id = pai.second->graphical_cuboid();
+    auto& actors = actors_.underlying();
+    const int size = actors.size();
+    //for (const auto& pai: actors_.underlying()) {
+    for (int i=0; i<size; ++i) {
+        const Id& id = i;
+        Actor& actor = actors[i];
+        const int g_id = actor.graphical_cuboid();
         if (!contains(graphics_id,g_id)) {
-            graphics_id.emplace(g_id,std::deque<Id>());
+            graphics_id.emplace(g_id,std::vector<Id>());
         }
         graphics_id[g_id].emplace_back(id);
     }
 
     for (const auto& pai: graphics_id) {
         const int& g_id = pai.first;
-        const std::deque<Id>& ids = pai.second;
+        const auto& ids = pai.second;
         if (!ids.empty()) {
-            const G_Cuboid& graphical_cuboid = g_cubs.find(g_id)->second;
+            const G_Cuboid& graphical_cuboid = *(g_cubs.find(g_id)->second);
 
             graphical_cuboid.bindBuffers();
             graphical_cuboid.useShader();
@@ -516,7 +529,6 @@ void World::render() {
             glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
             glBindVertexArray(graphical_cuboid.VAO);
-
 
             // bind buffers
             for (const auto& id: ids) {

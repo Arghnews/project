@@ -18,7 +18,6 @@ G_Cuboid::G_Cuboid(
 // for now since I don't care about colour I bind the
 // positional data as the colour data
 void G_Cuboid::bindBuffers() const {
-
     const fv& vertices = *vertex_data;
 
     // Bind the Vertex Array Object first, then bind and set vertex bufer(s) and attribute pointer(s).
@@ -52,4 +51,41 @@ int G_Cuboid::drawSize() const {
 G_Cuboid::~G_Cuboid() {
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+}
+
+
+
+G_Cuboid_Color::G_Cuboid_Color(const fv* vertexData,
+        std::string vertPath, std::string fragPath,
+        const fv* color_data) :
+    G_Cuboid(vertexData, vertPath, fragPath),
+    color_data(color_data) {
+        glGenBuffers(1, &VBO_color);
+}
+
+void G_Cuboid_Color::bindBuffers() const {
+    const fv& vertices = *vertex_data;
+    const fv& colors = *color_data;
+
+    // Bind the Vertex Array Object first, then bind and set vertex bufer(s) and attribute pointer(s).
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_color);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * colors.size(), colors.data(), GL_STATIC_DRAW);
+    // Colour attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0); // Unbind VAO
+}
+
+G_Cuboid_Color::~G_Cuboid_Color() {
+    glDeleteBuffers(1, &VBO_color);
 }

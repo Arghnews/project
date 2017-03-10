@@ -64,7 +64,7 @@ Forces setup_cubes(World& world);
 void draw_crosshair(Window_Inputs& inputs);
 
 static const float my_mass = 1.0f;
-static const float cube1_mass = 10.0f;
+static const float cube1_mass = 20.0f;
 static const float cube2_mass = 2.0f;
 static const float cube3_mass = 0.1f;
 static const float default_mass = 1.0f;
@@ -187,7 +187,7 @@ int main(int argc, char* argv[]) {
             //bool lf = inputs.window_lost_focus();
             // these functions reset a bool, should be called every frame really
             const v3 mouse_torque = 10.0f * v3(glm::radians(mouseDelta.y), glm::radians(mouseDelta.x), 0.0f);
-            if (mouse_torque.x != 0.0f && mouse_torque.y != 0.0f) {
+            if (mouse_torque.x != 0.0f || mouse_torque.y != 0.0f) {
                 world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
             }
 
@@ -430,6 +430,7 @@ Forces setup_cubes(World& world) {
     Forces forces;
     // make default cube with index in map 0
     int default_g_cube = 0;
+    int colored_g_cube = 1;
     int default_l_face_verts = 0;
 
     world.l_cub_face_verts.emplace(
@@ -439,8 +440,14 @@ Forces setup_cubes(World& world) {
 
     world.g_cubs.emplace(
             std::make_pair(default_g_cube,
-            G_Cuboid(&vertices, "shaders/vertex.shader",
+            make_unique<G_Cuboid>(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader"))
+    );
+
+    world.g_cubs.emplace(
+            std::make_pair(colored_g_cube,
+            make_unique<G_Cuboid_Color>(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader",&colors))
     );
 
     /*
@@ -459,7 +466,7 @@ Forces setup_cubes(World& world) {
 
     auto create_default_cube = [&] (v3 start_pos, float mass, bool selectable, bool mobile) {
         world.insert(
-                new Actor(default_g_cube,
+                Actor(default_g_cube,
                     &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
@@ -479,7 +486,7 @@ Forces setup_cubes(World& world) {
                 position += where;
                 create_default_cube(position,default_mass,selectable,mobile);
                 if (rotated) {
-                    forces.emplace_back(std::max(world.actors().size()-1,0),v3(i,0.0f,j),Force::Type::Torque);
+                    forces.emplace_back(std::max(world.actors().size()-1,0),v3(i*100.0f,0.0f,j*100.0f),Force::Type::Torque);
                 }
             }
         }
@@ -488,12 +495,12 @@ Forces setup_cubes(World& world) {
     create_default_cube(v3(0.0f,-0.4f,10.0f),my_mass,true,true);
 
     world.insert(
-            new Actor(default_g_cube,
+            Actor(colored_g_cube,
                 &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                 v3(4.0f,1.0f,4.0f),
                 v3(15.0f,2.0f,0.0f),
                 cube1_mass,
-                5.0f,
+                100.0f,
                 true,
                 true)
             );

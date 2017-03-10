@@ -6,26 +6,29 @@
 #include "Force.hpp"
 #include "Actor.hpp"
 
+#include <vector>
 #include <iterator>
 #include <map>
 
 class Actors {
     private:
-        std::map<Id, Actor*> actors;
+        //std::map<Id, Actor*> actors;
+        std::vector<Actor> actors;
         int selected_index;
         void check();
 
     public:
 
         // because I'm too lazy to implement an iterator wrapper
-        const std::map<Id, Actor*>& underlying() const;
+        //const std::map<Id, Actor*>& underlying() const;
+        std::vector<Actor>& underlying();
 
         Actors();
         ~Actors();
 
         void apply_force(const Force& force);
 
-        bool insert(const Id& id, Actor* a);
+        bool insert(const Id& id, Actor a);
 
         Id selected();
 
