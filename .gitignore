@@ -12,3 +12,4 @@ exec
 *.jpg
 *~
 *.exec
+.nfs*
