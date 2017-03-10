@@ -1,0 +1,1 @@
+export DESTDIR="$(pwd)/installed" && make -j4 install

@@ -33,10 +33,12 @@ class P_State {
 
         v3 ang_velocity;
 
-        const float mass;
-        const float inverse_mass;
-        const float inertia;
-        const float inverse_inertia;
+        // removed const from these because networking deserialisation lib
+        // using the assignment operator...
+        float mass;
+        float inverse_mass;
+        float inertia;
+        float inverse_inertia;
 
         void set_momentum(const v3& mom);
 

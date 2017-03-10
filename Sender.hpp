@@ -18,7 +18,6 @@ class Sender {
 
     private:
         io_service& io;
-        unsigned short local_port;
         std::shared_ptr<udp_socket> socket;
         udp_endpoint endpoint;
 

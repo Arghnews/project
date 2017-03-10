@@ -69,7 +69,7 @@ main() {
 #g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi
     # at least on my home ubuntu, glfw -> dynamic/shared, glfw3 static
     # lz for compression - zlib
-    libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lz"
+    libraries="-lGLEW -lGL -lGLU -lglfw -lX11 -lXxf86vm -lXrandr -lpthread -lXi -lz -lfreetype"
     # older version of glm
     # glew, glfw libs (dynamic) in your LIBRARY_PATH/LD_LIBRARY_PATH
     # glew, glfw, glm headers in your CPATH
@@ -77,7 +77,7 @@ main() {
     #export LIBRARY_PATH=$LIBRARY_PATH:$HOME/lib
     #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib
 
-	includes="-Icereal/include -Iasio/include"
+	includes="-Icereal/include -Iasio/include -I/usr/local/include/freetype2"
 
     #verbose=true # if "true" will print
     verbose=false

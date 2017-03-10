@@ -108,8 +108,8 @@ void static concat(std::vector<T>& grower, const std::vector<T>& added) {
 }
 */
 
-template <class T_container>
-void static concat(T_container& grower, const T_container& added) {
+template <class T_container_1, class T_container_2>
+void static concat(T_container_1& grower, const T_container_2& added) {
     grower.insert( grower.end(), added.begin(), added.end() );
 }
 

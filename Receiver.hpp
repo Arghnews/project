@@ -38,6 +38,7 @@ class Receiver {
 
         template <typename Serializable_Items>
             Serializable_Items receive() {
+                std::cout << "Receive called\n";
                 Serializable_Items items;
                 int reply_size = socket->available();
 
@@ -52,6 +53,7 @@ class Receiver {
                     ;
                 }
 
+                std::cout << "Receive end\n";
                 return items;
             }
 
