@@ -79,9 +79,17 @@ main() {
 
     ubuntu_include_dir="/usr/local/include/freetype2"
 
-    chosen_dir="$ubuntu_include_dir"
+    dcs_include_dir="/dcs/14/u1419657/include/freetype2"
 
-	includes="-Icereal/include -Iasio/include -Ichosen_dir"
+    who="$(whoami)"
+
+    if [ "$who" == "u1419657" ]; then
+        chosen_dir="$dcs_include_dir"
+    else
+        chosen_dir="$ubuntu_include_dir"
+    fi
+
+	includes="-Icereal/include -Iasio/include -I$chosen_dir"
 
     #verbose=true # if "true" will print
     verbose=false
