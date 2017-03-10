@@ -336,8 +336,9 @@ void World::collisions() {
         const float total_mass_i = 1.0f/total_mass;
         const float m1_ratio = m1 * total_mass_i;
         const float m2_ratio = m2 * total_mass_i;
-        float f1_m_mul = total_mass * m2_ratio * std::max(0.01f,glm::length(v2));
-        float f2_m_mul = total_mass * m1_ratio * std::max(0.01f,glm::length(v1));
+        //* std::max(1.0f,glm::length(v1));
+        float f1_m_mul = total_mass * m2_ratio;
+        float f2_m_mul = total_mass * m1_ratio;
 
         auto velo_changer = [&] (const v3& u, const v3& v) -> float {
             float velo_change = glm::dot(glm::normalize(u),glm::normalize(v));

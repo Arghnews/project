@@ -159,15 +159,15 @@ void Octree::makeKids() {
     auto h = boundary.halfDimension / 2.0f;
 
     int i = 0;
-    kids.emplace_back( v3(c.x + h, c.y + h, c.z + h),h,depth+1 );
-    kids.emplace_back( v3(c.x - h, c.y - h, c.z - h),h,depth+1 );
-    kids.emplace_back( v3(c.x - h, c.y + h, c.z + h),h,depth+1 );
-    kids.emplace_back( v3(c.x + h, c.y - h, c.z + h),h,depth+1 );
-    kids.emplace_back( v3(c.x + h, c.y + h, c.z - h),h,depth+1 );
-    kids.emplace_back( v3(c.x - h, c.y - h, c.z + h),h,depth+1 );
-    kids.emplace_back( v3(c.x - h, c.y + h, c.z - h),h,depth+1 );
-    kids.emplace_back( v3(c.x + h, c.y - h, c.z - h),h,depth+1 );
-    
+    kids.emplace_back(Octree( v3(c.x + h, c.y + h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x - h, c.y - h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x - h, c.y + h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x + h, c.y - h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x + h, c.y + h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x - h, c.y - h, c.z + h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x - h, c.y + h, c.z - h),h,depth+1 ));
+    kids.emplace_back( Octree(v3(c.x + h, c.y - h, c.z - h),h,depth+1 ));
+
     // remove all objects at this level, insert into kids...
     for (const auto& p: points) {
         const bool worked = insert(p);
