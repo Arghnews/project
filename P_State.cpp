@@ -8,6 +8,7 @@
 #include "Util.hpp"
 #include "P_State.hpp"
 #include "Force.hpp"
+#include "Archiver.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -17,13 +18,21 @@
  * Things like it's position, momentum, mass and orientation are here
 */
 
-P_State::P_State(float m, float inertia, v3 pos) :
+P_State::P_State(float m, float inertia, v3 pos, Id id) :
     mass(m),
     inverse_mass(1.0f/m),
     inertia(inertia),
     inverse_inertia(1.0f/inertia),
-    position(pos) {
+    position(pos),
+    id(id) {
     }
+
+// just here so that serialize can do it's thing
+P_State::P_State() : 
+    mass(0.0f),
+    inverse_mass(0.0f),
+    inertia(0.0f),
+    inverse_inertia(0.0f) {}
 
 m4 P_State::modelMatrix(const v3& scale) const {
     //glm::mat4 myModelMatrix = myTranslationMatrix * myRotationMatrix * myScaleMatrix;

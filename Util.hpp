@@ -23,7 +23,10 @@
 #define ASIO_STANDALONE
 #include "asio.hpp"
 
+typedef uint8_t Instance_Id;
 typedef uint16_t Id;
+
+static const uint16_t uint16_t_max(-1);
 
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;
@@ -38,10 +41,12 @@ typedef std::vector<v3Id> vv3Id;
 
 typedef std::vector<Id> vId;
 
+struct P_State;
 struct Force;
 struct Shot;
 typedef std::vector<Force> Forces;
 typedef std::vector<Shot> Shots;
+typedef std::vector<P_State> P_States;
 
 typedef asio::io_service io_service;
 typedef asio::ip::udp::socket udp_socket;
