@@ -475,6 +475,9 @@ void World::fire_shots(const Shots& shots) {
         closest.org = org;
         closest.dir = dir;
 
+        this->apply_force(Force(closest.shooter,v3(0.5f,0.01f,0.0f),Force::Type::Torque,false,false));
+        //world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
+
         long taken = timeNowMicros() - now;
         //std::cout << "Shot checking took " << (double)taken/1000.0 << "ms\n";
         std::cout << closest.shooter << " fired from " << printV(closest.org) << " toward " << printV(closest.dir);

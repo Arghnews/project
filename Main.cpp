@@ -270,8 +270,9 @@ int main(int argc, char* argv[]) {
                 }
             } else if (type == type_local) {
                 // assumed testing non networking aspect
-                world.apply_forces(world.forces());
+                // shots must be first for recoil force
                 world.fire_shots(world.shots());
+                world.apply_forces(world.forces());
             }
 
             // actually applies forces and moves the world
@@ -507,7 +508,7 @@ Forces setup_cubes(World& world) {
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
                     mass,
-                    3.0f,
+                    2.5f,
                     selectable,
                     mobile)
                 );
