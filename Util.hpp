@@ -26,8 +26,6 @@
 typedef uint8_t Instance_Id;
 typedef uint16_t Id;
 
-static const uint16_t uint16_t_max(-1);
-
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;
 typedef glm::fvec4 v4;
