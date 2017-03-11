@@ -36,7 +36,7 @@ static const std::vector<uint8_t> powers_of_two = {
     0, 1, 2, 4, 8, 16, 32, 64, 128
 };
 
-typedef std::vector<uint16_t> Acks;
+uint32_t Acks;
 // uint32_t
 
 struct Packet_Header {
@@ -302,7 +302,7 @@ int main(int argc, char* argv[]) {
         uint16_t remote_sequence_number = 0;
         //uint32_t ack_bitfield = -1;
         Acks ack_bitfield;
-        Payloads unacked_payloads;
+        Packets unacked_packets;
 
         for (int i=0; i<4; ++i) {
             // need queue of uint16_t sequence numbers that are the prior received packets
