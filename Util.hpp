@@ -114,15 +114,14 @@ void static concat(T_container_1& grower, const T_container_2& added) {
 
 template <class T_container, class T>
 bool static contains(const T_container& s, const T& item) {
-    //return s.find(item) != s.end();
-    return std::find(s.begin(), s.end(), item) != s.end();
+    return s.find(item) != s.end();
 }
 
-/*
 template <class T>
 bool static contains(const std::deque<T>& s, const T& item) {
     //return s.find(item) != s.end();
-}*/
+    return std::find(s.begin(), s.end(), item) != s.end();
+}
 
 /*
 template <class T>
