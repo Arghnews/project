@@ -38,14 +38,14 @@ typedef std::deque<Seq> Seqs;
 
 struct Packet_Header {
     // header
-    Seq Sequence_number;
-    Seq remote_Sequence_number;
+    Seq sequence_number;
+    Seq remote_sequence_number;
     Seqs lost; // corresponds to prior 32
     Instance_Id sender_id; // use last two digits of port
     // packets
     template<class Archive>
         void serialize(Archive& archive) {
-            archive(Sequence_number, remote_Sequence_number, lost, sender_id);       
+            archive(sequence_number, remote_sequence_number, lost, sender_id);       
         }
 
     // returns true when s1 is a more recent Sequence number than s2
@@ -66,13 +66,13 @@ struct Packet_Header {
 
     //Packet_Header() : Packet_Header(1, 0, short_max) {}
     Packet_Header(
-            const Seq& Sequence_number,
-            const Seq& remote_Sequence_number,
+            const Seq& sequence_number,
+            const Seq& remote_sequence_number,
             const Seqs& lost,
             const Instance_Id& sender_id
             ) :
-        Sequence_number(Sequence_number),
-        remote_Sequence_number(remote_Sequence_number),
+        sequence_number(sequence_number),
+        remote_sequence_number(remote_sequence_number),
         lost(lost),
         sender_id(sender_id) {
         }
@@ -82,13 +82,13 @@ struct Packet_Header {
 
 std::string static printH(const Packet_Header& h) {
     std::stringstream buffer;
-    buffer << "Seq:" << h.Sequence_number << ", remote_Seq:" << h.remote_Sequence_number << ", sender_id:" << int(h.sender_id) << " and bitfield:";//<< h.lost;
+    buffer << "Seq:" << h.sequence_number << ", remote_Seq:" << h.remote_sequence_number << ", sender_id:" << int(h.sender_id) << " and bitfield:";//<< h.lost;
     return buffer.str();
 }
 
 /*
 std::ostream& operator<<(std::ostream& stream, const Packet_Header& h) {
-    stream << "Seq:" << h.Sequence_number << ", ack:" << h.remote_Sequence_number << ", sender_id:" << h.sender_id << " and bitfield:" << h.lost;
+    stream << "Seq:" << h.sequence_number << ", ack:" << h.remote_sequence_number << ", sender_id:" << h.sender_id << " and bitfield:" << h.lost;
     */
 
 class Packet_Payload {
@@ -266,21 +266,21 @@ int main(int argc, char* argv[]) {
             while (receiver_ptr->available()) {
                 Packet p(receiver_ptr->receive<Packet>());
                 Packet_Header& header = p.header;
-                if (header.Sequence_number == 3 || header.Sequence_number == 4) {
+                if (header.sequence_number == 3 || header.sequence_number == 4) {
                     continue;
                 };
                 std::cout << "Server received ";
 
-                //if (contains(received, header.Sequence_number)) {
-                if (!Packet_Header::Sequence_more_recent(header.Sequence_number, received)) {
-                    std::cout << "duplicate or old packet:" << int(header.Sequence_number) << "\n";
+                //if (contains(received, header.sequence_number)) {
+                if (!Packet_Header::Sequence_more_recent(header.sequence_number, received)) {
+                    std::cout << "duplicate or old packet:" << int(header.sequence_number) << "\n";
                 } else {
-                    //received.emplace_back(header.Sequence_number);
-                    //std::cout << "packet:" << header.Sequence_number << ", adding to received\n";
+                    //received.emplace_back(header.sequence_number);
+                    //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
                     Seq old_received = received;
 
                     std::cout << "Most recent received from " << int(received);
-                    received = p.header.Sequence_number;
+                    received = p.header.sequence_number;
                     std::cout << " to " << int(received) << "\n";
 
                     Seq new_received = received;
@@ -305,27 +305,27 @@ int main(int argc, char* argv[]) {
             }
         }
     } else if (instance_type == type_client) {
-        Seq Sequence_number = 0;
+        Seq sequence_number = 0;
         while (c++ < 6) {
             sleep_ms(1000 * 2);
             Packet p;
             Packet_Header ph;
-            ph.Sequence_number = Sequence_number;
+            ph.sequence_number = sequence_number;
             p.header = ph;
 
             auto serial = Sender::serialize(p);
             for (auto& sender: senders) {
-                std::cout << "Client sent " << int(p.header.Sequence_number) << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
+                std::cout << "Client sent " << int(p.header.sequence_number) << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
                 sender.send(serial);
             }
             auto p_copy = p;
-            p_copy.header.Sequence_number %= 3;
+            p_copy.header.sequence_number %= 3;
             serial = Sender::serialize(p_copy);
             for (auto& sender: senders) {
-                std::cout << "Client sent " << int(p_copy.header.Sequence_number) << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
+                std::cout << "Client sent " << int(p_copy.header.sequence_number) << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
                 sender.send(serial);
             }
-            ++Sequence_number;
+            ++sequence_number;
 
         }
     }
@@ -343,8 +343,8 @@ int main(int argc, char* argv[]) {
         }
     } else if (instance_type == type_client) {
         int tick = 0;
-        uint16_t Sequence_number = 0;
-        uint16_t remote_Sequence_number = 0;
+        uint16_t sequence_number = 0;
+        uint16_t remote_sequence_number = 0;
         //uint32_t lost = -1;
         Seqs lost;
         Packets unacked_packets;
@@ -353,10 +353,10 @@ int main(int argc, char* argv[]) {
             // need queue of uint16_t Sequence numbers that are the prior received packets
             // lost 
             // for every value in the queue (which is a Seq number)
-            // lost[i] = contains(queue, remote_Sequence_number-i)
-            // or for every ele in queue, index=remote_Sequence_number - ele
+            // lost[i] = contains(queue, remote_sequence_number-i)
+            // or for every ele in queue, index=remote_sequence_number - ele
             // lost[index] = 1
-            Packet_Header header(Sequence_number, remote_Sequence_number,
+            Packet_Header header(sequence_number, remote_sequence_number,
                     lost, instance_id);
 
             std::cout << "Client sending " << printH(header) << "\n";
@@ -370,7 +370,7 @@ int main(int argc, char* argv[]) {
                 sender.send(serial);
             }
 
-            ++Sequence_number; // inc Seq number
+            ++sequence_number; // inc Seq number
             //lost = lost << 1; // shift, ie. most recent packet not acked
 
             sleep_ms(1000);
@@ -379,14 +379,14 @@ int main(int argc, char* argv[]) {
                 Packet_Header& header = p.header;
                 std::cout << "Client received " << printH(header) << "\n";
                 if (Packet_Header::Sequence_more_recent(
-                            header.Sequence_number, remote_Sequence_number)) {
+                            header.sequence_number, remote_sequence_number)) {
                     // packet more recent
-                    std::cout << "More recent, remote Seq number from " << remote_Sequence_number;
-                    remote_Sequence_number = header.Sequence_number;
+                    std::cout << "More recent, remote Seq number from " << remote_sequence_number;
+                    remote_sequence_number = header.sequence_number;
                     for (int i=0; i<32; ++i) {
                         
                     }
-                    std::cout << " to " << remote_Sequence_number << "\n";
+                    std::cout << " to " << remote_sequence_number << "\n";
                 } else {
                     std::cout << "Received old or duped packet\n";
                 }
