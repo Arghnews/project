@@ -36,7 +36,7 @@ static const std::vector<uint8_t> powers_of_two = {
     0, 1, 2, 4, 8, 16, 32, 64, 128
 };
 
-uint32_t Acks;
+typedef uint32_t Acks;
 // uint32_t
 
 struct Packet_Header {
@@ -104,49 +104,14 @@ class Packet_Payload {
 
         Packet_Payload(
                 const uint32_t& tick,
-                const Forces& forces,
-                const Shots& shots,
-                const P_States& p_states,
                 const Type& packet_type) :
             tick(tick),
-            forces(forces),
-            shots(shots),
-            p_states(p_states),
             packet_type(packet_type)
     {
-        if (packet_type == Type::Input &&
-                p_states.size() > 0) {
-            std::cerr << "Packet_Payload has type Input but has absolute data\n";
-        } else if (packet_type == Type::State &&
-                forces.size() > 0) {
-            std::cerr << "Packet_Payload has type State but has input data\n";
-        } else if (forces.size() == 0 &&
-                shots.size() == 0 &&
-                p_states.size() == 0) {
-            std::cerr << "Packet_Payload no data\n";
-        }
     }
 
     public:
         Packet_Payload() {}
-        // Input Packet
-        Packet_Payload(
-                const uint32_t& tick,
-                const Forces& forces,
-                const Shots& shots=Shots()) :
-            Packet_Payload(tick,forces,shots,
-                    P_States(),Type::Input) {
-            }
-
-        // Stately packet
-        Packet_Payload(
-                const uint32_t& tick,
-                const P_States& p_states,
-                const Shots& shots=Shots()) :
-            Packet_Payload(tick,Forces(),shots,
-                    p_states,Type::State) {
-            }
-
         uint32_t tick; // initially tied to seq number
         // application level number, so can tell at what tick this was sent on
         // can tell if too old or not etc // think I need this? maybe not really
@@ -155,12 +120,16 @@ class Packet_Payload {
 
         Forces forces;
         Shots shots;
-
-        P_States p_states;
+            
+        std::vector<Id_v3> positions;
+        std::vector<Id_fq> orients;
+        std::vector<Id_v3> momentums;
+        std::vector<Id_v3> ang_momentums;
 
         template<class Archive>
             void serialize(Archive& archive) {
-                archive(tick, forces, shots, p_states, packet_type);
+                archive(tick, forces, shots, positions, orients, momentums, ang_momentums, packet_type);
+                //archive(tick, forces, shots, packet_type);
             }
 };
 
@@ -281,11 +250,74 @@ int main(int argc, char* argv[]) {
     for (int i=0; i<32; ++i) {
         std::cout << read_bit(val, i) << "\n";
     }*/
-    
-    typedef std::vector<Packet> Packets;
-    typedef std::deque<Packet_Payload> Payloads;
+
+    auto pr = [] (std::deque<uint16_t>& q) {
+        std::cout << "Size " << q.size() << ": ";
+        for (const auto& i: q) {
+            std::cout << i << ", ";
+        }
+        std::cout << "\n";
+    };
+
+    int c = 0;
+    //std::deque<uint16_t> received;
+    uint16_t received = -1;
 
     if (instance_type == type_server) {
+        while (1) {
+            sleep_ms(1000 * 1);
+            while (receiver_ptr->available()) {
+                Packet p(receiver_ptr->receive<Packet>());
+                Packet_Header& header = p.header;
+                std::cout << "Server received ";
+
+                //if (contains(received, header.sequence_number)) {
+                if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
+                    std::cout << "duplicate or old packet:" << header.sequence_number << "\n";
+                } else {
+                    //received.emplace_back(header.sequence_number);
+                    //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
+                    std::cout << "Most recent received from " << received;
+                    received = p.header.sequence_number;
+                    std::cout << " to " << received << "\n";
+                }
+
+                /*
+                if (!received.empty() && received.size() >= 4) {
+                    pr(received);
+                    std::cout << "Removing " << received.front() << " from queue\n";
+                    received.pop_front();
+                    pr(received);
+                }*/
+            }
+        }
+    } else if (instance_type == type_client) {
+        uint16_t sequence_number = 0;
+        while (c++ < 6) {
+            sleep_ms(1000 * 3);
+            Packet p;
+            Packet_Header ph;
+            ph.sequence_number = sequence_number;
+            p.header = ph;
+
+            auto serial = Sender::serialize(p);
+            for (auto& sender: senders) {
+                std::cout << "Client sent " << p.header.sequence_number << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
+                sender.send(serial);
+            }
+            auto p_copy = p;
+            p_copy.header.sequence_number %= 3;
+            serial = Sender::serialize(p_copy);
+            for (auto& sender: senders) {
+                std::cout << "Client sent " << p_copy.header.sequence_number << " to " << sender.port << " (" << sizeof(serial) << " vs " << serial.size() << ")\n";
+                sender.send(serial);
+            }
+            ++sequence_number;
+
+        }
+    }
+
+    /*
         while (1) {
             if (receiver_ptr->available()) {
                 Packet p(receiver_ptr->receive<Packet>());
@@ -351,10 +383,10 @@ int main(int argc, char* argv[]) {
             // and remove the payload for that tick from unacked_payloads
             }
 
-        }
+
+       */
 
 
-    }
         /*
         Forces fs;
         fs.emplace_back(Force(tick,v3(69.0f,72.0f,0.0f),Force::Type::Force));

@@ -35,10 +35,10 @@ class P_State {
 
         // removed const from these because networking deserialisation lib
         // using the assignment operator...
-        float mass;
-        float inverse_mass;
-        float inertia;
-        float inverse_inertia;
+        const float mass;
+        const float inverse_mass;
+        const float inertia;
+        const float inverse_inertia;
 
         void set_momentum(const v3& mom);
 
@@ -53,6 +53,7 @@ class P_State {
 
         friend std::ostream& operator<<(std::ostream& stream, const P_State& state);
 
+        /*
         // please note that when serialized the mass/inertia are not encoded
         // intended use is to set the object's state according to the serialised
         // object's state, not replace the object with the serialised one
@@ -60,6 +61,7 @@ class P_State {
             void serialize(Archive& archive) {
                 archive(position, momentum, orient, ang_momentum, id);       
             }
+        */
 };
 
 #endif

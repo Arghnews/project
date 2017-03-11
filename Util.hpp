@@ -36,17 +36,18 @@ typedef glm::fmat4 m4;
 typedef std::vector<GLfloat> fv;
 typedef std::vector<v3> vv3;
 
+typedef std::pair<Id, v3> Id_v3;
+typedef std::pair<Id, fq> Id_fq;
+
 typedef std::pair<v3, Id> v3Id;
 typedef std::vector<v3Id> vv3Id;
 
 typedef std::vector<Id> vId;
 
-struct P_State;
 struct Force;
 struct Shot;
 typedef std::vector<Force> Forces;
 typedef std::vector<Shot> Shots;
-typedef std::vector<P_State> P_States;
 
 typedef asio::io_service io_service;
 typedef asio::ip::udp::socket udp_socket;
@@ -113,6 +114,19 @@ void static concat(T_container_1& grower, const T_container_2& added) {
     grower.insert( grower.end(), added.begin(), added.end() );
 }
 
+template <class T_container, class T>
+bool static contains(const T_container& s, const T& item) {
+    //return s.find(item) != s.end();
+    return std::find(s.begin(), s.end(), item) != s.end();
+}
+
+/*
+template <class T>
+bool static contains(const std::deque<T>& s, const T& item) {
+    //return s.find(item) != s.end();
+}*/
+
+/*
 template <class T>
 bool static contains(const std::set<T>& s, const T& item) {
     return s.find(item) != s.end();
@@ -121,7 +135,7 @@ bool static contains(const std::set<T>& s, const T& item) {
 template <typename K, typename V>
 bool static contains(const std::map<K,V>& s, const K& item) {
     return s.find(item) != s.end();
-}
+}*/
 
 template <class T>
 std::pair<bool,int> static vecContains(const std::vector<std::vector<T>>& vec, const T& t) {

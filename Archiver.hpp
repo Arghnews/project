@@ -6,6 +6,7 @@
 #include "cereal/archives/portable_binary.hpp"
 #include "cereal/types/vector.hpp"
 #include <cereal/types/deque.hpp>
+#include <cereal/types/utility.hpp>
 #include "Util.hpp"
 #include <algorithm>
 #include <cmath>
