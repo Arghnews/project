@@ -44,11 +44,11 @@ Packet_Payloads Connection::receive() {
     assert(header.sender_id < 8);
 
     if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
-        std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number)  << " from " << int(header.sender_id) << "\n";
+        ////std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number)  << " from " << int(header.sender_id) << "\n";
     } else {
         //if (header.sequence_number == 3 || header.sequence_number == 4
         //|| header.sequence_number == 5) return usable_payloads;
-        std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << " from " << int(header.sender_id) << ", last received was " << int(received) << "\n";
+        ////std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << " from " << int(header.sender_id) << ", last received was " << int(received) << "\n";
         //received.emplace_back(header.sequence_number);
         //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
         received = header.sequence_number;
@@ -57,7 +57,8 @@ Packet_Payloads Connection::receive() {
         // add for each payload seq_number to received_seqs so that when next send back a packet, the other end can see that did "get" packets say 3,4 even if instead they were on the back of packet 5
         Seqs duplicates;
         for (const auto& payload: payloads) {
-            assert(payload.valid() && "Invalid payload type");
+            //std::cout << "Payload type " << int(payload.type) << "\n";
+            assert(payload.valid() && "Invalid payload type - probably forgot to call constructor with type,tick!");
             const Seq seq_num = payload.sequence_number;
             const bool already_received = 
                 contains(received_seqs, seq_num);
@@ -84,10 +85,19 @@ Packet_Payloads Connection::receive() {
                 }
                 );
 
-        for (const auto& seq_num: received_payload_seqs) {
+        // no payloads! then just add this packet's sequence number to received_seqs
+        if (received_payload_seqs.size() == 0) {
+            const Seq& seq_num = header.sequence_number;
             received_seqs.emplace_back(seq_num);
             if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
                 received_seqs.pop_front();
+            }
+        } else {
+            for (const auto& seq_num: received_payload_seqs) {
+                received_seqs.emplace_back(seq_num);
+                if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
+                    received_seqs.pop_front();
+                }
             }
         }
         //std::cout << " to " << pr(received_seqs) << "\n";
@@ -136,6 +146,7 @@ void Connection::send(Packet_Payload& payload) {
     payload.sequence_number = sequence_number;
 
     p.header = ph;
+    assert(payload.valid() && "Invalid payload type on sending - probably forgot to call constructor with type,tick!");
     p.payloads.emplace_back(payload);
     // this packet built with this payload
 
@@ -145,6 +156,11 @@ void Connection::send(Packet_Payload& payload) {
 
     // add packet to list of unacked packets
     unacked_packets.emplace_back(p);
+    if (unacked_packets.size() >= received_seqs_lim/2) {
+        std::cout << int(instance_id_) << " unacked_packets queue is size " << unacked_packets.size();
+        std::cout << "Removing element from front \n";
+        unacked_packets.pop_front();
+    }
     assert(p.header.sender_id < 8);
     assert(unacked_packets.back().header.sender_id < 8);
 
@@ -160,7 +176,7 @@ void Connection::send(Packet_Payload& payload) {
     // this should not really be a for loop
     // ie. should be one for client, and this whole
     // thing should be called once per client per server
-    std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
+    ////std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
     sender.send(serial);
     ++sequence_number;
     ++tick;

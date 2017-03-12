@@ -61,11 +61,11 @@ struct Connection_Address {
         remote_host(remote_host),
         remote_port(remote_port) {}
 
-    Connection_Address clientify() {
+    Connection_Address clientify() const {
         return Connection_Address(remote_port, remote_host, local_port);
     }
 
-    Connection_Address static clientify(Connection_Addresses& addrs, int index) {
+    Connection_Address static clientify(const Connection_Addresses& addrs, int index) {
         auto addr = addrs[index].clientify();
         assert(addrs.size() > 0 && "Should have a connection address to clientify");
         addr.remote_host = addrs.front().remote_host;

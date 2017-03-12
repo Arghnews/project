@@ -39,6 +39,9 @@ typedef std::deque<Packet_Payload> Packet_Payloads;
 struct Packet;
 typedef std::deque<Packet> Packets;
 
+class Connection;
+typedef std::vector<Connection> Connections;
+
 struct Connection_Address;
 typedef std::vector<Connection_Address> Connection_Addresses;
 
