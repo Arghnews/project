@@ -50,6 +50,11 @@ std::string pr(Seqs& q) {
     return buf.str();
 };
 
+struct Connection_Address {
+    std::string local_port; // port to listen on
+    std::string remote_host; // remote host
+    std::string remote_port; // remote port
+};
 
 struct Packet_Header {
     // header
@@ -177,6 +182,7 @@ struct Packet {
 
 class Connection {
     private:
+        std::shared_ptr<udp_socket> socket_ptr;
         Receiver receiver;// = make_unique<Receiver>(io,socket_ptr);
         Sender sender;
         Seq sequence_number;// = 0;
@@ -192,11 +198,22 @@ class Connection {
             return instance_id_;
         }
         Connection(io_service& io,
-                const std::shared_ptr<udp_socket>& socket_ptr,
-                std::string host,
-                std::string port,
+                const Connection_Address& connection_address,
                 Instance_Id instance_id,
                 int received_seqs_lim) :
+            Connection(io,
+                    connection_address.local_port,
+                    connection_address.remote_host,
+                    connection_address.remote_port,
+                    instance_id,
+                    received_seqs_lim) {}
+        Connection(io_service& io,
+                std::string local_port, // port to listen on
+                std::string host, // host to connect to to send stuff to
+                std::string port, // port to connect to
+                Instance_Id instance_id,
+                int received_seqs_lim) :
+            socket_ptr(std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),std::stoi(local_port)))),
             receiver(io,socket_ptr),
             sender(io,socket_ptr,host,port),
             sequence_number(0),
@@ -365,11 +382,12 @@ static const std::string type_server = "server";
 static const std::string type_client = "client";
 static const std::string type_local = "local"; // no networking
 
-static std::shared_ptr<udp_socket> socket_ptr;
-static std::vector<std::pair<std::string,std::string>> addresses; // address, port
-
 static io_service io;
-static std::vector<Sender> senders;
+
+static std::string local_port;
+// port I receive stuff on
+
+std::vector<Connection_Address> connection_addresses;
 
 static int received_seqs_lim = 20;
 
@@ -402,6 +420,7 @@ int main(int argc, char* argv[]) {
         }
         instance_id = potential_id;
 
+        /*
         for (int i=3; i<argc; i+=2) {
             // argv[i] = address // eg localhost
             unsigned short port = std::stoi(argv[i+1]);
@@ -416,9 +435,9 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
 
-        uint16_t local_port = std::stoi(addresses[instance_id].second);
+        local_port = addresses[instance_id].second;
         std::cout << "My local_port " << local_port << "\n";
-        socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),local_port));
+        //socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),local_port));
 
         if (instance_type == type_server) {
             for (int i=0; i<addresses.size(); ++i) {
@@ -428,21 +447,15 @@ int main(int argc, char* argv[]) {
                     // don't send stuff to myself, that would be dumb
                 }
                 // first:address, second:port
-                senders.emplace_back(io, socket_ptr, address.first, address.second);
+                //senders.emplace_back(io, socket_ptr, address.first, address.second);
             }
         } else if (instance_type == type_client) {
-            senders.emplace_back(io, socket_ptr, addresses[0].first, addresses[0].second);
+            //senders.emplace_back(io, socket_ptr, addresses[0].first, addresses[0].second);
         }
+        */
 
-        for (auto& s: senders) {
-            std::cout << "In senders: " << s.host << "," << s.port << "\n";
-        }
     }
     std::cout << "\n";
-
-    std::cout << instance_type << " " << int(instance_id) << " connecting to " << senders[0].port << "\n";
-
-    exit(1);
 
     /*
     // In server case create a connection per client
@@ -467,10 +480,16 @@ int main(int argc, char* argv[]) {
     std::vector<Connection> connections;
 
     if (instance_type == type_server) {
-        for (const auto& sender: senders) {
-            std::cout << "Making connection to " << sender.port << "\n";
-            connections.emplace_back(io, socket_ptr,
-                    sender.host, sender.port,
+        //for (const auto& connection_address: connections_addresses) {
+        for (int i=0; i<connection_addresses.size(); ++i) {
+            if (i == instance_id) {
+                continue;
+                // don't want server connecting to self
+            }
+            const auto& connection_address = connection_addresses[i];
+            std::cout << "Making connection to " << connection_address.remote_port << "\n";
+            connections.emplace_back(io,
+                    connection_address,
                     instance_id, received_seqs_lim);
             std::cout << "Success\n";
         }
@@ -490,8 +509,8 @@ int main(int argc, char* argv[]) {
             }
         }
     } else if (instance_type == type_client) {
-        Connection con(io, socket_ptr,
-                senders[0].host, senders[0].port,
+        Connection con(io,
+                connection_addresses[0],
                 instance_id, received_seqs_lim);
         for (int i=0; i<big; ++i) {
             sleep_us(sleep_time);
