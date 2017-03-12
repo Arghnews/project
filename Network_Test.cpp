@@ -142,6 +142,7 @@ struct Packet {
         }
         return ret;
     }
+
 };
 
 static std::string instance_type; // server/client etc.
@@ -238,11 +239,12 @@ int main(int argc, char* argv[]) {
 
     Seq sequence_number = 0;
     Seqs received_seqs;
-    int received_seqs_lim = 4;
+    int received_seqs_lim = 50;
     Seq received = -1;
     Packets unacked_packets;
     uint32_t tick = 0;
 
+    /*
     auto received_seqs_add = [&] (Seqs& received_seqs, const Seq& new_received, const int& received_seqs_lim) -> bool {
         bool already_received = false;
         if (!contains(received_seqs, new_received)) {
@@ -255,13 +257,12 @@ int main(int argc, char* argv[]) {
 
         // update received_seqs to say we have received this packet
         if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
-            pr(received_seqs);
             std::cout << "Removing " << int(received_seqs.front()) << " from queue\n";
             received_seqs.pop_front();
-            pr(received_seqs);
         }
         return already_received;
     };
+    */
 
     if (instance_type == type_server) {
 
@@ -295,16 +296,25 @@ int main(int argc, char* argv[]) {
                     
                     // now when we get packet, need to check through all of payloads to say "we got this packet in case it was piggybacked"
                     // add for each payload seq_number to received_seqs so that when next send back a packet, the other end can see that did "get" packets say 3,4 even if instead they were on the back of packet 5
-                    for (auto& payload: payloads) {
-                        bool already_received = received_seqs_add(
-                                received_seqs,
-                                payload.sequence_number,
-                                received_seqs_lim);
+                    Packet_Payloads usable_payloads;
+                    for (const auto& payload: payloads) {
+                        const bool already_received = 
+                            contains(received_seqs, payload.sequence_number);
                         // this payload is a duplicate
                         if (already_received) {
                             std::cout << "Received duplicate payload " << int(payload.sequence_number) << "\n";
+                        } else {
+                            std::cout << "Received new payload " << int(payload.sequence_number) << "\n";
+                            usable_payloads.emplace_back(payload);
                         }
                     }
+                    for (const auto& payload: usable_payloads) {
+                        received_seqs.emplace_back(payload.sequence_number);
+                        if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
+                            received_seqs.pop_front();
+                        }
+                    }
+                    
                     // packets we missed
                     /*for (
                       Seq i = old_received + 1;
@@ -317,11 +327,35 @@ int main(int argc, char* argv[]) {
 
                     // acknowledge that we sent these packets and they have been acked
                     // packets are in p.header.lost
+                    Seqs just_received_seqs;
                     for (const Seq& seq_num: header.received_seqs) {
                         std::cout << "Sender knows other end received " << int(seq_num) << ", removing it from received_seqs\n";
-                        erase(received_seqs, seq_num);
+                        just_received_seqs.emplace_back(seq_num);
+                        //erase(unacked_packets, seq_num);
+                        //erase(received_seqs, seq_num);
                         // need to remove each packet with this seq_num from unacked_packets
                     }
+                    // remove from unacked packets packets that have a sequence number
+                    // that is in "just_received_seqs", ie. we just got an ack for them
+                    // don't need to hold them in buffer anymore
+                    std::cout << "Unacked packets before erase: ";
+                    for (const auto& pack: unacked_packets) {
+                        std::cout << pack.header.sequence_number << ", ";
+                    }
+                    std::cout << "\n";
+                    unacked_packets.erase(std::remove_if(
+                                unacked_packets.begin(),
+                                unacked_packets.end(),
+                                [&] (const Packet& p) -> bool {
+                                    return contains(just_received_seqs, p.header.sequence_number);
+                                }),
+                                unacked_packets.end()
+                    );
+                    std::cout << "Unacked packets after erase: ";
+                    for (const auto& pack: unacked_packets) {
+                        std::cout << pack.header.sequence_number << ", ";
+                    }
+                    std::cout << "\n";
                 }
 
                 // send a message saying "you fuckhead, I didn't get these, where are they"
