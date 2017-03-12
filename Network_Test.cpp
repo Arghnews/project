@@ -239,30 +239,10 @@ int main(int argc, char* argv[]) {
 
     Seq sequence_number = 0;
     Seqs received_seqs;
-    int received_seqs_lim = 50;
+    int received_seqs_lim = 40;
     Seq received = -1;
     Packets unacked_packets;
     uint32_t tick = 0;
-
-    /*
-    auto received_seqs_add = [&] (Seqs& received_seqs, const Seq& new_received, const int& received_seqs_lim) -> bool {
-        bool already_received = false;
-        if (!contains(received_seqs, new_received)) {
-            std::cout << "Adding received " << int(new_received) << "\n";
-            received_seqs.emplace_back(new_received);
-        } else {
-            // should then discard payload
-            already_received = true;
-        }
-
-        // update received_seqs to say we have received this packet
-        if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
-            std::cout << "Removing " << int(received_seqs.front()) << " from queue\n";
-            received_seqs.pop_front();
-        }
-        return already_received;
-    };
-    */
 
     if (instance_type == type_server) {
 
