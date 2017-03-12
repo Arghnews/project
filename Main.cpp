@@ -43,6 +43,11 @@
 #include "Receiver.hpp"
 #include "Sender.hpp"
 
+#include "Packet_Header.hpp"
+#include "Packet_Payload.hpp"
+#include "Packet.hpp"
+#include "Connection.hpp"
+
 //#include <xmmintrin.h>
 //#include <pmmintrin.h>
 
@@ -65,6 +70,13 @@ void set_keyboard(Window_Inputs& inputs, GLFWwindow* window, World& world);
 void select_cube(Window_Inputs& inputs, World& world);
 Forces setup_cubes(World& world);
 void draw_crosshair(Window_Inputs& inputs);
+void static parse_args(
+        int argc,
+        char* argv[],
+        std::string& instance_type,
+        Instance_Id& instance_id,
+        Connection_Addresses& connection_addresses
+        );
 
 static const float my_mass = 1.0f;
 static const float cube1_mass = 20.0f;
@@ -74,20 +86,21 @@ static const float default_mass = 1.0f;
 static const float small = my_mass * 0.05f;
 static const long program_start_time = timeNowMicros();
 
-static std::string type;
 static const std::string type_server = "server";
 static const std::string type_client = "client";
 static const std::string type_local = "local"; // no networking
 
-static unsigned short local_port; // port that the socket_ptr binds to
-// ie port that stuff gets sent from and read from
-static std::shared_ptr<udp_socket> socket_ptr;
-static std::vector<std::pair<std::string,std::string>> addresses; // address, port
+static std::string instance_type; // server/client etc.
+static Instance_Id instance_id; // 0-255, server usually 0
 
 static io_service io;
-static std::unique_ptr<Receiver> receiver_ptr;
-static std::vector<Sender> senders;
-static std::string my_id;
+
+static Connections connections;
+static Connection_Addresses connection_addresses;
+
+static int received_seqs_lim = 40;
+
+static uint32_t tick = 0;
 
 //
 // 
@@ -120,60 +133,42 @@ long static timeNow() {
 
 int main(int argc, char* argv[]) {
 
-    if (argc < 2) {
-        std::cout << "Not enough arguments - please provide client/server as first param\n";
-        exit(1);
-    }
-
-    // host, port
-    type = std::string(argv[1]);
-    if (type == type_server) {
-        if (argc < 5 || argc % 2 == 0) {
-            std::cout << "To run server: ./server server [server_receive_port] [client_addr] [client_port]... - at least is needed\n";
-            exit(1);
-        }
-
-        local_port = std::stoi(argv[2]);
-        for (int i=3; i<argc; i+=2) {
-            std::string addr = argv[i];
-            std::string port = argv[i+1];
-            auto address = std::make_pair(addr,port);
-            addresses.push_back(address);
-        }
-    } else if (type == type_client) {
-        if (argc != 5) {
-            std::cout << "To run client: ./client client [client_receive_port] [server_host] [server_port] at least is needed\n";
-            exit(1);
-        }
-        local_port = std::stoi(argv[2]);
-        std::string addr = argv[3];
-        std::string port = argv[4];
-        auto address = std::make_pair(addr,port);
-        addresses.push_back(address);
-        my_id = local_port;
-    } else if (type == type_local) {
-    } else {
-        std::cout << "Did not recognise type, choose from either " << type_server << " or " << type_client << "\n";
-        exit(1);
-    }
-
-    socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(), local_port));
-
-    std::cout << "Local port: " << local_port << "\n";
-    receiver_ptr = make_unique<Receiver>(io,socket_ptr);
-
-    for (const auto& address: addresses) {
-        // first:address, second:port
-        std::cout << "Local port: " << local_port << " and address " << address.first << " and port " << address.second << "\n";
-        senders.emplace_back(io, socket_ptr, address.first, address.second);
-    }
+    parse_args(argc, argv,
+            instance_type,
+            instance_id,
+            connection_addresses);
 
     //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
     ////_MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
+
+    // networking
+    // if want printouts, uncomment the //// lines in Connection.cpp
+
+    // setup connections
+    if (instance_type == type_server) {
+        for (int i=0; i<connection_addresses.size(); ++i) {
+            if (i == instance_id) {
+                continue;
+                // don't want server connecting to self
+            }
+            const auto& connection_address = connection_addresses[i];
+            //std::cout << "Making connection to " << connection_address.remote_port << "\n";
+            connections.emplace_back(io,
+                    connection_address,
+                    instance_id, received_seqs_lim);
+            //std::cout << "Success\n";
+        }
+    } else if (instance_type == type_client) {
+        // add server with ports swapped and remote_host as server address
+        connections.emplace_back(io,
+                Connection_Address::clientify(connection_addresses, instance_id),
+                instance_id, received_seqs_lim);
+    }
+
     Window_Inputs inputs;
 
-    GLFWwindow* window = inputs.init_window(type, 640, 480);
+    GLFWwindow* window = inputs.init_window(instance_type, 640, 480);
     //const long fps_max = 60l;
     
     //const long tickrate = 100l;
@@ -222,57 +217,80 @@ int main(int argc, char* argv[]) {
                 world.apply_force(Force(world.actors().selected(),mouse_torque,Force::Type::Torque,false,false));
             }
 
+            static const float normalize = 1.0f / 1e4f;
+            const float t_normalized = t * normalize;
+            const float dt_normalized = dt * normalize;
+
             temp = timeNow();
-            world.collisions();
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
-            if (type == type_client) {
+            if (instance_type == type_client) {
 
-                // process forces and send to server
-                Forces& forces = world.forces();
-                if (forces.size() > 0) {
-                    auto serial = Sender::serialize(forces);
-                    assert(senders.size() == 1);
-                    for (auto& sender: senders) {
-                        //std::cout << "Client sending force\n";
-                        sender.send(serial);
-                    }
+                Connection& conn = connections[0];
+                Packet_Payload payload(Packet_Payload::Type::Input, tick);
+                payload.forces = world.forces();
+                conn.send(payload);
+                //p = gen_payload();
+                //conn.send(p);
+                Packet_Payloads payloads = conn.receive();
+                //std::cout << int(conn.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+                // CHANGE ME ---------------------------------------------------------------------------------------------------------------------------------------------------
+                for (const auto& received_payload: payloads) {
+                    assert(received_payload.type == Packet_Payload::Type::State && "Client should only receive stateful packets from server");
+                    // add this whole payload for whatever tick this was to buffer
+                    // buffer should be ordered by tick
+                    /* // Potentially in received_payload, need to set state to these/add to buffer!
+                    Shots shots;
+                    std::vector<Id_v3> positions;
+                    std::vector<Id_fq> orients;
+                    std::vector<Id_v3> momentums;
+                    std::vector<Id_v3> ang_momentums;
+                    */
+                    //std::cout << "Tick:" << payload.tick << "\n";
+                }
+            } else if (instance_type == type_server) {
+                /*
+                Process inputs from all clients
+                for (const auto& payload: payloads) {
+                world.apply_forces(payload.forces); // etc
                 }
 
-                // if server has sent reply, apply that to world
-                while (receiver_ptr->available()) {
-                    //std::cout << "Client receiving force\n";
-                    Forces fs;
-                    fs = receiver_ptr->receive<Forces>();
-                    world.apply_forces(fs);
-                }
 
-            } else if (type == type_server) {
 
+                // for every shot in payload.shots
+                // add shots to world.fire_shot(shot); // etc
+                */
+                // not sure about order of these lines perhaps
+                world.collisions();
+                world.simulate(t_normalized,dt_normalized);
+                // world.fire_shots(world.shots())
+                // need to get from simulate, any actors states that changed
+                //std::vector<Id_v3> momentums = world.new_momentums(); // or something
+                // world.clear_new_momentums();
+                // 
+                // push to all clients new world state
+                // for (auto& conn: connections) {
+                // Packet_Payload payload(Packet_Payload::Type::State, tick);
+                // payload.momentums = new_momentums;
+                // conn.send(payload);
+                // 
+                // world.clear_forces();
+                // world.clear_shots();
+                // perhaps need to add something stateful about like
+                // pair of just been shot here so that client can tell
+                /*
+                // remember something about some issue about how shots must not be cleared
+                // till after render? -- if strange shot behaviour
                 // if clients have sent any forces process them and affect world state
                 // then send them to all clients - currently doing this immediately
-                Forces forces;
-                while (receiver_ptr->available()) {
-                    //std::cout << "Server receiving force\n";
-                    Forces forces_in = receiver_ptr->receive<Forces>();
-                    forces.insert(forces.begin(), forces_in.begin(), forces_in.end());
-                }
-                // in real thing obv send update every frame!
-                if (forces.size() > 0) {
-                    //std::cout << "Server sending force\n";
-                    // apply force to world
-                    world.apply_forces(forces);
-                    // send forces to clients
-                    auto serial = Sender::serialize(forces);
-                    for (auto& sender: senders) {
-                        sender.send(serial);
-                    }
-                }
-            } else if (type == type_local) {
+                }*/
+            } else if (instance_type == type_local) {
                 // assumed testing non networking aspect
                 // shots must be first for recoil force
+                world.collisions();
                 world.fire_shots(world.shots());
                 world.apply_forces(world.forces());
+                world.simulate(t_normalized,dt_normalized);
             }
 
             // actually applies forces and moves the world
@@ -281,12 +299,7 @@ int main(int argc, char* argv[]) {
             //world.fire_shots(shots);
             // actually fires the shots
 
-            static const float normalize = 1.0f / 1e4f;
-            const float t_normalized = t * normalize;
-            const float dt_normalized = dt * normalize;
-
             temp = timeNow();
-            world.simulate(t_normalized,dt_normalized);
             //std::cout << "Time for sim " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
 
@@ -303,6 +316,8 @@ int main(int argc, char* argv[]) {
         v2 win = inputs.windowSize();
         bind_text_graphics(text_shader,win.x,win.y);
         renderText(text_shader, "420 blaze it", 25.0f, 25.0f, 1.0f, glm::vec3(1.0f, 0.8f, 1.0f));
+
+        ++tick;
 
         inputs.swapBuffers(); // swaps buffers
         //std::cout << "Time for render " << (double)(timeNow()-temp)/1000.0 << "ms\n";
@@ -685,6 +700,64 @@ void renderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void static parse_args(
+        int argc,
+        char* argv[],
+        std::string& instance_type,
+        Instance_Id& instance_id,
+        Connection_Addresses& connection_addresses
+        ) {
+    if (argc == 2) {
+        if (std::string(argv[1]) == type_local) {
+            instance_type = type_local;
+            return;
+        }
+    }
+    if (argc < 9) {
+        std::cerr << "Args of form: ./exec [client|server] id (local_port remote_host remote_port){2,}\n";
+        std::cerr << "instance_type is " << type_server << "," << type_client;
+        std::cerr << " or " << type_local << " and id 0-255" << "\n";
+        exit(1);
+    }
+
+    instance_type = std::string(argv[1]);
+
+    if (instance_type != type_server &&
+            instance_type != type_client &&
+            instance_type != type_local) {
+        std::cerr << "instance_type is " << type_server << "," << type_client;
+        std::cerr << " or " << type_local << "\n";
+        exit(1);
+    }
+
+    if (instance_type == type_local) {
+    } else {
+
+        int potential_id = std::stoi(argv[2]);
+        if (potential_id < 0 || potential_id > 255) {
+            std::cerr << "Id must be from 0 to num instances-1 and must be in byte range (it's an array index\n";
+            exit(1);
+        }
+        instance_id = potential_id;
+
+        int start_of_rest = 3;
+        if ((argc-start_of_rest) % 3 != 0 || (argc-start_of_rest) < 6) {
+            std::cerr << "Arguments at end should [local_port remote_host remote_port] triplets\n";
+            exit(1);
+        }
+        for (int i=start_of_rest; i<argc; i+=3) {
+            std::string local_port = argv[i+0];
+            std::string remote_host = argv[i+1];
+            std::string remote_port = argv[i+2];
+            connection_addresses.emplace_back(
+                    Connection_Address(local_port, remote_host, remote_port));
+        }
+
+    }
+    std::cout << "\n";
+}
+
 
     /*
     while (!glfwWindowShouldClose(window)) {

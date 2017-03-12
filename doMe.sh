@@ -71,7 +71,7 @@ main() {
 
 	compiler="g++"
 
-	compilerFlags="-O3 -std=c++11"
+	compilerFlags="-O3 -std=c++11 -Wno-narrowing"
 
     #libraries="-lGLEW -lglfw3 -lGL -lX11 -lpthread -lXrandr -lXi"
 #g++ main.o -o main.exec -lGL -lGLU -lglfw3 -lX11 -lXxf86vm -lXrandr -lpthread -lXi

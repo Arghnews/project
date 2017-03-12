@@ -43,7 +43,7 @@ static io_service io;
 
 static Connection_Addresses connection_addresses;
 
-static int received_seqs_lim = 20;
+static int received_seqs_lim = 40;
 
 int main(int argc, char* argv[]) {
 

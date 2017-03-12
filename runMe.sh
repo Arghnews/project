@@ -10,6 +10,9 @@ fi
 
 let numClients=$numClients
 
+#executable="./network.exec"
+executable="./game.exec"
+
 clients=()
 
 list=""
@@ -35,14 +38,14 @@ let j=$numClients
 
 while [ $i -lt $j ];do
     let i=$i+1
-    client="./network.exec client"
+    client="$executable client"
     client="$client $i"
     client="$client $list"
 
     clients+=("$client")
 done
 
-server="./network.exec server 0 $list"
+server="$executable server 0 $list"
 echo "$server"
 $server &
 
