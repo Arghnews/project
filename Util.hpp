@@ -23,9 +23,12 @@
 #define ASIO_STANDALONE
 #include "asio.hpp"
 
+// networking stuff
 typedef uint8_t Instance_Id;
 typedef uint16_t Id;
 typedef uint32_t Tick;
+typedef uint8_t Seq;
+typedef std::deque<Seq> Seqs;
 
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;

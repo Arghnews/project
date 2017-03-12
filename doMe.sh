@@ -38,6 +38,7 @@ main() {
     "World.cpp"
     "Sender.cpp"
     "Receiver.cpp"
+    "Packet_Header.cpp"
     )
 
     client=(
@@ -53,6 +54,7 @@ main() {
     "Receiver.cpp"
     "Sender.cpp"
     "P_State.cpp"
+    "Packet_Header.cpp"
     )
 
     Test=(
