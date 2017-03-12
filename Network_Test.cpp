@@ -32,12 +32,22 @@ void sleep_us(long us) {
     std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,us)));
 }
 
+
 typedef uint8_t Seq;
 typedef std::deque<Seq> Seqs;
 
 typedef std::deque<Packet_Payload> Packet_Payloads;
 
 typedef std::deque<Packet> Packets;
+
+void pr(std::deque<Seq>& q) {
+    std::cout << "Size " << q.size() << ": ";
+    for (const auto& i: q) {
+        std::cout << int(i) << ", ";
+    }
+    std::cout << "\n";
+};
+
 
 struct Packet_Header {
     // header
@@ -145,6 +155,162 @@ struct Packet {
 
 };
 
+
+class Connection {
+    private:
+        Receiver receiver;// = make_unique<Receiver>(io,socket_ptr);
+        Sender sender;
+        Seq sequence_number;// = 0;
+        Seqs received_seqs;
+        int received_seqs_lim;// = 40;
+        Seq received;// = -1;
+        Packets unacked_packets;
+        uint32_t tick;// = 0;
+        Instance_Id instance_id;
+
+    public:
+        Connection(io_service& io,
+                const std::shared_ptr<udp_socket>& socket_ptr,
+                std::string host,
+                std::string port,
+                Instance_Id instance_id,
+                int received_seqs_lim) :
+                receiver(io,socket_ptr),
+                sender(io,socket_ptr,host,port),
+                sequence_number(0),
+                received_seqs_lim(received_seqs_lim),
+                received(-1),
+                tick(0),
+                instance_id(instance_id)
+    {
+
+    }
+
+        void receive() {
+            while (receiver.available()) {
+                Packet p(receiver.receive<Packet>());
+                Packet_Header& header = p.header;
+                Packet_Payloads& payloads = p.payloads;
+                if (header.sequence_number == 3 || header.sequence_number == 4) {
+                    continue;
+                };
+                std::cout << "Server received ";
+
+                if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
+                    std::cout << "duplicate or old packet:" << int(header.sequence_number) << "\n";
+                } else {
+                    //received.emplace_back(header.sequence_number);
+                    //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
+                    std::cout << "Most recent received from " << int(received);
+                    received = header.sequence_number;
+                    std::cout << " to " << int(received) << "\n";
+
+                    // update received_seqs to say we have received this packet
+
+                    // now when we get packet, need to check through all of payloads to say "we got this packet in case it was piggybacked"
+                    // add for each payload seq_number to received_seqs so that when next send back a packet, the other end can see that did "get" packets say 3,4 even if instead they were on the back of packet 5
+                    Packet_Payloads usable_payloads;
+                    for (const auto& payload: payloads) {
+                        const bool already_received = 
+                            contains(received_seqs, payload.sequence_number);
+                        // this payload is a duplicate
+                        if (already_received) {
+                            std::cout << "Received duplicate payload " << int(payload.sequence_number) << "\n";
+                        } else {
+                            std::cout << "Received new payload " << int(payload.sequence_number) << "\n";
+                            usable_payloads.emplace_back(payload);
+                        }
+                    }
+                    for (const auto& payload: usable_payloads) {
+                        received_seqs.emplace_back(payload.sequence_number);
+                        if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
+                            received_seqs.pop_front();
+                        }
+                    }
+
+                    // acknowledge that we sent these packets and they have been acked
+                    // packets are in p.header.lost
+                    Seqs just_received_seqs;
+                    for (const Seq& seq_num: header.received_seqs) {
+                        std::cout << "Sender knows other end received " << int(seq_num) << ", removing it from received_seqs\n";
+                        just_received_seqs.emplace_back(seq_num);
+                        //erase(unacked_packets, seq_num);
+                        //erase(received_seqs, seq_num);
+                        // need to remove each packet with this seq_num from unacked_packets
+                    }
+                    // remove from unacked packets packets that have a sequence number
+                    // that is in "just_received_seqs", ie. we just got an ack for them
+                    // don't need to hold them in buffer anymore
+                    std::cout << "Unacked packets before erase: ";
+                    for (const auto& pack: unacked_packets) {
+                        std::cout << pack.header.sequence_number << ", ";
+                    }
+                    std::cout << "\n";
+                    unacked_packets.erase(std::remove_if(
+                                unacked_packets.begin(),
+                                unacked_packets.end(),
+                                [&] (const Packet& p) -> bool {
+                                return contains(just_received_seqs, p.header.sequence_number);
+                                }),
+                            unacked_packets.end()
+                            );
+                    std::cout << "Unacked packets after erase: ";
+                    for (const auto& pack: unacked_packets) {
+                        std::cout << pack.header.sequence_number << ", ";
+                    }
+                    std::cout << "\n";
+                }
+
+                // send a message saying "you fuckhead, I didn't get these, where are they"
+            }
+        }
+
+        void send() {
+            // this packet
+            Packet p;
+
+            Packet_Header ph;
+            ph.sequence_number = sequence_number;
+            ph.received_seqs = received_seqs;
+            ph.sender_id = instance_id;
+
+            Packet_Payload payload;
+            payload.tick = tick;
+            payload.type = Packet_Payload::Type::Input;
+            payload.sequence_number = sequence_number;
+            Forces fs;
+            fs.emplace_back(Force(tick,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+            payload.forces = fs;
+
+            p.header = ph;
+            p.payloads.emplace_back(payload);
+            // this packet built with this payload
+
+            Packet to_send = Packet::piggyback(p, unacked_packets);
+
+            // add packet to list of unacked packets
+            unacked_packets.emplace_back(p);
+
+            const int payload_size = to_send.payloads.size();
+            if (payload_size > 10) {
+                std::cout << "Large payload size of " << payload_size << "\n";
+            }
+
+            //Packet::append_payloads(p, unacked_packets);
+            auto serial = Sender::serialize(to_send);
+            // DO NOT SWAP order of append_payloads and this line below
+
+            // this should not really be a for loop
+            // ie. should be one for client, and this whole
+            // thing should be called once per client per server
+            std::cout << "Client sent " << int(to_send.header.sequence_number) << " to " << sender.port << " (" << serial.size() << ") with payload size " << payload_size << "\n";
+            sender.send(serial);
+            ++sequence_number;
+            ++tick;
+        }
+
+};
+
 static std::string instance_type; // server/client etc.
 static Instance_Id instance_id; // 0-255, server usually 0
 
@@ -156,8 +322,9 @@ static std::shared_ptr<udp_socket> socket_ptr;
 static std::vector<std::pair<std::string,std::string>> addresses; // address, port
 
 static io_service io;
-static std::unique_ptr<Receiver> receiver_ptr;
 static std::vector<Sender> senders;
+
+static int received_seqs_lim = 40;
 
 int main(int argc, char* argv[]) {
 
@@ -206,8 +373,6 @@ int main(int argc, char* argv[]) {
         std::cout << "My local_port " << local_port << "\n";
         socket_ptr = std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),local_port));
 
-        receiver_ptr = make_unique<Receiver>(io,socket_ptr);
-
         if (instance_type == type_server) {
             for (int i=0; i<addresses.size(); ++i) {
                 auto& address = addresses[i];
@@ -227,16 +392,34 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    auto pr = [] (std::deque<Seq>& q) {
-        std::cout << "Size " << q.size() << ": ";
-        for (const auto& i: q) {
-            std::cout << int(i) << ", ";
-        }
-        std::cout << "\n";
-    };
+    Connection c1(io, socket_ptr,
+            addresses[0].first, addresses[0].second,
+            instance_id, received_seqs_lim);
 
+    /*
+     // In server case create a connection per client
+    Connection c2(io, socket_ptr,
+            addresses[0].first, addresses[0].second,
+            received_seqs_lim);
+            */
+
+    if (instance_type == type_server) {
+        while (1) {
+            c1.receive();
+        }
+    } else if (instance_type == type_client) {
+        for (int i=0; i<4; ++i) {
+            sleep_ms(2 * 1000);
+            c1.send();
+        }
+    }
+
+}
+
+    /*
     int c = 0;
 
+    std::unique_ptr<Receiver> receiver_ptr = make_unique<Receiver>(io,socket_ptr);
     Seq sequence_number = 0;
     Seqs received_seqs;
     int received_seqs_lim = 40;
@@ -264,13 +447,13 @@ int main(int argc, char* argv[]) {
                     //received.emplace_back(header.sequence_number);
                     //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
                     std::cout << "Most recent received from " << int(received);
-                    received = p.header.sequence_number;
+                    received = header.sequence_number;
                     std::cout << " to " << int(received) << "\n";
 
-                    /*received_seqs_add(
-                            received_seqs,
-                            header.sequence_number,
-                            received_seqs_lim);*/
+                    //received_seqs_add(
+                            //received_seqs,
+                            //header.sequence_number,
+                            //received_seqs_lim);
 
                     // update received_seqs to say we have received this packet
                     
@@ -296,15 +479,15 @@ int main(int argc, char* argv[]) {
                     }
                     
                     // packets we missed
-                    /*for (
-                      Seq i = old_received + 1;
-                      Packet_Header::sequence_more_recent(new_received,i);
-                      ++i)
-                      {
-                      lost.emplace_back(i);
-                      std::cout << "Receiver didn't get packet " << int(i) << "\n";
-                      } */
-
+                    //for (
+                      //Seq i = old_received + 1;
+                      //Packet_Header::sequence_more_recent(new_received,i);
+                      //++i)
+                      //{
+                      //lost.emplace_back(i);
+                      //std::cout << "Receiver didn't get packet " << int(i) << "\n";
+                      //}
+//
                     // acknowledge that we sent these packets and they have been acked
                     // packets are in p.header.lost
                     Seqs just_received_seqs;
@@ -392,6 +575,7 @@ int main(int argc, char* argv[]) {
     }
 
 }
+*/
     /*
                 Packet p;
                 Packet_Header ph;
