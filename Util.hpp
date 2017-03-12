@@ -25,6 +25,7 @@
 
 typedef uint8_t Instance_Id;
 typedef uint16_t Id;
+typedef uint32_t Tick;
 
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;

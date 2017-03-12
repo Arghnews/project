@@ -40,12 +40,14 @@ typedef std::deque<Packet_Payload> Packet_Payloads;
 
 typedef std::deque<Packet> Packets;
 
-void pr(std::deque<Seq>& q) {
-    std::cout << "Size " << q.size() << ": ";
+std::string pr(Seqs& q) {
+    std::stringstream buf;
+    buf << "(" << q.size() << ") [";
     for (const auto& i: q) {
-        std::cout << int(i) << ", ";
+        buf << int(i) << ", ";
     }
-    std::cout << "\n";
+    buf << "]";
+    return buf.str();
 };
 
 
@@ -84,21 +86,31 @@ struct Packet_Header {
 };
 
 /*
-std::ostream& operator<<(std::ostream& stream, const Packet_Header& h) {
-    stream << "Seq:" << h.sequence_number << ", ack:" << h.remote_sequence_number << ", sender_id:" << h.sender_id << " and bitfield:" << h.lost;
-    */
+   std::ostream& operator<<(std::ostream& stream, const Packet_Header& h) {
+   stream << "Seq:" << h.sequence_number << ", ack:" << h.remote_sequence_number << ", sender_id:" << h.sender_id << " and bitfield:" << h.lost;
+   */
 
 class Packet_Payload {
 
+    private:
     public:
         enum class Type : uint8_t {
-            Input, State
+            Invalid, Input, State
         };
+        Packet_Payload(
+                const Packet_Payload::Type& t,
+                const Tick& tick
+                ) :
+            type(t),
+            tick(tick)
+    {
+
+    }
+        Packet_Payload() : Packet_Payload(Packet_Payload::Type::Invalid, 0) {}
 
         Seq sequence_number;
 
-        Packet_Payload() {}
-        uint32_t tick; // initially tied to Seq number
+        Tick tick; // initially tied to Seq number
         // application level number, so can tell at what tick this was sent on
         // can tell if too old or not etc // think I need this? maybe not really
 
@@ -106,11 +118,15 @@ class Packet_Payload {
 
         Forces forces;
         Shots shots;
-            
+
         std::vector<Id_v3> positions;
         std::vector<Id_fq> orients;
         std::vector<Id_v3> momentums;
         std::vector<Id_v3> ang_momentums;
+
+        bool valid() const {
+            return type != Packet_Payload::Type::Invalid;
+        }
 
         template<class Archive>
             void serialize(Archive& archive) {
@@ -128,13 +144,13 @@ struct Packet {
         header(header), payloads(payloads) {
             //std::cout << "Copy constructor called\n";
 
-    }
+        }
     Packet(Packet_Header&& header,
             Packet_Payloads&& payloads) :
         header(header), payloads(payloads) {
             //std::cout << "Move constructor called\n";
 
-    }
+        }
     template<class Archive>
         void serialize(Archive& archive) {
             archive(header, payloads);       
@@ -150,6 +166,13 @@ struct Packet {
         for (const auto& packet: packets) {
             concat(payloads, packet.payloads);
         }
+        // convert 6,3,4,5 -> 3,4,5,6
+        if (payloads.size() > 1) {
+            const Packet_Payload payload = payloads.front();
+            payloads.pop_front();
+            payloads.emplace_back(payload);
+        }
+
         return ret;
     }
 
@@ -165,122 +188,142 @@ class Connection {
         int received_seqs_lim;// = 40;
         Seq received;// = -1;
         Packets unacked_packets;
-        uint32_t tick;// = 0;
-        Instance_Id instance_id;
+        Tick tick;// = 0;
+        Instance_Id instance_id_;
 
     public:
+        Instance_Id instance_id() const {
+            return instance_id_;
+        }
         Connection(io_service& io,
                 const std::shared_ptr<udp_socket>& socket_ptr,
                 std::string host,
                 std::string port,
                 Instance_Id instance_id,
                 int received_seqs_lim) :
-                receiver(io,socket_ptr),
-                sender(io,socket_ptr,host,port),
-                sequence_number(0),
-                received_seqs_lim(received_seqs_lim),
-                received(-1),
-                tick(0),
-                instance_id(instance_id)
+            receiver(io,socket_ptr),
+            sender(io,socket_ptr,host,port),
+            sequence_number(0),
+            received_seqs_lim(received_seqs_lim),
+            received(-1),
+            tick(0),
+            instance_id_(instance_id)
     {
 
     }
 
-        void receive() {
-            while (receiver.available()) {
-                Packet p(receiver.receive<Packet>());
-                Packet_Header& header = p.header;
-                Packet_Payloads& payloads = p.payloads;
-                if (header.sequence_number == 3 || header.sequence_number == 4) {
-                    continue;
-                };
-                std::cout << "Server received ";
-
-                if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
-                    std::cout << "duplicate or old packet:" << int(header.sequence_number) << "\n";
-                } else {
-                    //received.emplace_back(header.sequence_number);
-                    //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
-                    std::cout << "Most recent received from " << int(received);
-                    received = header.sequence_number;
-                    std::cout << " to " << int(received) << "\n";
-
-                    // update received_seqs to say we have received this packet
-
-                    // now when we get packet, need to check through all of payloads to say "we got this packet in case it was piggybacked"
-                    // add for each payload seq_number to received_seqs so that when next send back a packet, the other end can see that did "get" packets say 3,4 even if instead they were on the back of packet 5
-                    Packet_Payloads usable_payloads;
-                    for (const auto& payload: payloads) {
-                        const bool already_received = 
-                            contains(received_seqs, payload.sequence_number);
-                        // this payload is a duplicate
-                        if (already_received) {
-                            std::cout << "Received duplicate payload " << int(payload.sequence_number) << "\n";
-                        } else {
-                            std::cout << "Received new payload " << int(payload.sequence_number) << "\n";
-                            usable_payloads.emplace_back(payload);
-                        }
-                    }
-                    for (const auto& payload: usable_payloads) {
-                        received_seqs.emplace_back(payload.sequence_number);
-                        if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
-                            received_seqs.pop_front();
-                        }
-                    }
-
-                    // acknowledge that we sent these packets and they have been acked
-                    // packets are in p.header.lost
-                    Seqs just_received_seqs;
-                    for (const Seq& seq_num: header.received_seqs) {
-                        std::cout << "Sender knows other end received " << int(seq_num) << ", removing it from received_seqs\n";
-                        just_received_seqs.emplace_back(seq_num);
-                        //erase(unacked_packets, seq_num);
-                        //erase(received_seqs, seq_num);
-                        // need to remove each packet with this seq_num from unacked_packets
-                    }
-                    // remove from unacked packets packets that have a sequence number
-                    // that is in "just_received_seqs", ie. we just got an ack for them
-                    // don't need to hold them in buffer anymore
-                    std::cout << "Unacked packets before erase: ";
-                    for (const auto& pack: unacked_packets) {
-                        std::cout << pack.header.sequence_number << ", ";
-                    }
-                    std::cout << "\n";
-                    unacked_packets.erase(std::remove_if(
-                                unacked_packets.begin(),
-                                unacked_packets.end(),
-                                [&] (const Packet& p) -> bool {
-                                return contains(just_received_seqs, p.header.sequence_number);
-                                }),
-                            unacked_packets.end()
-                            );
-                    std::cout << "Unacked packets after erase: ";
-                    for (const auto& pack: unacked_packets) {
-                        std::cout << pack.header.sequence_number << ", ";
-                    }
-                    std::cout << "\n";
-                }
-
-                // send a message saying "you fuckhead, I didn't get these, where are they"
-            }
+        bool available() {
+            return receiver.available();
         }
 
-        void send() {
+        Packet_Payloads receive() {
+            Packet_Payloads usable_payloads;
+            Packet p(receiver.receive<Packet>());
+            Packet_Header& header = p.header;
+            Packet_Payloads& payloads = p.payloads;
+
+            if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
+                std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number) << "\n";
+            } else {
+                if (header.sequence_number == 3 || header.sequence_number == 4
+                        || header.sequence_number == 5) return usable_payloads;
+                std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << ", last received was " << int(received) << "\n";
+                //received.emplace_back(header.sequence_number);
+                //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
+                received = header.sequence_number;
+
+                // update received_seqs to say we have received this packet
+
+                // now when we get packet, need to check through all of payloads to say "we got this packet in case it was piggybacked"
+                // add for each payload seq_number to received_seqs so that when next send back a packet, the other end can see that did "get" packets say 3,4 even if instead they were on the back of packet 5
+                Seqs duplicates;
+                for (const auto& payload: payloads) {
+                    assert(payload.valid() && "Invalid payload type");
+                    const Seq seq_num = payload.sequence_number;
+                    const bool already_received = 
+                        contains(received_seqs, seq_num);
+                    // this payload is a duplicate
+                    if (already_received) {
+                        duplicates.emplace_back(seq_num);
+                    } else {
+                        usable_payloads.emplace_back(payload);
+                    }
+                }
+
+                std::cout << "Duplicates " << pr(duplicates) << "\n";
+
+                std::cout << "Received seqs from " << pr(received_seqs);
+                Seqs received_payload_seqs;
+                for (const auto& payload: usable_payloads) {
+                    received_payload_seqs.emplace_back(payload.sequence_number);
+                }
+                std::sort(
+                        received_payload_seqs.begin(),
+                        received_payload_seqs.end(),
+                        [] (const Seq& s1, const Seq& s2) {
+                            // intentionally swapped
+                            return Packet_Header::sequence_more_recent(s2,s1);
+                        }
+                );
+
+                for (const auto& seq_num: received_payload_seqs) {
+                    received_seqs.emplace_back(seq_num);
+                    if (!received_seqs.empty() && received_seqs.size() > received_seqs_lim) {
+                        received_seqs.pop_front();
+                    }
+                }
+                std::cout << " to " << pr(received_seqs) << "\n";
+
+                // acknowledge that we sent these packets and they have been acked
+                // packets are in p.header.lost
+                Seqs just_received_seqs;
+                for (const Seq& seq_num: header.received_seqs) {
+                    //std::cout << "Sender knows other end received " << int(seq_num) << ", removing it from received_seqs\n";
+                    just_received_seqs.emplace_back(seq_num);
+                    //erase(unacked_packets, seq_num);
+                    //erase(received_seqs, seq_num);
+                    // need to remove each packet with this seq_num from unacked_packets
+                }
+                std::cout << int(instance_id_) << " (sender) knows remote end received " << pr(just_received_seqs) << "\n";
+
+                // remove from unacked packets packets that have a sequence number
+                // that is in "just_received_seqs", ie. we just got an ack for them
+                // don't need to hold them in buffer anymore
+                std::cout << "Unacked packets before erase: ";
+                for (const auto& pack: unacked_packets) {
+                    std::cout << int(pack.header.sequence_number) << ", ";
+                }
+                std::cout << "\n";
+                unacked_packets.erase(std::remove_if(
+                            unacked_packets.begin(),
+                            unacked_packets.end(),
+                            [&] (const Packet& p) -> bool {
+                            return contains(just_received_seqs, p.header.sequence_number);
+                            }),
+                        unacked_packets.end()
+                        );
+                std::cout << "Unacked packets after erase: ";
+                for (const auto& pack: unacked_packets) {
+                    std::cout << int(pack.header.sequence_number) << ", ";
+                }
+                std::cout << "\n";
+                std::cout << int(instance_id_) << " receive for this packet over\n";
+            }
+
+            // send a message saying "you fuckhead, I didn't get these, where are they"
+            return usable_payloads;
+        }
+
+        void send(Packet_Payload& payload) {
             // this packet
             Packet p;
 
             Packet_Header ph;
             ph.sequence_number = sequence_number;
             ph.received_seqs = received_seqs;
-            ph.sender_id = instance_id;
+            ph.sender_id = instance_id_;
 
-            Packet_Payload payload;
-            payload.tick = tick;
-            payload.type = Packet_Payload::Type::Input;
             payload.sequence_number = sequence_number;
-            Forces fs;
-            fs.emplace_back(Force(tick,v3(69.0f,72.0f,0.0f),Force::Type::Force));
-            payload.forces = fs;
 
             p.header = ph;
             p.payloads.emplace_back(payload);
@@ -303,7 +346,7 @@ class Connection {
             // this should not really be a for loop
             // ie. should be one for client, and this whole
             // thing should be called once per client per server
-            std::cout << "Client sent " << int(to_send.header.sequence_number) << " to " << sender.port << " (" << serial.size() << ") with payload size " << payload_size << "\n";
+            std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
             sender.send(serial);
             ++sequence_number;
             ++tick;
@@ -324,7 +367,7 @@ static std::vector<std::pair<std::string,std::string>> addresses; // address, po
 static io_service io;
 static std::vector<Sender> senders;
 
-static int received_seqs_lim = 40;
+static int received_seqs_lim = 20;
 
 int main(int argc, char* argv[]) {
 
@@ -391,28 +434,90 @@ int main(int argc, char* argv[]) {
             std::cout << "In senders: " << s.host << "," << s.port << "\n";
         }
     }
+    std::cout << "\n";
 
-    Connection c1(io, socket_ptr,
-            addresses[0].first, addresses[0].second,
-            instance_id, received_seqs_lim);
+    std::cout << instance_type << " " << int(instance_id) << " connecting to " << senders[0].port << "\n";
 
     /*
-     // In server case create a connection per client
+    // In server case create a connection per client
     Connection c2(io, socket_ptr,
-            addresses[0].first, addresses[0].second,
-            received_seqs_lim);
-            */
+    addresses[0].first, addresses[0].second,
+    received_seqs_lim);
+    */
+
+    int tps = 1;
+    int sleep_time = 1000000/tps;
+    auto big = 10;
+
+    auto gen_payload = [&] () -> Packet_Payload {
+        static Tick tick = 0;
+        Packet_Payload payload(Packet_Payload::Type::Input, tick++);
+        Forces fs;
+        fs.emplace_back(Force(0,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+        payload.forces = fs;
+        return payload;
+    };
+
+    std::vector<Connection> connections;
 
     if (instance_type == type_server) {
-        while (1) {
-            c1.receive();
+        for (const auto& sender: senders) {
+            connections.emplace_back(io, socket_ptr,
+                    sender.host, sender.port,
+                    instance_id, received_seqs_lim);
+        }
+        std::cout << "Server has " << connections.size() << " connections\n";
+        for (int i=0; i<big; ++i) {
+            sleep_us(sleep_time);
+            for (auto& con: connections) {
+                while (con.available()) {
+                    Packet_Payloads payloads = con.receive();
+                    std::cout << int(con.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+                    for (const auto& payload: payloads) {
+                        std::cout << "Tick:" << payload.tick << "\n";
+                    }
+                }
+                Packet_Payload payload = gen_payload();
+                con.send(payload);
+            }
         }
     } else if (instance_type == type_client) {
-        for (int i=0; i<4; ++i) {
-            sleep_ms(2 * 1000);
-            c1.send();
+        Connection c1(io, socket_ptr,
+                senders[0].host, senders[0].port,
+                instance_id, received_seqs_lim);
+        for (int i=0; i<big; ++i) {
+            sleep_us(sleep_time);
+            auto p = gen_payload();
+            c1.send(p);
+            p = gen_payload();
+            c1.send(p);
+            Packet_Payloads payloads = c1.receive();
+            std::cout << int(c1.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+            for (const auto& payload: payloads) {
+                std::cout << "Tick:" << payload.tick << "\n";
+            }
         }
     }
+    /*
+            Forces fs;
+            fs.emplace_back(Force(tick,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(74.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(79.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(84.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(89.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(94.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(99.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(104.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(109.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(114.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(119.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(124.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(129.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(134.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(139.0f,72.0f,0.0f),Force::Type::Force));
+            fs.emplace_back(Force(tick,v3(144.0f,72.0f,0.0f),Force::Type::Force));
+            payload.forces = fs;
+            */
 
 }
 

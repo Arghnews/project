@@ -111,8 +111,6 @@ main() {
 
     # special case for verbose, eg. want to run ./script clean -v won't work without this
 
-    executable="$executable"'.exec'
-
 	for arg in "$@"; do
 		case $arg in
             -v|--v|-verbose|--verbose)
@@ -168,6 +166,8 @@ main() {
 				;;
 		esac
 	done
+
+    executable="$executable"'.exec'
 
     # if want to remove args etc should do in loop above or here
     # argsStr is for printout etc
