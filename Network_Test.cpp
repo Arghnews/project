@@ -40,6 +40,10 @@ typedef std::deque<Packet_Payload> Packet_Payloads;
 
 typedef std::deque<Packet> Packets;
 
+struct Connection_Address;
+
+typedef std::vector<Connection_Address> Connection_Addresses;
+
 std::string pr(Seqs& q) {
     std::stringstream buf;
     buf << "(" << q.size() << ") [";
@@ -54,7 +58,25 @@ struct Connection_Address {
     std::string local_port; // port to listen on
     std::string remote_host; // remote host
     std::string remote_port; // remote port
+    // used for clients as they need the remote/local ports swapped
+    Connection_Address(
+            std::string local_port,
+            std::string remote_host,
+            std::string remote_port) :
+        local_port(local_port),
+        remote_host(remote_host),
+        remote_port(remote_port) {}
+    Connection_Address clientify() {
+        return Connection_Address(remote_port, remote_host, local_port);
+    }
 };
+
+Connection_Address clientify(Connection_Addresses& addrs, int index) {
+    auto addr = addrs[index].clientify();
+    assert(addrs.size() > 0 && "Should have a connection address to clientify");
+    addr.remote_host = addrs.front().remote_host;
+    return addr;
+}
 
 struct Packet_Header {
     // header
@@ -234,7 +256,6 @@ class Connection {
             Packet p = receiver.receive<Packet>();
             Packet_Header& header = p.header;
             Packet_Payloads& payloads = p.payloads;
-            std::cout << int(instance_id_) << " received from sender id " << int(header.sender_id) << "\n";
             assert(header.sender_id < 8);
 
             if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
@@ -242,7 +263,7 @@ class Connection {
             } else {
                 //if (header.sequence_number == 3 || header.sequence_number == 4
                         //|| header.sequence_number == 5) return usable_payloads;
-                std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << ", last received was " << int(received) << "\n";
+                std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << " from " << int(header.sender_id) << ", last received was " << int(received) << "\n";
                 //received.emplace_back(header.sequence_number);
                 //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
                 received = header.sequence_number;
@@ -337,7 +358,7 @@ class Connection {
             ph.sequence_number = sequence_number;
             ph.received_seqs = received_seqs;
             ph.sender_id = instance_id_;
-            std::cout << int(instance_id_) << " setting sender_id to " << int(ph.sender_id) << "\n";
+            //std::cout << int(instance_id_) << " setting sender_id to " << int(ph.sender_id) << "\n";
             assert(ph.sender_id < 8);
 
             payload.sequence_number = sequence_number;
@@ -367,7 +388,7 @@ class Connection {
             // this should not really be a for loop
             // ie. should be one for client, and this whole
             // thing should be called once per client per server
-            std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << " (id:" << int(to_send.header.sender_id) << ")\n";
+            std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
             sender.send(serial);
             ++sequence_number;
             ++tick;
@@ -384,10 +405,7 @@ static const std::string type_local = "local"; // no networking
 
 static io_service io;
 
-static std::string local_port;
-// port I receive stuff on
-
-std::vector<Connection_Address> connection_addresses;
+static Connection_Addresses connection_addresses;
 
 static int received_seqs_lim = 20;
 
@@ -419,6 +437,14 @@ int main(int argc, char* argv[]) {
             exit(1);
         }
         instance_id = potential_id;
+
+        for (int i=3; i<argc; i+=3) {
+            std::string local_port = argv[i+0];
+            std::string remote_host = argv[i+1];
+            std::string remote_port = argv[i+2];
+            connection_addresses.emplace_back(
+                    Connection_Address(local_port, remote_host, remote_port));
+        }
 
         /*
         for (int i=3; i<argc; i+=2) {
@@ -510,11 +536,12 @@ int main(int argc, char* argv[]) {
         }
     } else if (instance_type == type_client) {
         Connection con(io,
-                connection_addresses[0],
+                clientify(connection_addresses, instance_id),
                 instance_id, received_seqs_lim);
         for (int i=0; i<big; ++i) {
             sleep_us(sleep_time);
             auto p = gen_payload();
+            con.send(p);
             con.send(p);
             //p = gen_payload();
             //con.send(p);
