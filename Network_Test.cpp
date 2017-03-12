@@ -54,12 +54,15 @@ std::string pr(Seqs& q) {
 struct Packet_Header {
     // header
     Seq sequence_number;
-    Seqs received_seqs; // corresponds to prior 32
+    // DON'T PUT SENDER_ID BELOW RECEIVE_SEQS
     Instance_Id sender_id; // use last two digits of port
+    // DON'T PUT SENDER_ID BELOW RECEIVE_SEQS
+    // cannot properly read it after serialisation for some reason
+    Seqs received_seqs; // corresponds to prior 32
     // packets
     template<class Archive>
         void serialize(Archive& archive) {
-            archive(sequence_number, received_seqs, sender_id);       
+            archive(sequence_number, sender_id, received_seqs);
         }
 
     // returns true when s1 is a more recent Sequence number than s2
@@ -70,12 +73,11 @@ struct Packet_Header {
             (s2 > s1) && (s2 - s1 > max/2);
     }
 
-
     //Packet_Header() : Packet_Header(1, 0, short_max) {}
     Packet_Header(
             const Seq& sequence_number,
             const Seqs& received_seqs,
-            const Instance_Id& sender_id
+            const Instance_Id sender_id
             ) :
         sequence_number(sequence_number),
         received_seqs(received_seqs),
@@ -145,12 +147,6 @@ struct Packet {
             //std::cout << "Copy constructor called\n";
 
         }
-    Packet(Packet_Header&& header,
-            Packet_Payloads&& payloads) :
-        header(header), payloads(payloads) {
-            //std::cout << "Move constructor called\n";
-
-        }
     template<class Archive>
         void serialize(Archive& archive) {
             archive(header, payloads);       
@@ -172,12 +168,12 @@ struct Packet {
             payloads.pop_front();
             payloads.emplace_back(payload);
         }
+        assert(ret.header.sender_id < 8 && "IN PIGGYBACK\n");
 
         return ret;
     }
 
 };
-
 
 class Connection {
     private:
@@ -218,15 +214,17 @@ class Connection {
 
         Packet_Payloads receive() {
             Packet_Payloads usable_payloads;
-            Packet p(receiver.receive<Packet>());
+            Packet p = receiver.receive<Packet>();
             Packet_Header& header = p.header;
             Packet_Payloads& payloads = p.payloads;
+            std::cout << int(instance_id_) << " received from sender id " << int(header.sender_id) << "\n";
+            assert(header.sender_id < 8);
 
             if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
-                std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number) << "\n";
+                std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number)  << " from " << int(header.sender_id) << "\n";
             } else {
-                if (header.sequence_number == 3 || header.sequence_number == 4
-                        || header.sequence_number == 5) return usable_payloads;
+                //if (header.sequence_number == 3 || header.sequence_number == 4
+                        //|| header.sequence_number == 5) return usable_payloads;
                 std::cout << int(instance_id_) << " received new packet " << int(header.sequence_number) << ", last received was " << int(received) << "\n";
                 //received.emplace_back(header.sequence_number);
                 //std::cout << "packet:" << header.sequence_number << ", adding to received\n";
@@ -250,9 +248,9 @@ class Connection {
                     }
                 }
 
-                std::cout << "Duplicates " << pr(duplicates) << "\n";
+                //std::cout << "Duplicates " << pr(duplicates) << "\n";
 
-                std::cout << "Received seqs from " << pr(received_seqs);
+                //std::cout << "Received seqs from " << pr(received_seqs);
                 Seqs received_payload_seqs;
                 for (const auto& payload: usable_payloads) {
                     received_payload_seqs.emplace_back(payload.sequence_number);
@@ -272,7 +270,7 @@ class Connection {
                         received_seqs.pop_front();
                     }
                 }
-                std::cout << " to " << pr(received_seqs) << "\n";
+                //std::cout << " to " << pr(received_seqs) << "\n";
 
                 // acknowledge that we sent these packets and they have been acked
                 // packets are in p.header.lost
@@ -284,16 +282,16 @@ class Connection {
                     //erase(received_seqs, seq_num);
                     // need to remove each packet with this seq_num from unacked_packets
                 }
-                std::cout << int(instance_id_) << " (sender) knows remote end received " << pr(just_received_seqs) << "\n";
+                //std::cout << int(instance_id_) << " (sender) knows remote end received " << pr(just_received_seqs) << "\n";
 
                 // remove from unacked packets packets that have a sequence number
                 // that is in "just_received_seqs", ie. we just got an ack for them
                 // don't need to hold them in buffer anymore
-                std::cout << "Unacked packets before erase: ";
+                //std::cout << "Unacked packets before erase: ";
                 for (const auto& pack: unacked_packets) {
-                    std::cout << int(pack.header.sequence_number) << ", ";
+                    //std::cout << int(pack.header.sequence_number) << ", ";
                 }
-                std::cout << "\n";
+                //std::cout << "\n";
                 unacked_packets.erase(std::remove_if(
                             unacked_packets.begin(),
                             unacked_packets.end(),
@@ -302,12 +300,12 @@ class Connection {
                             }),
                         unacked_packets.end()
                         );
-                std::cout << "Unacked packets after erase: ";
+                //std::cout << "Unacked packets after erase: ";
                 for (const auto& pack: unacked_packets) {
-                    std::cout << int(pack.header.sequence_number) << ", ";
+                    //std::cout << int(pack.header.sequence_number) << ", ";
                 }
-                std::cout << "\n";
-                std::cout << int(instance_id_) << " receive for this packet over\n";
+                //std::cout << "\n";
+                //std::cout << int(instance_id_) << " receive for this packet over\n";
             }
 
             // send a message saying "you fuckhead, I didn't get these, where are they"
@@ -322,6 +320,8 @@ class Connection {
             ph.sequence_number = sequence_number;
             ph.received_seqs = received_seqs;
             ph.sender_id = instance_id_;
+            std::cout << int(instance_id_) << " setting sender_id to " << int(ph.sender_id) << "\n";
+            assert(ph.sender_id < 8);
 
             payload.sequence_number = sequence_number;
 
@@ -329,10 +329,14 @@ class Connection {
             p.payloads.emplace_back(payload);
             // this packet built with this payload
 
+            assert(p.header.sender_id < 8);
             Packet to_send = Packet::piggyback(p, unacked_packets);
+            assert(to_send.header.sender_id < 8);
 
             // add packet to list of unacked packets
             unacked_packets.emplace_back(p);
+            assert(p.header.sender_id < 8);
+            assert(unacked_packets.back().header.sender_id < 8);
 
             const int payload_size = to_send.payloads.size();
             if (payload_size > 10) {
@@ -346,7 +350,7 @@ class Connection {
             // this should not really be a for loop
             // ie. should be one for client, and this whole
             // thing should be called once per client per server
-            std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
+            std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << " (id:" << int(to_send.header.sender_id) << ")\n";
             sender.send(serial);
             ++sequence_number;
             ++tick;
@@ -438,6 +442,8 @@ int main(int argc, char* argv[]) {
 
     std::cout << instance_type << " " << int(instance_id) << " connecting to " << senders[0].port << "\n";
 
+    exit(1);
+
     /*
     // In server case create a connection per client
     Connection c2(io, socket_ptr,
@@ -445,7 +451,7 @@ int main(int argc, char* argv[]) {
     received_seqs_lim);
     */
 
-    int tps = 1;
+    int tps = 100;
     int sleep_time = 1000000/tps;
     auto big = 10;
 
@@ -453,7 +459,7 @@ int main(int argc, char* argv[]) {
         static Tick tick = 0;
         Packet_Payload payload(Packet_Payload::Type::Input, tick++);
         Forces fs;
-        fs.emplace_back(Force(0,v3(69.0f,72.0f,0.0f),Force::Type::Force));
+        fs.emplace_back(Force(tick++,v3(69.348284523f,722334.20000223f,-432.3425f),Force::Type::Force));
         payload.forces = fs;
         return payload;
     };
@@ -462,9 +468,11 @@ int main(int argc, char* argv[]) {
 
     if (instance_type == type_server) {
         for (const auto& sender: senders) {
+            std::cout << "Making connection to " << sender.port << "\n";
             connections.emplace_back(io, socket_ptr,
                     sender.host, sender.port,
                     instance_id, received_seqs_lim);
+            std::cout << "Success\n";
         }
         std::cout << "Server has " << connections.size() << " connections\n";
         for (int i=0; i<big; ++i) {
@@ -472,9 +480,9 @@ int main(int argc, char* argv[]) {
             for (auto& con: connections) {
                 while (con.available()) {
                     Packet_Payloads payloads = con.receive();
-                    std::cout << int(con.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+                    //std::cout << int(con.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
                     for (const auto& payload: payloads) {
-                        std::cout << "Tick:" << payload.tick << "\n";
+                        //std::cout << "Tick:" << payload.tick << "\n";
                     }
                 }
                 Packet_Payload payload = gen_payload();
@@ -482,19 +490,19 @@ int main(int argc, char* argv[]) {
             }
         }
     } else if (instance_type == type_client) {
-        Connection c1(io, socket_ptr,
+        Connection con(io, socket_ptr,
                 senders[0].host, senders[0].port,
                 instance_id, received_seqs_lim);
         for (int i=0; i<big; ++i) {
             sleep_us(sleep_time);
             auto p = gen_payload();
-            c1.send(p);
-            p = gen_payload();
-            c1.send(p);
-            Packet_Payloads payloads = c1.receive();
-            std::cout << int(c1.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+            con.send(p);
+            //p = gen_payload();
+            //con.send(p);
+            Packet_Payloads payloads = con.receive();
+            //std::cout << int(con.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
             for (const auto& payload: payloads) {
-                std::cout << "Tick:" << payload.tick << "\n";
+                //std::cout << "Tick:" << payload.tick << "\n";
             }
         }
     }

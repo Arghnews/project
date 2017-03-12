@@ -322,7 +322,13 @@ function needsCompile() {
         elif [ "$item" == \\ ]; then
             :
         else
-            dependencies+=("$item")
+            # quick fix to make this shit faster on NFS like DCS
+            has=$(echo "$item" | grep -Eq "(asio|glm)" && echo 1)
+            if [ "$has" == "1" ]; then
+                :
+            else
+                dependencies+=("$item")
+            fi
         fi
     done
     v "${#dependencies[@]} dependencies found for $obj"

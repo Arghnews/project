@@ -1,0 +1,5 @@
+ server with multiple clients
+ limit on size of unacked packets, same as received seqs?, start dropping first things in once hit lim
+ remember still have dropper on 3,4,5
+ move this shit to game!
+ implement application level buffering of states received

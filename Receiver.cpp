@@ -19,8 +19,9 @@ void Receiver::read(std::stringstream& ss, int reply_size) {
 
     auto addr = sender_endpoint.address();
     auto port = sender_endpoint.port();
-    //std::cout << "Received " << reply_length << " on " << addr << ":" << port << "\n";
 
+    //std::cout << "Received " << reply_length << " on " << addr << ":" << port << "\n";
+    //std::cout << "Versus reply_size " << reply_size << "\n";
     ss.write(reply.data(), reply_length); // reply data to stream
 }
 
