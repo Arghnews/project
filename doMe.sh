@@ -39,6 +39,9 @@ main() {
     "Sender.cpp"
     "Receiver.cpp"
     "Packet_Header.cpp"
+    "Packet_Payload.cpp"
+    "Packet.cpp"
+    "Connection.cpp"
     )
 
     client=(
@@ -55,6 +58,9 @@ main() {
     "Sender.cpp"
     "P_State.cpp"
     "Packet_Header.cpp"
+    "Packet_Payload.cpp"
+    "Packet.cpp"
+    "Connection.cpp"
     )
 
     Test=(

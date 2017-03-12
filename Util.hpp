@@ -14,6 +14,7 @@
 #include <sstream>
 #include <iostream>
 #include <map>
+#include <thread>
 #include <limits>
 #include <math.h>
 #include <cmath>
@@ -23,12 +24,23 @@
 #define ASIO_STANDALONE
 #include "asio.hpp"
 
+
 // networking stuff
 typedef uint8_t Instance_Id;
 typedef uint16_t Id;
 typedef uint32_t Tick;
+
 typedef uint8_t Seq;
 typedef std::deque<Seq> Seqs;
+
+struct Packet_Payload;
+typedef std::deque<Packet_Payload> Packet_Payloads;
+
+struct Packet;
+typedef std::deque<Packet> Packets;
+
+struct Connection_Address;
+typedef std::vector<Connection_Address> Connection_Addresses;
 
 typedef glm::fvec2 v2;
 typedef glm::fvec3 v3;
@@ -103,6 +115,16 @@ bool static isZero(const v3& v) {
     //static const v3 TINY_V(TINY);
     return fabs(v.x) < TINY && fabs(v.y) < TINY && fabs(v.z) < TINY;
 }
+
+std::string static pr(Seqs& q) {
+    std::stringstream buf;
+    buf << "(" << q.size() << ") [";
+    for (const auto& i: q) {
+        buf << int(i) << ", ";
+    }
+    buf << "]";
+    return buf.str();
+};
 
 /*
 template <class T>
@@ -222,6 +244,14 @@ long static timeNowMillis() {
 
 long static timeNowMicros() {
     return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+}
+
+void static sleep_ms(long ms) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(std::max(0l,ms)));
+}
+
+void static sleep_us(long us) {
+    std::this_thread::sleep_for(std::chrono::microseconds(std::max(0l,us)));
 }
 
 #endif

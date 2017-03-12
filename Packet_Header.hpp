@@ -1,6 +1,7 @@
 #ifndef PACKET_HEADER_HPP
 #define PACKET_HEADER_HPP
 
+#include "Archiver.hpp"
 #include "Util.hpp"
 
 struct Packet_Header {
