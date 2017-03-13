@@ -762,9 +762,9 @@ Forces setup_cubes(World& world) {
     create_default_cube(v3(-20.0f,2.0f,3.0f),cube3_mass,true,true);
 
     spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
-    spawn_cubes(v3(0.0f,-10.0f,0.0f),5,10,false,false,true);
-    spawn_cubes(v3(0.0f,-20.0f,0.0f),5,10,false,false,true);
-    spawn_cubes(v3(0.0f,-30.0f,0.0f),2,10,false,false,true);
+    spawn_cubes(v3(-10.0f,-10.0f,0.0f),5,10,false,false,true);
+    spawn_cubes(v3(-10.0f,-20.0f,0.0f),5,10,false,false,true);
+    spawn_cubes(v3(-10.0f,-30.0f,0.0f),2,10,false,false,true);
     return forces;
 }
 
