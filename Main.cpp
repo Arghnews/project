@@ -192,7 +192,7 @@ int main(int argc, char* argv[]) {
 
     set_keyboard(inputs,window,world);
 
-    auto selected_id = std::max(0,instance_id-1);
+    auto selected_id = std::max((uint8_t)0,instance_id);
     world.actors().select(selected_id);
 
     static int frame = 0;
@@ -583,8 +583,10 @@ vv3 face_verts_from_fv(const fv* points_in) {
 Forces setup_cubes(World& world) {
     Forces forces;
     // make default cube with index in map 0
-    int default_g_cube = 0;
-    int colored_g_cube = 1;
+    int g_cub_default_colors = 0;
+    int g_cub_colors_blue = 1;
+    int g_cub_colors_green = 2;
+    int g_cub_colors_red = 3;
     int default_l_face_verts = 0;
 
     world.l_cub_face_verts.emplace(
@@ -593,15 +595,27 @@ Forces setup_cubes(World& world) {
     );
 
     world.g_cubs.emplace(
-            std::make_pair(default_g_cube,
+            std::make_pair(g_cub_default_colors,
             make_unique<G_Cuboid>(&vertices, "shaders/vertex.shader",
             "shaders/fragment.shader"))
     );
 
     world.g_cubs.emplace(
-            std::make_pair(colored_g_cube,
+            std::make_pair(g_cub_colors_red,
             make_unique<G_Cuboid_Color>(&vertices, "shaders/vertex.shader",
-            "shaders/fragment.shader",&colors))
+            "shaders/fragment.shader",&colors_red))
+    );
+
+    world.g_cubs.emplace(
+            std::make_pair(g_cub_colors_blue,
+            make_unique<G_Cuboid_Color>(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader",&colors_blue))
+    );
+
+    world.g_cubs.emplace(
+            std::make_pair(g_cub_colors_green,
+            make_unique<G_Cuboid_Color>(&vertices, "shaders/vertex.shader",
+            "shaders/fragment.shader",&colors_green))
     );
 
     /*
@@ -620,7 +634,7 @@ Forces setup_cubes(World& world) {
 
     auto create_default_cube = [&] (v3 start_pos, float mass, bool selectable, bool mobile) {
         world.insert(
-                Actor(default_g_cube,
+                Actor(g_cub_default_colors,
                     &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                     v3(1.0f,1.0f,1.0f),
                     start_pos,
@@ -646,10 +660,30 @@ Forces setup_cubes(World& world) {
         }
     };
 
-    create_default_cube(v3(0.0f,-0.4f,10.0f),my_mass,true,true);
+    world.insert(
+            Actor(g_cub_colors_red,
+                &world.l_cub_face_verts[default_l_face_verts],//&vertices,
+                v3(1.0f),
+                v3(0.0f,1.0f,14.0f),
+                1.0f,
+                3.0f,
+                true,
+                true)
+            );
 
     world.insert(
-            Actor(colored_g_cube,
+            Actor(g_cub_colors_blue,
+                &world.l_cub_face_verts[default_l_face_verts],//&vertices,
+                v3(1.0f),
+                v3(0.0f,-0.4f,10.0f),
+                my_mass,
+                3.0f,
+                true,
+                true)
+            );
+
+    world.insert(
+            Actor(g_cub_colors_green,
                 &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                 v3(4.0f,1.0f,4.0f),
                 v3(15.0f,2.0f,0.0f),
