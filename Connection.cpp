@@ -163,7 +163,7 @@ void Connection::send(Packet_Payload& payload) {
     unacked_packets.emplace_back(p);
     if (unacked_packets.size() >= received_seqs_lim/2) {
         std::cout << int(instance_id_) << " unacked_packets queue is size " << unacked_packets.size();
-        std::cout << "Removing element from front \n";
+        //std::cout << "Removing element from front \n";
         unacked_packets.pop_front();
     }
     assert(p.header.sender_id < 8);

@@ -169,7 +169,8 @@ int main(int argc, char* argv[]) {
 
     Window_Inputs inputs;
 
-    GLFWwindow* window = inputs.init_window(instance_type, 640, 480);
+    std::string win_name = instance_type + " " + std::to_string(int(instance_id));
+    GLFWwindow* window = inputs.init_window(win_name, 640, 480);
     //const long fps_max = 60l;
     
     //const long tickrate = 100l;
@@ -191,6 +192,9 @@ int main(int argc, char* argv[]) {
 
     set_keyboard(inputs,window,world);
 
+    auto selected_id = std::max(0,instance_id-1);
+    world.actors().select(selected_id);
+
     static int frame = 0;
 
     const double rate = 80.0; // tickrate/framerate (bound currently)
@@ -200,6 +204,8 @@ int main(int argc, char* argv[]) {
     long temp = timeNow();
 
     // apply initial setup forces on server
+    
+    std::string render_text = "";
 
     // simple as tits loop with render/tick bound for now - just easier to work with
     while (!glfwWindowShouldClose(window)) {
@@ -232,6 +238,7 @@ int main(int argc, char* argv[]) {
                 assert(connections.size() == 1 && "Client should only have one connection (to server)");
                 Packet_Payload payload(Packet_Payload::Type::Input, tick);
                 payload.forces = world.forces();
+                payload.shots = world.shots();
                 conn.send(payload);
                 //p = gen_payload();
                 //conn.send(p);
@@ -245,14 +252,37 @@ int main(int argc, char* argv[]) {
                         const Id& id = mom_pos.id;
                         Actor& actor = world.actors()[id];
                         P_State& p_state = actor.state_to_change();
-                        std::cout << "New position of " << id << " " << printV(mom_pos.position) << "\n";
                         p_state.position = mom_pos.position;
                         p_state.momentum = mom_pos.momentum;
                         // world
                         // set actor mom_pos.id to have mom mom_pos.momentum and pos..
                     }
+                    for (const auto& angmom_orient: received_payload.vec_angmom_ori) {
+                        const Id& id = angmom_orient.id;
+                        Actor& actor = world.actors()[id];
+                        P_State& p_state = actor.state_to_change();
+                        p_state.ang_momentum = angmom_orient.ang_momentum;
+                        p_state.orient = angmom_orient.orient;
+                        // world
+                        // set actor mom_pos.id to have mom mom_pos.momentum and pos..
+                    }
+                    const Id& id = world.actors().selected();
+                    for (const auto& shot: received_payload.shots) {
+                        if (shot.shooter == id) {
+                            // you shot someone
+                            render_text = "You shot";
+                            if (shot.hit) {
+                                render_text += " " + std::to_string(shot.target);
+                            } else {
+                                render_text += " and missed";
+                            }
+                        } else if (shot.target == id && shot.hit) {
+                            render_text = "You were shot by " + std::to_string(shot.shooter);
+                        }
+                    }
                 }
                 world.clear_forces();
+                world.clear_shots();
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
                     /* // Potentially in received_payload, need to set state to these/add to buffer!
@@ -291,20 +321,26 @@ int main(int argc, char* argv[]) {
                             for (const auto& force: payload.forces) {
                                 world.apply_force(force);
                             }
-
+                            for (const auto& shot: payload.shots) {
+                                world.fire_shot(shot);
+                            }
                         }
                     }
                 }
 
                 world.collisions();
                 std::vector<Mom_Pos> vec_mom_pos;
-                vec_mom_pos.reserve(4);
+                vec_mom_pos.reserve(2);
                 std::vector<AngMom_Ori> vec_angmom_ori;
+
+
+                Packet_Payload payload(Packet_Payload::Type::State, tick);
+                payload.shots = world.fire_shots(world.shots());
 
                 world.apply_forces(world.forces());
                 world.simulate(t_normalized,dt_normalized,
                         vec_mom_pos, vec_angmom_ori);
-                Packet_Payload payload(Packet_Payload::Type::State, tick);
+
                 payload.vec_mom_pos = vec_mom_pos;
                 payload.vec_angmom_ori = vec_angmom_ori;
 
@@ -370,7 +406,7 @@ int main(int argc, char* argv[]) {
 
         v2 win = inputs.windowSize();
         bind_text_graphics(text_shader,win.x,win.y);
-        renderText(text_shader, "420 blaze it", 25.0f, 25.0f, 1.0f, glm::vec3(1.0f, 0.8f, 1.0f));
+        renderText(text_shader, render_text, 10.0f, 10.0f, 1.0f, glm::vec3(1.0f, 0.8f, 1.0f));
 
         ++tick;
 

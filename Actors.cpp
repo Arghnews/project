@@ -43,6 +43,15 @@ Actor& Actors::selectedActor() {
     return actors[selected_index];
 }
 
+void Actors::select(const Id& id) {
+    check();
+    actors[selected_index].invis(false);
+    if (actors[id].selectable) {
+        selected_index = id;
+    }
+    actors[selected_index].invis(true);
+}
+
 // gets next selectable actor
 void Actors::next() {
     check();

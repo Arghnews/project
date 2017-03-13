@@ -446,7 +446,8 @@ void World::apply_forces(const Forces& forces) {
     }
 }
 
-void World::fire_shots(const Shots& shots) {
+Shots World::fire_shots(const Shots& shots) {
+    Shots shots_fired;
     for (const auto& shot: shots) {
         const Id& id = shot.shooter;
         const v3& org = shot.org;
@@ -509,7 +510,9 @@ void World::fire_shots(const Shots& shots) {
         } else {
             std::cout << " and missed\n";
         }
+        shots_fired.emplace_back(closest);
     }
+    return shots_fired;
 }
 
 void World::render() {

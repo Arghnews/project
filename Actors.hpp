@@ -30,6 +30,7 @@ class Actors {
 
         bool insert(const Id& id, Actor a);
 
+        void select(const Id& id);
         Id selected();
 
         Actor& selectedActor();
