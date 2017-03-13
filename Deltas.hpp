@@ -7,15 +7,15 @@
 #include "Util.hpp"
 
 struct Mom_Pos {
-    v3 position;
     v3 momentum;
+    v3 position;
     Id id;
     template<class Archive>
         void serialize(Archive& archive) {
-            archive(position, momentum, id);
+            archive(momentum, position, id);
         }
-    Mom_Pos(const v3& pos, const v3& mom, const Id& id) :
-        position(pos), momentum(mom), id(id) {}
+    Mom_Pos(const v3& mom, const v3& pos, const Id& id) :
+         momentum(mom), position(pos), id(id) {}
     Mom_Pos() {}
 };
 

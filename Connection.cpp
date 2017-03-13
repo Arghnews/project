@@ -32,6 +32,11 @@ Connection::Connection(io_service& io,
 
 }
 
+void Connection::close() {
+    socket_ptr->shutdown(asio::ip::udp::socket::shutdown_receive);
+    socket_ptr->shutdown(asio::ip::udp::socket::shutdown_send);
+}
+
 bool Connection::available() {
     return receiver.available();
 }
@@ -41,7 +46,7 @@ Packet_Payloads Connection::receive() {
     Packet p = receiver.receive<Packet>();
     Packet_Header& header = p.header;
     Packet_Payloads& payloads = p.payloads;
-    assert(header.sender_id < 8);
+    //assert(header.sender_id < 8);
 
     if (!Packet_Header::sequence_more_recent(header.sequence_number, received)) {
         ////std::cout << int(instance_id_) << " dropping duplicate/old packet " << int(header.sequence_number)  << " from " << int(header.sender_id) << "\n";

@@ -28,6 +28,7 @@ class Connection {
         Instance_Id instance_id_;
 
     public:
+        void close();
         Instance_Id instance_id() const;
         Connection(io_service& io,
                 const Connection_Address& connection_address,

@@ -94,11 +94,6 @@ static const std::string type_local = "local"; // no networking
 static std::string instance_type; // server/client etc.
 static Instance_Id instance_id; // 0-255, server usually 0
 
-static io_service io;
-
-static Connections connections;
-static Connection_Addresses connection_addresses;
-
 static int received_seqs_lim = 40;
 
 static uint32_t tick = 0;
@@ -133,6 +128,11 @@ long static timeNow() {
 }
 
 int main(int argc, char* argv[]) {
+
+    io_service io;
+    Connections connections;
+    Connection_Addresses connection_addresses;
+
 
     parse_args(argc, argv,
             instance_type,
@@ -228,7 +228,8 @@ int main(int argc, char* argv[]) {
             if (instance_type == type_client) {
 
                 Connection& conn = connections[0];
-                assert(connections.size() == 0 && "Client should only have one connection (to server)");
+
+                assert(connections.size() == 1 && "Client should only have one connection (to server)");
                 Packet_Payload payload(Packet_Payload::Type::Input, tick);
                 payload.forces = world.forces();
                 conn.send(payload);
@@ -238,12 +239,20 @@ int main(int argc, char* argv[]) {
                 //std::cout << int(conn.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
                 // CHANGE ME ---------------------------------------------------------------------------------------------------------------------------------------------------
                 for (const auto& received_payload: payloads) {
+                    //std::cout << "Recevied payload for tick " << received_payload.tick << "\n";
                     assert(received_payload.type == Packet_Payload::Type::State && "Client should only receive stateful packets from server");
                     for (const auto& mom_pos: received_payload.vec_mom_pos) {
-                        //world
+                        const Id& id = mom_pos.id;
+                        Actor& actor = world.actors()[id];
+                        P_State& p_state = actor.state_to_change();
+                        std::cout << "New position of " << id << " " << printV(mom_pos.position) << "\n";
+                        p_state.position = mom_pos.position;
+                        p_state.momentum = mom_pos.momentum;
+                        // world
                         // set actor mom_pos.id to have mom mom_pos.momentum and pos..
                     }
                 }
+                world.clear_forces();
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
                     /* // Potentially in received_payload, need to set state to these/add to buffer!
@@ -383,6 +392,18 @@ int main(int argc, char* argv[]) {
     }
 
     inputs.close();
+    for (auto& conn: connections) {
+        while (conn.available()) {
+            conn.receive();
+        }
+    }
+    for (auto& conn: connections) {
+        while (conn.available()) {
+            conn.close();
+        }
+    }
+    io.stop();
+    std::cout << int(instance_id) << " shutting down\n";
 }
 
 void gl_loop_start() {
