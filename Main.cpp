@@ -262,7 +262,6 @@ int main(int argc, char* argv[]) {
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
             if (instance_type == type_client) {
-                if (instance_id == 1) prediction = true;
 
                 Connection& conn = connections[0];
 
