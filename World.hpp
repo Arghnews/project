@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <deque>
 
+#include "Util.hpp"
 #include "Actors.hpp"
 #include "Actor.hpp"
 #include "Physics.hpp"
@@ -14,7 +15,7 @@
 #include "Octree.hpp"
 #include "AABB.hpp"
 #include "Force.hpp"
-#include "Util.hpp"
+#include "Deltas.hpp"
 
 #include <memory>
 #include "Shot.hpp"
@@ -36,8 +37,12 @@ class World {
         Actors& actors();
         //void insert(Actor* a);
         void insert(Actor a);
-        void simulate(const float& t, const float& dt);
-
+        void simulate(
+                const float& t,
+                const float& dt,
+                std::vector<Mom_Pos>& vec_mom_pos,
+                std::vector<AngMom_Ori>& vec_angmom_ori
+                );
         void apply_force(const Force& force);
         void apply_forces(const Forces& forces);
         void clear_forces();

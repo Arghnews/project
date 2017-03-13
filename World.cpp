@@ -26,6 +26,7 @@
 #include "MTV.hpp"
 #include "World.hpp"
 #include "Shot.hpp"
+#include "Deltas.hpp"
 
 World::World(float worldSize, v2 windowSize) :
     tree_(zeroV,worldSize),
@@ -138,7 +139,13 @@ void World::fire_shot(const Shot& shot) {
     shot_queue_.emplace_back(shot);
 }
 
-void World::simulate(const float& t, const float& dt) {
+void World::simulate(
+        const float& t,
+        const float& dt,
+        std::vector<Mom_Pos>& vec_mom_pos,
+        std::vector<AngMom_Ori>& vec_angmom_ori
+        )
+{
     // whenever move need to update octree
     auto& actors = actors_.underlying();
     const int size = actors.size();
@@ -151,12 +158,24 @@ void World::simulate(const float& t, const float& dt) {
             continue;
         }
         P_State& cube_phys = actor.state_to_change();
-        const bool deleted = tree_.del(cube_phys.position);
+        const v3 pos_before = cube_phys.position;
+        const fq orient_before = cube_phys.orient;
+        const bool deleted = tree_.del(pos_before);
         assert(deleted && "Should always be able to delete last cube position");
         const bool changed = phys_.integrate(cube_phys, t, dt);
         if (changed) {
             actor.set_changed();
             actor.recalc();
+            // positional change/mom change
+            if (cube_phys.position != pos_before) {
+                vec_mom_pos.emplace_back(
+                        Mom_Pos(cube_phys.momentum,cube_phys.position,id));
+            }
+            if (cube_phys.orient != orient_before) {
+                // orient change
+                vec_angmom_ori.emplace_back(
+                    AngMom_Ori(cube_phys.ang_momentum,cube_phys.orient,id));
+            }
         }
         tree_.insert(cube_phys.position, id);
     }

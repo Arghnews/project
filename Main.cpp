@@ -47,6 +47,7 @@
 #include "Packet_Payload.hpp"
 #include "Packet.hpp"
 #include "Connection.hpp"
+#include "Deltas.hpp"
 
 //#include <xmmintrin.h>
 //#include <pmmintrin.h>
@@ -240,29 +241,62 @@ int main(int argc, char* argv[]) {
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
                     /* // Potentially in received_payload, need to set state to these/add to buffer!
-                    Shots shots;
-                    std::vector<Id_v3> positions;
-                    std::vector<Id_fq> orients;
-                    std::vector<Id_v3> momentums;
-                    std::vector<Id_v3> ang_momentums;
-                    */
+                       Shots shots;
+                       std::vector<Id_v3> positions;
+                       std::vector<Id_fq> orients;
+                       std::vector<Id_v3> momentums;
+                       std::vector<Id_v3> ang_momentums;
+                       */
                     //std::cout << "Tick:" << payload.tick << "\n";
                 }
             } else if (instance_type == type_server) {
                 /*
-                Process inputs from all clients
-                for (const auto& payload: payloads) {
-                world.apply_forces(payload.forces); // etc
-                }
-
-
-
+                   Process inputs from all clients
+                   for (const auto& payload: payloads) {
+                   world.apply_forces(payload.forces); // etc
+                   }
                 // for every shot in payload.shots
                 // add shots to world.fire_shot(shot); // etc
                 */
                 // not sure about order of these lines perhaps
+                // apply forces from received input
+                
+                // for every connection (client)
+                //   while there are packets to read
+                //     for every payload
+                //       apply all the forces in the payload to the world
+                for (auto& conn: connections) {
+                    while (conn.available()) {
+                        Packet_Payloads payloads = conn.receive();
+                        //std::cout << int(conn.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+                        for (const auto& payload: payloads) {
+                            for (const auto& force: payload.forces) {
+                                world.apply_force(force);
+                            }
+
+                        }
+                    }
+                }
+
                 world.collisions();
-                world.simulate(t_normalized,dt_normalized);
+                std::vector<Mom_Pos> vec_mom_pos;
+                vec_mom_pos.reserve(4);
+                std::vector<AngMom_Ori> vec_angmom_ori;
+
+                world.apply_forces(world.forces());
+                world.simulate(t_normalized,dt_normalized,
+                        vec_mom_pos, vec_angmom_ori);
+                Packet_Payload payload(Packet_Payload::Type::State, tick);
+                payload.vec_mom_pos = vec_mom_pos;
+                payload.vec_angmom_ori = vec_angmom_ori;
+
+                for (auto& connection: connections) {
+                    connection.send(payload);
+                }
+
+                world.clear_forces();
+                world.clear_shots();
+
                 // world.fire_shots(world.shots())
                 // need to get from simulate, any actors states that changed
                 //std::vector<Id_v3> momentums = world.new_momentums(); // or something
@@ -290,7 +324,10 @@ int main(int argc, char* argv[]) {
                 world.collisions();
                 world.fire_shots(world.shots());
                 world.apply_forces(world.forces());
-                world.simulate(t_normalized,dt_normalized);
+                std::vector<Mom_Pos> vec_mom_pos;
+                std::vector<AngMom_Ori> vec_angmom_ori;
+                world.simulate(t_normalized,dt_normalized,
+                        vec_mom_pos, vec_angmom_ori);
             }
 
             // actually applies forces and moves the world
@@ -337,7 +374,6 @@ int main(int argc, char* argv[]) {
     }
 
     inputs.close();
-
 }
 
 void gl_loop_start() {
@@ -560,9 +596,9 @@ Forces setup_cubes(World& world) {
     create_default_cube(v3(-20.0f,2.0f,3.0f),cube3_mass,true,true);
 
     spawn_cubes(v3(0.0f,-1.0f,0.0f),25,10,true,false,true);
-    spawn_cubes(v3(0.0f,-10.0f,0.0f),25,10,false,false,true);
-    spawn_cubes(v3(0.0f,-20.0f,0.0f),25,10,false,false,true);
-    spawn_cubes(v3(0.0f,-30.0f,0.0f),25,10,false,false,true);
+    spawn_cubes(v3(0.0f,-10.0f,0.0f),5,10,false,false,true);
+    spawn_cubes(v3(0.0f,-20.0f,0.0f),5,10,false,false,true);
+    spawn_cubes(v3(0.0f,-30.0f,0.0f),2,10,false,false,true);
     return forces;
 }
 

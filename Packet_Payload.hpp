@@ -6,6 +6,7 @@
 #include "Archiver.hpp"
 #include "Force.hpp"
 #include "Shot.hpp"
+#include "Deltas.hpp"
 
 #include "Util.hpp"
 
@@ -31,16 +32,15 @@ struct Packet_Payload {
     Forces forces;
     Shots shots;
 
-    std::vector<Id_v3> positions;
-    std::vector<Id_fq> orients;
-    std::vector<Id_v3> momentums;
-    std::vector<Id_v3> ang_momentums;
+    // defined in Deltas.hpp
+    std::vector<Mom_Pos> vec_mom_pos;
+    std::vector<AngMom_Ori> vec_angmom_ori;
 
     bool valid() const;
 
     template<class Archive>
         void serialize(Archive& archive) {
-            archive(tick, forces, shots, positions, orients, momentums, ang_momentums, type, sequence_number);
+            archive(tick, forces, shots, vec_mom_pos, vec_angmom_ori, type, sequence_number);
             //archive(tick, forces, shots, packet_type);
         }
 };

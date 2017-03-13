@@ -53,8 +53,8 @@ typedef glm::fmat4 m4;
 typedef std::vector<GLfloat> fv;
 typedef std::vector<v3> vv3;
 
-typedef std::pair<Id, v3> Id_v3;
-typedef std::pair<Id, fq> Id_fq;
+//typedef std::pair<Id, v3> Id_v3;
+//typedef std::pair<Id, fq> Id_fq;
 
 typedef std::pair<v3, Id> v3Id;
 typedef std::vector<v3Id> vv3Id;
