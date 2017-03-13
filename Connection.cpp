@@ -19,7 +19,8 @@ Connection::Connection(io_service& io,
             std::string host, // host to connect to to send stuff to
             std::string port, // port to connect to
             Instance_Id instance_id,
-            int received_seqs_lim) :
+            int received_seqs_lim,
+            long fake_delay_us) :
         socket_ptr(std::make_shared<udp_socket>(io, udp_endpoint(asio::ip::udp::v4(),std::stoi(local_port)))),
         receiver(io,socket_ptr),
         sender(io,socket_ptr,host,port),
@@ -27,9 +28,22 @@ Connection::Connection(io_service& io,
         received_seqs_lim(received_seqs_lim),
         received(-1),
         tick(0),
-        instance_id_(instance_id)
+        instance_id_(instance_id),
+        fake_delay_us(fake_delay_us)
 {
 
+}
+
+void Connection::toggle_fake_delay_us(const long& delay_us) {
+    if (fake_delay_us == 0) {
+        set_fake_delay_us(delay_us);
+    } else {
+        fake_delay_us = 0;
+    }
+}
+
+void Connection::set_fake_delay_us(const long& delay_us) {
+    fake_delay_us = delay_us;
 }
 
 void Connection::close() {
@@ -162,7 +176,7 @@ void Connection::send(Packet_Payload& payload) {
     // add packet to list of unacked packets
     unacked_packets.emplace_back(p);
     if (unacked_packets.size() >= received_seqs_lim/2) {
-        std::cout << int(instance_id_) << " unacked_packets queue is size " << unacked_packets.size();
+        //std::cout << int(instance_id_) << " unacked_packets queue is size " << unacked_packets.size();
         //std::cout << "Removing element from front \n";
         unacked_packets.pop_front();
     }
@@ -171,18 +185,36 @@ void Connection::send(Packet_Payload& payload) {
 
     const int payload_size = to_send.payloads.size();
     if (payload_size > 10) {
-        std::cout << "Large payload size of " << payload_size << "\n";
+        //std::cout << "Large payload size of " << payload_size << "\n";
     }
 
     //Packet::append_payloads(p, unacked_packets);
-    auto serial = Sender::serialize(to_send);
+    data_to_send.emplace_back(
+            std::make_pair(timeNowMicros()+fake_delay_us,Sender::serialize(to_send))
+    );
     // DO NOT SWAP order of append_payloads and this line below
+
+    long timeNow = timeNowMicros();
+    while (!data_to_send.empty()) {
+        const long& t = data_to_send.front().first;
+        auto& serial_data = data_to_send.front().second;
+
+        // if time now is later than or same as packet send time
+        // then send the data
+        if (timeNow >= t) {
+            sender.send(serial_data);
+            data_to_send.pop_front();
+        } else {
+            // otherwise if first item isn't recent enough stop
+            // as other items can only be meant to be sent later
+            break;
+        }
+    }
 
     // this should not really be a for loop
     // ie. should be one for client, and this whole
     // thing should be called once per client per server
     ////std::cout << int(instance_id_) << " sending packet seq_num:" << int(ph.sequence_number) << " (" << serial.size() << ") to " << sender.port << "\n";
-    sender.send(serial);
     ++sequence_number;
     ++tick;
 }

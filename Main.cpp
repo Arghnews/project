@@ -188,9 +188,9 @@ int main(int argc, char* argv[]) {
     const float areaSize = 500.0f;
     World world(areaSize, inputs.windowSize());
 
-    Forces forces = setup_cubes(world);
-    world.apply_forces(forces);
-    forces.clear();
+    setup_cubes(world);
+    world.apply_forces(world.forces());
+    world.clear_forces();
 
     set_keyboard(inputs,window,world);
 
@@ -208,6 +208,16 @@ int main(int argc, char* argv[]) {
     // apply initial setup forces on server
     
     std::string render_text = "";
+
+
+    if (instance_type == type_server || instance_type == type_client) {
+        inputs.setFunc1(GLFW_KEY_F,[&] () {
+            for (auto& conn: connections) {
+                std::cout << "Fake delay for " << int(instance_id) << " now " << conn.fake_delay_us << "\n";
+                conn.toggle_fake_delay_us(1000 * 500);
+            }
+        });
+    }
 
     // simple as tits loop with render/tick bound for now - just easier to work with
     while (!glfwWindowShouldClose(window)) {
@@ -300,17 +310,6 @@ int main(int argc, char* argv[]) {
                 }
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
-                    /* // Potentially in received_payload, need to set state to these/add to buffer!
-    Tick tick; // initially tied to Seq number
-    // application level number, so can tell at what tick this was sent on
-    // can tell if too old or not etc // think I need this? maybe not really
-    Type type;
-    Forces forces;
-    Shots shots;
-    // defined in Deltas.hpp
-    std::vector<Mom_Pos> vec_mom_pos;
-    std::vector<AngMom_Ori> vec_angmom_ori;
-                       */
                     //std::cout << "Tick:" << payload.tick << "\n";
             } else if (instance_type == type_server) {
                 /*
@@ -669,7 +668,7 @@ Forces setup_cubes(World& world) {
                 position += where;
                 create_default_cube(position,default_mass,selectable,mobile);
                 if (rotated) {
-                    forces.emplace_back(std::max(world.actors().size()-1,0),v3(i*100.0f,0.0f,j*100.0f),Force::Type::Torque);
+                    world.apply_force(Force(std::max(world.actors().size()-1,0),v3(i*100.0f,0.0f,j*100.0f),Force::Type::Torque));
                 }
             }
         }

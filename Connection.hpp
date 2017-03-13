@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <utility>
 
 #include "Util.hpp"
 #include "Packet_Header.hpp"
@@ -26,8 +27,11 @@ class Connection {
         Packets unacked_packets;
         Tick tick;// = 0;
         Instance_Id instance_id_;
+        std::deque<std::pair<long,std::vector<char>>> data_to_send;
 
     public:
+        long fake_delay_us;
+        void toggle_fake_delay_us(const long& delay_us);
         void close();
         Instance_Id instance_id() const;
         Connection(io_service& io,
@@ -39,7 +43,8 @@ class Connection {
                 std::string host, // host to connect to to send stuff to
                 std::string port, // port to connect to
                 Instance_Id instance_id,
-                int received_seqs_lim);
+                int received_seqs_lim,
+                long fake_delay_us=0);
 
         bool available();
 
@@ -47,6 +52,7 @@ class Connection {
 
         void send(Packet_Payload& payload);
 
+        void set_fake_delay_us(const long& delay_us);
 };
 
 struct Connection_Address {
