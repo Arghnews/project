@@ -98,6 +98,8 @@ static int received_seqs_lim = 40;
 
 static uint32_t tick = 0;
 
+static int payload_buffer_lim = 8;
+
 //
 // 
 //
@@ -242,47 +244,60 @@ int main(int argc, char* argv[]) {
                 conn.send(payload);
                 //p = gen_payload();
                 //conn.send(p);
-                Packet_Payloads payloads = conn.receive();
-                //std::cout << int(conn.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
-                // CHANGE ME ---------------------------------------------------------------------------------------------------------------------------------------------------
-                for (const auto& received_payload: payloads) {
-                    //std::cout << "Recevied payload for tick " << received_payload.tick << "\n";
-                    assert(received_payload.type == Packet_Payload::Type::State && "Client should only receive stateful packets from server");
-                    for (const auto& mom_pos: received_payload.vec_mom_pos) {
-                        const Id& id = mom_pos.id;
-                        Actor& actor = world.actors()[id];
-                        P_State& p_state = actor.state_to_change();
-                        p_state.position = mom_pos.position;
-                        p_state.momentum = mom_pos.momentum;
-                        // world
-                        // set actor mom_pos.id to have mom mom_pos.momentum and pos..
+                Packet_Payloads payloads_in = conn.receive();
+
+                static std::deque<Packet_Payload> payload_buffer;
+                for (auto& payload: payloads_in) {
+                    if (payload_buffer.size() >= payload_buffer_lim) {
+                        payload_buffer.pop_front();
                     }
-                    for (const auto& angmom_orient: received_payload.vec_angmom_ori) {
-                        const Id& id = angmom_orient.id;
-                        Actor& actor = world.actors()[id];
-                        P_State& p_state = actor.state_to_change();
-                        p_state.ang_momentum = angmom_orient.ang_momentum;
-                        p_state.orient = angmom_orient.orient;
-                        // world
-                        // set actor mom_pos.id to have mom mom_pos.momentum and pos..
-                    }
-                    const Id& id = world.actors().selected();
-                    for (const auto& shot: received_payload.shots) {
-                        if (shot.shooter == id) {
-                            // you shot someone
-                            render_text = "You shot";
-                            if (shot.hit) {
-                                render_text += " " + std::to_string(shot.target);
-                            } else {
-                                render_text += " and missed";
-                            }
-                        } else if (shot.target == id && shot.hit) {
-                            render_text = "You were shot by " + std::to_string(shot.shooter);
-                        }
-                    }
+                    payload_buffer.emplace_back(payload);
                 }
-                world.clear_forces();
-                world.clear_shots();
+                assert(payload_buffer.size() <= payload_buffer_lim);
+
+                if (!payload_buffer.empty()) {
+                    Packet_Payload& received_payload = payload_buffer.front();
+
+                    //std::cout << int(conn.instance_id()) << " received ticks ("<<payloads.size() <<")\n";
+                    //for (const auto& received_payload: payloads) {
+                        //std::cout << "Recevied payload for tick " << received_payload.tick << "\n";
+                        assert(received_payload.type == Packet_Payload::Type::State && "Client should only receive stateful packets from server");
+                        for (const auto& mom_pos: received_payload.vec_mom_pos) {
+                            const Id& id = mom_pos.id;
+                            Actor& actor = world.actors()[id];
+                            P_State& p_state = actor.state_to_change();
+                            p_state.position = mom_pos.position;
+                            p_state.momentum = mom_pos.momentum;
+                            // world
+                            // set actor mom_pos.id to have mom mom_pos.momentum and pos..
+                        }
+                        for (const auto& angmom_orient: received_payload.vec_angmom_ori) {
+                            const Id& id = angmom_orient.id;
+                            Actor& actor = world.actors()[id];
+                            P_State& p_state = actor.state_to_change();
+                            p_state.ang_momentum = angmom_orient.ang_momentum;
+                            p_state.orient = angmom_orient.orient;
+                            // world
+                            // set actor mom_pos.id to have mom mom_pos.momentum and pos..
+                        }
+                        const Id& id = world.actors().selected();
+                        for (const auto& shot: received_payload.shots) {
+                            if (shot.shooter == id) {
+                                // you shot someone
+                                render_text = "You shot";
+                                if (shot.hit) {
+                                    render_text += " " + std::to_string(shot.target);
+                                } else {
+                                    render_text += " and missed";
+                                }
+                            } else if (shot.target == id && shot.hit) {
+                                render_text = "You were shot by " + std::to_string(shot.shooter);
+                            }
+                        }
+                    //}
+                    world.clear_forces();
+                    world.clear_shots();
+                }
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
                     /* // Potentially in received_payload, need to set state to these/add to buffer!
@@ -692,6 +707,7 @@ Forces setup_cubes(World& world) {
                 true,
                 true)
             );
+
     create_default_cube(v3(20.0f,2.0f,3.0f),cube2_mass,true,true);
     create_default_cube(v3(-20.0f,2.0f,3.0f),cube3_mass,true,true);
 
