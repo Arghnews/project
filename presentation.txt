@@ -29,11 +29,27 @@ Started with OpenGL labs and Vulkan - took most of term 1 really for not a lot
 Vulkan was incredibly tough esp. for beginner to graphics
 So started back at effectively square one, switched to OpenGL
 
+// Need part on project management
+// Test driven rapid incremental agile development, testing parts of code on smaller programs
+// and then slotting them into the main program afterward
+// for example the graphical representation of the cubes are actually completely
+// separate from their collision model, could have any graphical, one that doesn't
+// even conform to physical model
+// the networking class structure of a Sender and Receiever send any items that can
+// be serialised etc., slotted in later
+// thorough testing carried out on each unit before integrating it into the main application
+// Then after integration of components into program system testing undertaken to find out
+// if program still behaves correctly
+// philosophy is to break problems into sub problems, implement solutions for those,
+// build up those solutions until have a test program that works, then integrate into main
+
 Luckily two things still had were the concept of a physics engine/collision code
 Collision code - SAT theorem explained, test vertices of two shapes if when projected
     onto common axis of either shape, if all projections pass for an axis shapes colliding
     http://www.dyn4j.org/2010/01/sat/
 
+// Fixed timestep physics engine, what do Havok/Bullet do
+// Wanted to do own for understanding
 Physics "engine" - when say engine, really just mean a way to an rigid body at a position with
     a mass, and advance it a fixed time tick (note that fixed time delta important) so it's at 
     a new position with a new momentum
@@ -43,6 +59,9 @@ Physics "engine" - when say engine, really just mean a way to an rigid body at a
     weighted average. Running at a fixed number of simulations per second with a fixed delta t
     gives reasonable output.
 
+// Collision resolve, cons of momentum+minimum translation vectors forces
+// Could be done alternatively with impulse but requires additional algorithms like GJK? etc.
+// go lookup to find the contact point about where the impulse should be transferred
 It must be noted that getting realistic physics I found was very found/I'm very dumb and the to
     ensure that objects are not still in collision after a frame when they are (a posteriori) 
     colliding objects are gently pushed apart along minumum axis of separation
@@ -50,6 +69,7 @@ It must be noted that getting realistic physics I found was very found/I'm very 
     difficult to get right - using these pushing apart forces and conservation of momentum
     principle to set momentum. Spent a lot of time tweaking this.
 
+// Maybe find game that uses octree?
 Octree for storage, divide space up into cubes/octants. Each octant may also be subdivided.
     Octree holds <pos, Id> pairs, indexed by position so only need collide on nearby.
     In heinsight octree lookups are sufficiently slow I believe this is due to the
@@ -60,6 +80,7 @@ Octree for storage, divide space up into cubes/octants. Each octant may also be 
     https://en.wikipedia.org/wiki/Octree
     primarily to avoid O(n^2) collision checks
 
+// How do games do shooting?
 After this shooting - shooting was not too difficult once had broken down into appropriate
     smaller subproblems. Eventually settled on using
     // (0<AM⋅AB<AB⋅AB)∧(0<AM⋅AD<AD⋅AD) test if point M in rectangle ABCD
@@ -68,6 +89,8 @@ After this shooting - shooting was not too difficult once had broken down into a
     then check if coef t is positive ie. shot forward, not shot backward
     check this for faces, lots of early exits for optimisation
 
+// cite source multiplayer networking as goal to accomplish
+// following gaffer on games/source with sending snapshots in packets for client
 Networking. Using asio library that does the lowest level network ops and exposes a socket
     like API. Using UDP - explain TCP sliding window waiting around for stale data problem.
     Also using increase byte-size packet numbers to guard against UDP's lack of guarantee
@@ -82,8 +105,11 @@ Networking. Using asio library that does the lowest level network ops and expose
     Protocol I have sends off packet n, and until it receives an ack for that packet will
     include the payload for packet n in packets n+1, n+2 etc.. This utilises redundancy to
     combat packet loss rather and minimises latency as opposed to stopping at waiting.
-    The cost is bandwidth - again stress not optimised for bandwidth.
+    The cost is bandwidth - again stress not optimised for bandwidth - ie. no delta optim.
     
+    (When optimised - strategy games like sc2 for example (get link for I think AOE) 
+    send unit inputs over network. Often shooters ie. CS send state. I am sending both
+    but only using state).
     Clients send input forces/shots to game server.
     Server processes these inputs and applies them to it's world, affecting world state.
     Server send changed world state/events to all clients.
@@ -97,7 +123,7 @@ Networking. Using asio library that does the lowest level network ops and expose
     Ie. client doesn't receive packet n, n+1, n+2 but receives n+3.
     Since n+3 has all state data for n, n+1, n+2 in, client adds all these to buffer
     and can continue as normal. For better quality connection could reduce this buffer size,
-    less input latency.
+    less input latency. Buffer protects against up to buffer number of packet drops
 
     Dumb client really here. Ie. client just receives new world state like position and sets
     it. Actually the current arch also redundantly sends new momentums for pieces too.
@@ -110,3 +136,16 @@ Networking. Using asio library that does the lowest level network ops and expose
     the partial result of some action. Ie. here shoot and sees "hit" text change.
     In reality could have units move in a strategy game and give sound cues, recoil kick,
     etc. But cannot fully confirm this until server says you did in fact hit.
+    
+// https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking
+Lag compenstation - refer to article
+In a sense I already have this, ie. currently my hits are calced server side but I could
+easily change that to client side. In a real world impl. cannot do client side due to
+being unable to trust the client.
+
+// What to do better, time management definitely
+// Don't be so optimistic (stupid), doing so much stuff from scratch like the physics
+// Great learning experience, learnt a lot, very close to being able to develop more
+// on networking concepts - can mention input prediction (if not already), and lag
+// compensation
+// 
