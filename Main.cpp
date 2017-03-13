@@ -135,7 +135,6 @@ int main(int argc, char* argv[]) {
     Connections connections;
     Connection_Addresses connection_addresses;
 
-
     parse_args(argc, argv,
             instance_type,
             instance_id,
@@ -209,12 +208,17 @@ int main(int argc, char* argv[]) {
     
     std::string render_text = "";
 
-
     if (instance_type == type_server || instance_type == type_client) {
         inputs.setFunc1(GLFW_KEY_F,[&] () {
             for (auto& conn: connections) {
+                conn.toggle_fake_delay_us(1000 * 80);
                 std::cout << "Fake delay for " << int(instance_id) << " now " << conn.fake_delay_us << "\n";
+            }
+        });
+        inputs.setFunc1(GLFW_KEY_G,[&] () {
+            for (auto& conn: connections) {
                 conn.toggle_fake_delay_us(1000 * 500);
+                std::cout << "Fake delay for " << int(instance_id) << " now " << conn.fake_delay_us << "\n";
             }
         });
     }
@@ -252,6 +256,7 @@ int main(int argc, char* argv[]) {
                 payload.forces = world.forces();
                 payload.shots = world.shots();
                 conn.send(payload);
+
                 //p = gen_payload();
                 //conn.send(p);
                 Packet_Payloads payloads_in = conn.receive();
@@ -702,7 +707,7 @@ Forces setup_cubes(World& world) {
                 v3(4.0f,1.0f,4.0f),
                 v3(15.0f,2.0f,0.0f),
                 cube1_mass,
-                10.0f,
+                5.0f,
                 true,
                 true)
             );
