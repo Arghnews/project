@@ -1,6 +1,112 @@
+f,g for 80/500 ms of fake lag
+i for prediction
+p for into/out of screen
+w,a,s,d for movement
+left click for shoot
+
+Make sure when you start it up the cubes orient themselves correctly
+
 1. Tell assessors about project
 2. Demo system
 3. Answer questions
 
+    Why was the project worth doing?
+    Unsolved complicated field that is frequently used in development of actual games.
 
+    My project is really just a delve into the field and the various difficulties
+    Turned more into an exploration into developing a game - tough
 
+    Technical strength -
+    Collision code
+    Physics concept
+    Shooting
+    Networking concept for reliable UDP
+
+Intro on defining fps-game genre
+State that my aim to understand networking aspects behind them
+Need to build a basic game
+Started with OpenGL labs and Vulkan - took most of term 1 really for not a lot
+Vulkan was incredibly tough esp. for beginner to graphics
+So started back at effectively square one, switched to OpenGL
+
+Luckily two things still had were the concept of a physics engine/collision code
+Collision code - SAT theorem explained, test vertices of two shapes if when projected
+    onto common axis of either shape, if all projections pass for an axis shapes colliding
+    http://www.dyn4j.org/2010/01/sat/
+
+Physics "engine" - when say engine, really just mean a way to an rigid body at a position with
+    a mass, and advance it a fixed time tick (note that fixed time delta important) so it's at 
+    a new position with a new momentum
+    Note that the issue with simple Euler integration is that due the game world being sampled
+    at discrete time intervals (80tps) that very quickly the physics of the world spiral out
+    of control with this. Using RK4 that effectively does Taylor series approxs and takes a
+    weighted average. Running at a fixed number of simulations per second with a fixed delta t
+    gives reasonable output.
+
+It must be noted that getting realistic physics I found was very found/I'm very dumb and the to
+    ensure that objects are not still in collision after a frame when they are (a posteriori) 
+    colliding objects are gently pushed apart along minumum axis of separation
+    Lot of tweaking to physics engine, works well enough for this. In reality I suspect very
+    difficult to get right - using these pushing apart forces and conservation of momentum
+    principle to set momentum. Spent a lot of time tweaking this.
+
+Octree for storage, divide space up into cubes/octants. Each octant may also be subdivided.
+    Octree holds <pos, Id> pairs, indexed by position so only need collide on nearby.
+    In heinsight octree lookups are sufficiently slow I believe this is due to the
+    quintessential problem that whilst O(n) analysis is great, the octree has fairly awful
+    cache locality and does a lot of traversal to find an element. And a lot of if cond.
+    add else don't branching. In heinsight perhaps have more higher level nodes that are
+    compactly stored and lowest level nodes in leaves that are somewhere else.
+    https://en.wikipedia.org/wiki/Octree
+    primarily to avoid O(n^2) collision checks
+
+After this shooting - shooting was not too difficult once had broken down into appropriate
+    smaller subproblems. Eventually settled on using
+    // (0<AM⋅AB<AB⋅AB)∧(0<AM⋅AD<AD⋅AD) test if point M in rectangle ABCD
+    // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection 
+    so check if org + t(dir) = point where point in cuboid
+    then check if coef t is positive ie. shot forward, not shot backward
+    check this for faces, lots of early exits for optimisation
+
+Networking. Using asio library that does the lowest level network ops and exposes a socket
+    like API. Using UDP - explain TCP sliding window waiting around for stale data problem.
+    Also using increase byte-size packet numbers to guard against UDP's lack of guarantee
+    for out of order packets and duplicate ones.
+    To serialise data using a library called C++ cereal. Nice and simple API, able to
+    serialise types like glm vec3 and all STL containers so really nice.
+    Could/will in proper version consider a switch to google's protocol buffers that are
+    a more complete solution that I suspect will especially have greater space efficiency.
+    Also have a zlib impementation that does compression to compress serialised data.
+    Despite all this I still send fairly large amounts of data - haven't optimised for
+    bandwidth as it would take so long and already quite behind schedule.
+    Protocol I have sends off packet n, and until it receives an ack for that packet will
+    include the payload for packet n in packets n+1, n+2 etc.. This utilises redundancy to
+    combat packet loss rather and minimises latency as opposed to stopping at waiting.
+    The cost is bandwidth - again stress not optimised for bandwidth.
+    
+    Clients send input forces/shots to game server.
+    Server processes these inputs and applies them to it's world, affecting world state.
+    Server send changed world state/events to all clients.
+    Clients receive this and update their world state.
+
+    At 80tps for server and client, 12.5 ms delay between sims.
+    In order to combat packets arriving out of order, client buffers packets received
+    by adding them a small queue of size 4 currently. This therefore adds 50ms in "input
+    latency" where all actions are delayed by an additional 50ms but means up to 3 packets
+    in a row may be lost and the client will still be able to render perfectly normally.
+    Ie. client doesn't receive packet n, n+1, n+2 but receives n+3.
+    Since n+3 has all state data for n, n+1, n+2 in, client adds all these to buffer
+    and can continue as normal. For better quality connection could reduce this buffer size,
+    less input latency.
+
+    Dumb client really here. Ie. client just receives new world state like position and sets
+    it. Actually the current arch also redundantly sends new momentums for pieces too.
+    However these are not set as they don't matter. Could do some extrapolation type thing
+    where when buffer empty and recieved no data just simulate with stale, but you get a
+    huge jump when you get back new data.
+
+    Also have prediction on shot, simple idea. Complex to properly implement and ran out of
+    time quite frankly. Idea being client does not have to wait for their own delay to see
+    the partial result of some action. Ie. here shoot and sees "hit" text change.
+    In reality could have units move in a strategy game and give sound cues, recoil kick,
+    etc. But cannot fully confirm this until server says you did in fact hit.

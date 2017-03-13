@@ -176,6 +176,9 @@ void World::simulate(
                 vec_angmom_ori.emplace_back(
                     AngMom_Ori(cube_phys.ang_momentum,cube_phys.orient,id));
             }
+            actor.set_changed();
+        } else {
+            actor.set_unchanged();
         }
         tree_.insert(cube_phys.position, id);
     }
@@ -232,6 +235,9 @@ void World::collisions() {
         const Id& id = i;
         //const Actor& actor = *a.second;
         const Actor& actor = actors[i];
+        if (!actor.changed_state()) {
+            continue;
+        }
         const L_Cuboid& l_cub = actor.logical_cuboid();
         const P_State& phys = actor.p_state();
         long a_start = timeNowMicros();
@@ -446,7 +452,7 @@ void World::apply_forces(const Forces& forces) {
     }
 }
 
-Shots World::fire_shots(const Shots& shots) {
+Shots World::fire_shots(const Shots& shots, bool moved) {
     Shots shots_fired;
     for (const auto& shot: shots) {
         const Id& id = shot.shooter;
@@ -505,7 +511,9 @@ Shots World::fire_shots(const Shots& shots) {
         std::cout << closest.shooter << " fired from " << printV(closest.org) << " toward " << printV(closest.dir);
         if (closest.hit) {
             // push back on the target
-            this->apply_force(Force(closest.target,closest.dir,Force::Type::Force,false,true));
+            if (moved) {
+                this->apply_force(Force(closest.target,closest.dir,Force::Type::Force,false,true));
+            }
             std::cout << " and hit " << closest.target << " at " << printV(closest.hit_pos) << "\n";
         } else {
             std::cout << " and missed\n";

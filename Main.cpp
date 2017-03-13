@@ -100,6 +100,8 @@ static uint32_t tick = 0;
 
 static int payload_buffer_lim = 4;
 
+static bool prediction = false;
+
 //
 // 
 //
@@ -227,6 +229,13 @@ int main(int argc, char* argv[]) {
             }
         });
     }
+    if (instance_type == type_client) {
+        inputs.setFunc1(GLFW_KEY_I,[&] () {
+                prediction = !prediction;
+                auto p(prediction ? "enabled" : "disabled");
+                std::cout << "(" << int(instance_id) << ") prediction " << p << "\n";
+        });
+    }
 
     // simple as tits loop with render/tick bound for now - just easier to work with
     while (!glfwWindowShouldClose(window)) {
@@ -253,6 +262,7 @@ int main(int argc, char* argv[]) {
             //std::cout << "Time for col " << (double)(timeNow()-temp)/1000.0 << "ms\n";
 
             if (instance_type == type_client) {
+                if (instance_id == 1) prediction = true;
 
                 Connection& conn = connections[0];
 
@@ -260,6 +270,24 @@ int main(int argc, char* argv[]) {
                 Packet_Payload payload(Packet_Payload::Type::Input, tick);
                 payload.forces = world.forces();
                 payload.shots = world.shots();
+                if (prediction) {
+                    const Id& id = world.actors().selected();
+                    const Shots shots_fired = world.fire_shots(world.shots(),false);
+                    for (const auto& shot: shots_fired) {
+                        if (shot.shooter == id) {
+                            // you shot someone
+                            render_text = "(P) ";
+                            render_text += "You shot";
+                            if (shot.hit) {
+                                render_text += " " + std::to_string(shot.target);
+                            } else {
+                                render_text += " and missed";
+                            }
+                        } else if (shot.target == id && shot.hit) {
+                            render_text = "You were shot by " + std::to_string(shot.shooter);
+                        }
+                    }
+                }
                 conn.send(payload);
 
                 //p = gen_payload();

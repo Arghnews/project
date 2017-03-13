@@ -55,6 +55,10 @@ void Actor::set_changed() {
     changed_state_ = true;
 }
 
+void Actor::set_unchanged() {
+    changed_state_ = false;
+}
+
 void Actor::recalc() {
     static const std::string s = "Should only ever recalc an actor's state if it changed "
     "- if strange bug here after time, take care that physics sim clamps mom/ang_mom to zero, "

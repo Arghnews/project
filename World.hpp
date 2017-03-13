@@ -51,7 +51,7 @@ class World {
         Shots& shots();
         void fire_shot(const Id& id);
         void fire_shot(const Shot& shot);
-        Shots fire_shots(const Shots& shots);
+        Shots fire_shots(const Shots& shots, bool moved=true);
 
         void render();
         void collisions();

@@ -34,6 +34,7 @@ class Actor {
         const bool invis() const;
 
         void set_changed();
+        void set_unchanged();
         bool changed_state() const;
         void recalc();
         const P_State& p_state() const;
