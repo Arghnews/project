@@ -80,8 +80,8 @@ void static parse_args(
         );
 
 static const float my_mass = 1.0f;
-static const float cube1_mass = 20.0f;
-static const float cube2_mass = 2.0f;
+static const float cube1_mass = 2.0f;
+static const float cube2_mass = 4.0f;
 static const float cube3_mass = 0.1f;
 static const float default_mass = 1.0f;
 static const float small = my_mass * 0.05f;
@@ -731,7 +731,7 @@ Forces setup_cubes(World& world) {
                 &world.l_cub_face_verts[default_l_face_verts],//&vertices,
                 v3(1.0f),
                 v3(0.0f,1.0f,14.0f),
-                1.0f,
+                cube2_mass,
                 3.0f,
                 true,
                 true)
