@@ -2,16 +2,21 @@
 
 let numClients=1
 
+#executable="./network.exec"
+executable="./game.exec"
+
 if [ ! -z ${1+x} ]; then
+    if [ "$1" == "local" ];then
+        executable="$executable local"
+        $executable
+        exit 0
+    fi
     numClients=$1
 fi
 
 #[client/server] [0-9] 2000 localhost 2010 2001 localhost 2001
 
 let numClients=$numClients
-
-#executable="./network.exec"
-executable="./game.exec"
 
 clients=()
 

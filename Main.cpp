@@ -171,7 +171,12 @@ int main(int argc, char* argv[]) {
     Window_Inputs inputs;
 
     std::string win_name = instance_type + " " + std::to_string(int(instance_id));
-    GLFWwindow* window = inputs.init_window(win_name, 640, 480);
+    GLFWwindow* window;
+    if (instance_type == type_local) {
+        window = inputs.init_window(win_name);
+    } else {
+        window = inputs.init_window(win_name, 640, 480);
+    }
     //const long fps_max = 60l;
     
     //const long tickrate = 100l;
@@ -394,13 +399,27 @@ int main(int argc, char* argv[]) {
             } else if (instance_type == type_local) {
                 // assumed testing non networking aspect
                 // shots must be first for recoil force
+                Id selected = world.actors().selected();
                 world.collisions();
-                world.fire_shots(world.shots());
+                Shots shots_fired = world.fire_shots(world.shots());
                 world.apply_forces(world.forces());
                 std::vector<Mom_Pos> vec_mom_pos;
                 std::vector<AngMom_Ori> vec_angmom_ori;
                 world.simulate(t_normalized,dt_normalized,
                         vec_mom_pos, vec_angmom_ori);
+                for (const auto& shot: shots_fired) {
+                    if (shot.shooter == selected) {
+                        // you shot someone
+                        render_text = "You shot";
+                        if (shot.hit) {
+                            render_text += " " + std::to_string(shot.target);
+                        } else {
+                            render_text += " and missed";
+                        }
+                    } else if (shot.target == selected && shot.hit) {
+                        render_text = "You were shot by " + std::to_string(shot.shooter);
+                    }
+                }
             }
 
             // actually applies forces and moves the world

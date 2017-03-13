@@ -46,7 +46,7 @@ class Window_Inputs {
     public:
         Window_Inputs();
 
-        GLFWwindow* init_window(std::string window_name="Sick window name here", int x=800, int y=600);
+        GLFWwindow* init_window(std::string window_name="Sick window name here", int x=1920, int y=1080);
         GLFWwindow* getWindow();
         v2 windowSize();
         
