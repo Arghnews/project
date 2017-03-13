@@ -228,6 +228,7 @@ int main(int argc, char* argv[]) {
             if (instance_type == type_client) {
 
                 Connection& conn = connections[0];
+                assert(connections.size() == 0 && "Client should only have one connection (to server)");
                 Packet_Payload payload(Packet_Payload::Type::Input, tick);
                 payload.forces = world.forces();
                 conn.send(payload);
@@ -238,17 +239,25 @@ int main(int argc, char* argv[]) {
                 // CHANGE ME ---------------------------------------------------------------------------------------------------------------------------------------------------
                 for (const auto& received_payload: payloads) {
                     assert(received_payload.type == Packet_Payload::Type::State && "Client should only receive stateful packets from server");
+                    for (const auto& mom_pos: received_payload.vec_mom_pos) {
+                        //world
+                        // set actor mom_pos.id to have mom mom_pos.momentum and pos..
+                    }
+                }
                     // add this whole payload for whatever tick this was to buffer
                     // buffer should be ordered by tick
                     /* // Potentially in received_payload, need to set state to these/add to buffer!
-                       Shots shots;
-                       std::vector<Id_v3> positions;
-                       std::vector<Id_fq> orients;
-                       std::vector<Id_v3> momentums;
-                       std::vector<Id_v3> ang_momentums;
+    Tick tick; // initially tied to Seq number
+    // application level number, so can tell at what tick this was sent on
+    // can tell if too old or not etc // think I need this? maybe not really
+    Type type;
+    Forces forces;
+    Shots shots;
+    // defined in Deltas.hpp
+    std::vector<Mom_Pos> vec_mom_pos;
+    std::vector<AngMom_Ori> vec_angmom_ori;
                        */
                     //std::cout << "Tick:" << payload.tick << "\n";
-                }
             } else if (instance_type == type_server) {
                 /*
                    Process inputs from all clients
