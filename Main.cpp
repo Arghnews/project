@@ -98,7 +98,7 @@ static int received_seqs_lim = 40;
 
 static uint32_t tick = 0;
 
-static int payload_buffer_lim = 8;
+static int payload_buffer_lim = 4;
 
 //
 // 
