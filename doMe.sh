@@ -21,6 +21,10 @@ main() {
 
     # for now if run ./doMe.sh --client --clean will remove all objects
 
+    export CPATH=$CPATH:include
+    export LIBRARY_PATH=$LIBRARY_PATH:lib
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:lib
+
 	executable="game" # .exec will be appeneded
 
     game=(

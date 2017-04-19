@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:lib
+
 let numClients=1
 
 #executable="./network.exec"
