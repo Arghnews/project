@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
     if (instance_type == type_local) {
         window = inputs.init_window(win_name);
     } else {
-        window = inputs.init_window(win_name, 640, 480);
+        window = inputs.init_window(win_name, 900, 600);
     }
     //const long fps_max = 60l;
     
